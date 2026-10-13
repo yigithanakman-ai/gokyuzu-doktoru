@@ -1,0 +1,44 @@
+# Credentials & Secrets (ASLA GITHUB'A YÜKLENMEZ)
+.env
+*.env
+*.env.*
+credentials.json
+*service_account*.json
+token*.json
+client_secret*.json
+*.pem
+*.key
+
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+venv/
+.venv/
+env/
+.env/
+
+# Flutter & Dart
+.dart_tool/
+.flutter-plugins
+.flutter-plugins-dependencies
+.pub-cache/
+.pub/
+build/
+coverage/
+**/ios/Flutter/.last_build_id
+**/android/app/debug
+**/android/app/profile
+**/android/app/release
+.widget_preview/
+
+# macOS
+.DS_Store
+.AppleDouble
+.LSOverride
+._*
+
+# IDEs
+.idea/
+*.iml
+.vscode/

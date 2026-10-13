@@ -1,0 +1,396 @@
+<!DOCTYPE html>
+<html lang="tr">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Gökyüzü Doktoru - Yasal Merkez & Gizlilik Politikası</title>
+  <meta name="description" content="Gökyüzü Doktoru mobil uygulaması resmi yasal merkezi, KVKK aydınlatma metni, gizlilik politikası ve kullanım koşulları.">
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;500;600;700&display=swap" rel="stylesheet">
+  <style>
+    :root {
+      --bg: #0B0A10;
+      --card-bg: #14121F;
+      --border: #232035;
+      --text: #F0EDF6;
+      --text-muted: #9590A8;
+      --accent-gold: #FFD166;
+      --accent-purple: #9D4EDD;
+      --accent-blue: #4EA8DE;
+      --accent-red: #EF476F;
+    }
+    * {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0;
+      font-family: 'Plus Jakarta Sans', -apple-system, BlinkMacSystemFont, sans-serif;
+    }
+    body {
+      background-color: var(--bg);
+      color: var(--text);
+      line-height: 1.6;
+      padding-bottom: 60px;
+    }
+    header {
+      border-bottom: 1px solid var(--border);
+      padding: 20px 24px;
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      max-width: 1100px;
+      margin: 0 auto;
+    }
+    .logo-area {
+      display: flex;
+      align-items: center;
+      gap: 12px;
+      text-decoration: none;
+      color: inherit;
+    }
+    .logo-icon {
+      width: 40px;
+      height: 40px;
+      border-radius: 10px;
+      background: linear-gradient(135deg, var(--accent-purple), var(--accent-blue));
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      font-size: 20px;
+    }
+    .logo-title {
+      font-weight: 700;
+      font-size: 18px;
+      letter-spacing: -0.3px;
+    }
+    .badge-live {
+      background: rgba(78, 168, 222, 0.15);
+      color: var(--accent-blue);
+      border: 1px solid rgba(78, 168, 222, 0.3);
+      padding: 4px 10px;
+      border-radius: 20px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+    .hero {
+      max-width: 1100px;
+      margin: 40px auto 30px;
+      padding: 0 24px;
+      text-align: center;
+    }
+    .hero h1 {
+      font-size: 32px;
+      font-weight: 700;
+      margin-bottom: 12px;
+      background: linear-gradient(135deg, #FFF, var(--text-muted));
+      -webkit-background-clip: text;
+      -webkit-text-fill-color: transparent;
+    }
+    .hero p {
+      color: var(--text-muted);
+      font-size: 15px;
+      max-width: 600px;
+      margin: 0 auto;
+    }
+    .tabs-nav {
+      max-width: 1100px;
+      margin: 20px auto;
+      padding: 0 24px;
+      display: flex;
+      gap: 10px;
+      overflow-x: auto;
+      scrollbar-width: none;
+      border-bottom: 1px solid var(--border);
+      padding-bottom: 12px;
+    }
+    .tab-btn {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      color: var(--text-muted);
+      padding: 10px 18px;
+      border-radius: 10px;
+      font-size: 13.5px;
+      font-weight: 600;
+      cursor: pointer;
+      white-space: nowrap;
+      transition: all 0.2s ease;
+    }
+    .tab-btn:hover {
+      color: var(--text);
+      border-color: rgba(255, 255, 255, 0.2);
+    }
+    .tab-btn.active {
+      background: rgba(255, 209, 102, 0.12);
+      border-color: var(--accent-gold);
+      color: var(--accent-gold);
+    }
+    .container {
+      max-width: 1100px;
+      margin: 0 auto;
+      padding: 0 24px;
+    }
+    .content-card {
+      background: var(--card-bg);
+      border: 1px solid var(--border);
+      border-radius: 16px;
+      padding: 36px;
+      margin-top: 10px;
+      display: none;
+    }
+    .content-card.active {
+      display: block;
+      animation: fadeIn 0.25s ease;
+    }
+    @keyframes fadeIn {
+      from { opacity: 0; transform: translateY(6px); }
+      to { opacity: 1; transform: translateY(0); }
+    }
+    .content-card h2 {
+      font-size: 22px;
+      margin-bottom: 16px;
+      color: var(--accent-gold);
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .content-card h3 {
+      font-size: 16px;
+      margin: 22px 0 8px;
+      color: #FFF;
+    }
+    .content-card p, .content-card li {
+      color: #C8C5D8;
+      font-size: 14.5px;
+      margin-bottom: 10px;
+    }
+    .content-card ul {
+      margin-left: 20px;
+      margin-bottom: 14px;
+    }
+    .alert-box {
+      background: rgba(239, 71, 111, 0.08);
+      border: 1px solid rgba(239, 71, 111, 0.3);
+      border-radius: 12px;
+      padding: 16px 20px;
+      margin: 20px 0;
+      color: #FFB3C1;
+      font-size: 13.5px;
+    }
+    .alert-box strong {
+      color: #FFF;
+    }
+    footer {
+      max-width: 1100px;
+      margin: 60px auto 0;
+      padding: 30px 24px 0;
+      border-top: 1px solid var(--border);
+      text-align: center;
+      color: var(--text-muted);
+      font-size: 13px;
+    }
+    .footer-links {
+      display: flex;
+      justify-content: center;
+      gap: 18px;
+      flex-wrap: wrap;
+      margin-bottom: 18px;
+    }
+    .footer-links a {
+      color: var(--text-muted);
+      text-decoration: none;
+      transition: color 0.2s;
+    }
+    .footer-links a:hover {
+      color: var(--accent-gold);
+    }
+    .disclaimer-badge {
+      background: rgba(255, 255, 255, 0.03);
+      border: 1px solid rgba(255, 255, 255, 0.07);
+      padding: 14px 20px;
+      border-radius: 12px;
+      margin: 20px auto 0;
+      max-width: 800px;
+      font-size: 12px;
+      color: #8C87A0;
+    }
+  </style>
+</head>
+<body>
+
+  <header>
+    <a href="#" class="logo-area">
+      <div class="logo-icon">🪐</div>
+      <div>
+        <div class="logo-title">Gökyüzü Doktoru</div>
+        <div style="font-size: 11px; color: var(--text-muted);">Yasal Uyum ve Şeffaflık Merkezi</div>
+      </div>
+    </a>
+    <div class="badge-live">Resmi Yasal Portal</div>
+  </header>
+
+  <div class="hero">
+    <h1>Yasal Metinler & Bilgi Güvenliği</h1>
+    <p>Kişisel verilerinizin korunması, yasal haklarınız, abonelik ve iade koşullarımız hakkında tam şeffaflık taahhüdümüz.</p>
+  </div>
+
+  <nav class="tabs-nav">
+    <button class="tab-btn active" onclick="showTab('gizlilik')">Gizlilik Politikası</button>
+    <button class="tab-btn" onclick="showTab('kvkk')">KVKK Aydınlatma</button>
+    <button class="tab-btn" onclick="showTab('kullanim')">Kullanım Koşulları</button>
+    <button class="tab-btn" onclick="showTab('satis')">Mesafeli Satış</button>
+    <button class="tab-btn" onclick="showTab('iade')">İptal & İade</button>
+    <button class="tab-btn" onclick="showTab('sorumluluk')">Yasal Sorumluluk Reddi</button>
+    <button class="tab-btn" onclick="showTab('iletisim')">İletişim & Şirket</button>
+  </nav>
+
+  <div class="container">
+
+    <!-- GİZLİLİK POLİTİKASI -->
+    <div id="gizlilik" class="content-card active">
+      <h2>🛡️ Gizlilik Politikası (Privacy Policy)</h2>
+      <p><strong>Son Güncelleme:</strong> 13 Ekim 2026</p>
+      <p>Gökyüzü Doktoru ("Uygulama") olarak gizliliğinize en yüksek düzeyde saygı duyuyoruz. Bu Gizlilik Politikası, iOS ve Android uygulamalarımızı kullandığınızda verilerinizin nasıl toplandığını, işlendiğini ve korunduğunu açıklar.</p>
+      
+      <h3>1. Toplanan Veriler</h3>
+      <ul>
+        <li><strong>Kimlik ve İletişim:</strong> Ad, soyad, e-posta adresi, cinsiyet.</li>
+        <li><strong>Astrolojik Doğum Verileri:</strong> Doğum tarihi, kesin doğum saati, doğum yeri şehri ve ülkesi, enlem/boylam koordinatları.</li>
+        <li><strong>Cihaz Bilgileri:</strong> İşletim sistemi versiyonu, cihaz modeli ve hata raporları (sadece uygulama performansını iyileştirmek için).</li>
+      </ul>
+
+      <h3>2. Verilerin İşlenme Amacı</h3>
+      <p>Verileriniz yalnızca hassas Placidus ev algoritmaları, efemeris tabloları ve kişisel öngörü haritalarını hesaplamak amacıyla yerel ve güvenli bulut ortamında işlenir.</p>
+
+      <h3>3. Kesinlikle Satılmaz ve Paylaşılmaz</h3>
+      <p>Doğum haritası koordinatlarınız ve kişisel bilgileriniz <strong>asla hiçbir reklam şirketine veya üçüncü şahsa ticari amaçla satılmaz veya kiralanmaz</strong>.</p>
+
+      <h3>4. Hesap ve Veri Silme Hakkı (Apple 5.1.1 Uyumlu)</h3>
+      <p>Kullanıcılarımız diledikleri zaman uygulama içindeki <em>Profil &gt; Hesabımı Sil</em> seçeneğinden veya <strong>destek@gokyuzudoktoru.com</strong> adresine yazarak tüm kişisel verilerini ve doğum haritalarını kalıcı olarak sistemlerimizden sildirebilirler.</p>
+    </div>
+
+    <!-- KVKK AYDINLATMA -->
+    <div id="kvkk" class="content-card">
+      <h2>📜 KVKK Aydınlatma ve Açık Rıza Metni</h2>
+      <p><strong>Veri Sorumlusu:</strong> Gökyüzü Doktoru (Yiğithan Akman)</p>
+      <p>6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK") kapsamında, kişisel verileriniz veri sorumlusu sıfatıyla yasal mevzuata tam uyumlu olarak işlenmektedir.</p>
+
+      <h3>1. Hukuki Sebepler ve İşleme Şartları</h3>
+      <p>Verileriniz, KVKK'nın 5. maddesinde yer alan "Bir sözleşmenin kurulması veya ifasıyla doğrudan doğruya ilgili olması" ve "İlgili kişinin temel hak ve özgürlüklerine zarar vermemek kaydıyla meşru menfaat" hukuki sebeplerine dayalı olarak işlenmektedir.</p>
+
+      <h3>2. İlgili Kişinin Hakları (Madde 11)</h3>
+      <p>KVKK'nın 11. maddesi uyarınca; verilerinizin işlenip işlenmediğini öğrenme, yanlış işlenmişse düzeltilmesini talep etme ve verilerinizin silinmesini isteme hakkınız saklıdır.</p>
+    </div>
+
+    <!-- KULLANIM KOŞULLARI -->
+    <div id="kullanim" class="content-card">
+      <h2>⚖️ Kullanım Koşulları & Hizmet Şartları (EULA)</h2>
+      <p>Gökyüzü Doktoru uygulamasını indirerek veya hesap oluşturarak aşağıdaki koşulları kabul etmiş sayılırsınız:</p>
+      
+      <h3>1. Fikri Mülkiyet</h3>
+      <p>Uygulamada yer alan özgün astroloji motoru kodları, 10 sayfalık özel PDF kitapçığı algoritmaları, Kabala yaşam ağacı grafikleri ve içerikler telif hakkı ile korunmaktadır. İzinsiz kopyalanamaz veya çoğaltılamaz.</p>
+
+      <h3>2. VIP Abonelik ve Otomatik Yenileme</h3>
+      <p>Abonelikler Apple App Store ve Google Play Store mağaza kurallarına tabidir. Cari fatura dönemi bitmeden 24 saat önce iptal edilmediği sürece abonelik otomatik olarak yenilenir.</p>
+
+      <div class="alert-box">
+        <strong>⚠️ Önemli Hatırlatma:</strong> Aboneliğinizi cihazınızın Ayarlar &gt; Abonelikler menüsünden tek tıkla iptal edebilirsiniz. İptal ettiğinizde dönemin sonuna kadar VIP haklarınız eksiksiz devam eder.
+      </div>
+    </div>
+
+    <!-- MESAFELİ SATIŞ -->
+    <div id="satis" class="content-card">
+      <h2>🛒 Mesafeli Satış Sözleşmesi & Ön Bilgilendirme</h2>
+      <p><strong>Yasal Dayanak:</strong> 6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği</p>
+      
+      <h3>1. Hizmetin Niteliği</h3>
+      <p>Sözleşme konusu hizmet; dijital ortamda anında kullanıma açılan VIP astrolojik analizler, rektifikasyon modülleri ve indirilebilir 10 sayfalık PDF analiz kitapçığıdır. Fiziki kargo veya teslimat yoktur.</p>
+
+      <h3>2. Fiyatlandırma ve Ödeme</h3>
+      <p>Hizmet bedeli uygulama içi satın alma ekranında açıkça belirtilen KDV dahil bedeldir. Tahsilat Apple StoreKit veya Google Play Billing güvenli kanallarıyla yapılır.</p>
+    </div>
+
+    <!-- İPTAL VE İADE -->
+    <div id="iade" class="content-card">
+      <h2>🔄 İptal, İade ve Cayma Hakkı Koşulları</h2>
+      
+      <div class="alert-box">
+        <strong>Kanuni Cayma Hakkı İstisnası (Madde 15/1-ğ):</strong><br>
+        6502 sayılı Tüketicinin Korunması Hakkında Kanun gereğince; <em>"Elektronik ortamda anında ifa edilen hizmetler veya tüketiciye anında teslim edilen gayrimaddi mallara ilişkin sözleşmelerde tüketici cayma hakkını kullanamaz."</em>
+      </div>
+
+      <p>Kişiye özel oluşturulan doğum haritası raporları ve anında kullanıma açılan VIP dijital erişim hakları anında ifa edildiğinden, satın alma tamamlandıktan sonra ücret iadesi yapılmamaktadır.</p>
+      <p>Kullanıcı istediği an gelecek dönem abonelik yenilemesini Apple/Google mağaza ayarlarından kapatabilir.</p>
+    </div>
+
+    <!-- SORUMLULUK REDDİ -->
+    <div id="sorumluluk" class="content-card">
+      <h2>⚠️ Yasal Sorumluluk Reddi (Disclaimer)</h2>
+      
+      <div class="alert-box" style="background: rgba(255, 209, 102, 0.08); border-color: rgba(255, 209, 102, 0.3); color: #FFE082;">
+        <strong>KESİNLİKLE TIBBİ, HUKUKİ VEYA YATIRIM TAVSİYESİ DEĞİLDİR:</strong><br>
+        Gökyüzü Doktoru uygulamasında sunulan hiçbir astrolojik yorum, gezegen konumu veya döngü öngörüsü; TIBBİ TEŞHİS, TEDAVİ, PSİKOLOJİK TERAPİ, HUKUKİ DANIŞMANLIK VEYA FİNANSAL YATIRIM TAVSİYESİ NİTELİĞİ TAŞIMAZ.
+      </div>
+
+      <p>Uygulamamızdaki tüm içerikler yalnızca kadim sembolizmler doğrultusunda <strong>öz farkındalık ve kültürel eğlence</strong> amaçlıdır. Hayati kararlarınızda daima yetkili hekimlere ve uzman profesyonellere danışınız.</p>
+    </div>
+
+    <!-- İLETİŞİM -->
+    <div id="iletisim" class="content-card">
+      <h2>📬 İletişim & Geliştirici Bilgileri</h2>
+      <p>Tüm soru, öneri, destek talepleri ve KVKK veri silme başvuruları için bizimle iletişime geçebilirsiniz:</p>
+      <ul style="list-style: none; margin-left: 0; margin-top: 16px;">
+        <li style="margin-bottom: 10px;"><strong>Geliştirici:</strong> Yiğithan Akman</li>
+        <li style="margin-bottom: 10px;"><strong>E-posta:</strong> destek@gokyuzudoktoru.com</li>
+        <li style="margin-bottom: 10px;"><strong>Uygulama:</strong> Gökyüzü Doktoru</li>
+        <li style="margin-bottom: 10px;"><strong>Web Sitesi:</strong> https://gokyuzudoktoru.com</li>
+      </ul>
+    </div>
+
+  </div>
+
+  <footer>
+    <div class="footer-links">
+      <a href="javascript:showTab('gizlilik')">Gizlilik</a>
+      <a href="javascript:showTab('kvkk')">KVKK</a>
+      <a href="javascript:showTab('kullanim')">Kullanım Koşulları</a>
+      <a href="javascript:showTab('satis')">Mesafeli Satış</a>
+      <a href="javascript:showTab('iade')">İptal & İade</a>
+      <a href="javascript:showTab('sorumluluk')">Feragatname</a>
+      <a href="javascript:showTab('iletisim')">İletişim</a>
+    </div>
+    <p>© 2026 Gökyüzü Doktoru - Tüm Hakları Saklıdır.</p>
+    <div class="disclaimer-badge">
+      Astrolojik içerikler öz farkındalık ve eğlence amaçlıdır; tıbbi, psikolojik, finansal veya hukuki danışmanlık yerine geçmez.
+    </div>
+  </footer>
+
+  <script>
+    function showTab(tabId) {
+      document.querySelectorAll('.content-card').forEach(card => card.classList.remove('active'));
+      document.querySelectorAll('.tab-btn').forEach(btn => btn.classList.remove('active'));
+      
+      const targetCard = document.getElementById(tabId);
+      if (targetCard) targetCard.classList.add('active');
+
+      const buttons = document.querySelectorAll('.tab-btn');
+      buttons.forEach(btn => {
+        if (btn.getAttribute('onclick').includes(tabId)) {
+          btn.classList.add('active');
+        }
+      });
+
+      window.location.hash = tabId;
+      window.scrollTo({ top: 120, behavior: 'smooth' });
+    }
+
+    // Hash kontrolü (Örn: sayfa.html#gizlilik açıldığında ilgili sekmeyi açar)
+    window.addEventListener('DOMContentLoaded', () => {
+      const hash = window.location.hash.replace('#', '');
+      if (hash && document.getElementById(hash)) {
+        showTab(hash);
+      }
+    });
+  </script>
+
+</body>
+</html>
