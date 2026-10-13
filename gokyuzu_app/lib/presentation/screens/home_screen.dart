@@ -2210,6 +2210,7 @@ class _HomeScreenState extends State<HomeScreen> {
     final now = DateTime.now();
     final quotaKey = 'pdf_count_${now.year}_${now.month}';
     final prefs = await SharedPreferences.getInstance();
+    final usedCount = prefs.getInt(quotaKey) ?? 0;
     final maxQuota = await StorageService.getMonthlyPdfAllowance();
 
     if (usedCount >= maxQuota) {
