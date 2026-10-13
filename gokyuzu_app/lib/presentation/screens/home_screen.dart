@@ -742,22 +742,29 @@ class _HomeScreenState extends State<HomeScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.verified_rounded,
-                                size: 18, color: AppColors.starlightGold),
-                            SizedBox(width: 8),
-                            Text(
-                              'YİĞİTHAN AKMAN İLE İLETİŞİM',
-                              style: TextStyle(
-                                fontSize: 12,
-                                fontWeight: FontWeight.bold,
-                                letterSpacing: 0.8,
-                                color: AppColors.starlightGold,
+                        const Expanded(
+                          child: Row(
+                            children: [
+                              Icon(Icons.verified_rounded,
+                                  size: 18, color: AppColors.starlightGold),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'YİĞİTHAN AKMAN İLE İLETİŞİM',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 12,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.8,
+                                    color: AppColors.starlightGold,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
+                        const SizedBox(width: 8),
                         InkWell(
                           onTap: () => _showSocialShareModal(context),
                           borderRadius: BorderRadius.circular(8),
@@ -1533,23 +1540,27 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const SizedBox(width: 14),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Row(
                             children: [
-                              Text(
-                                'VIP KOZMİK DANIŞMANLIK',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  letterSpacing: 0.6,
-                                  color: AppColors.starlightGold,
+                              const Flexible(
+                                child: Text(
+                                  'VIP KOZMİK DANIŞMANLIK',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                    letterSpacing: 0.6,
+                                    color: AppColors.starlightGold,
+                                  ),
                                 ),
                               ),
-                              SizedBox(width: 8),
-                              Text(
+                              const SizedBox(width: 8),
+                              const Text(
                                 'ÖZEL ERİŞİM 👑',
                                 style: TextStyle(
                                   fontSize: 10,
@@ -1559,8 +1570,8 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ],
                           ),
-                          SizedBox(height: 2),
-                          Text(
+                          const SizedBox(height: 2),
+                          const Text(
                             'İleri Düzey Modüller & Kişiye Özel Astrolojik Analizler',
                             style: TextStyle(
                                 fontSize: 11.5, color: AppColors.textMuted),
@@ -1825,27 +1836,34 @@ class _HomeScreenState extends State<HomeScreen> {
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Row(
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        color: color.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(10),
+                Expanded(
+                  child: Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(8),
+                        decoration: BoxDecoration(
+                          color: color.withValues(alpha: 0.15),
+                          borderRadius: BorderRadius.circular(10),
+                        ),
+                        child: Icon(icon, size: 18, color: color),
                       ),
-                      child: Icon(icon, size: 18, color: color),
-                    ),
-                    const SizedBox(width: 10),
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 14,
-                        fontWeight: FontWeight.bold,
-                        color: color,
+                      const SizedBox(width: 10),
+                      Expanded(
+                        child: Text(
+                          title,
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 14,
+                            fontWeight: FontWeight.bold,
+                            color: color,
+                          ),
+                        ),
                       ),
-                    ),
-                  ],
+                    ],
+                  ),
                 ),
+                const SizedBox(width: 8),
                 Container(
                   padding:
                       const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
@@ -2386,22 +2404,29 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Row(
-                children: [
-                  Icon(Icons.format_quote_rounded,
-                      color: AppColors.starlightGold, size: 22),
-                  SizedBox(width: 8),
-                  Text(
-                    'GÜNÜN KOZMİK MOTİVASYON SÖZÜ',
-                    style: TextStyle(
-                      fontSize: 11,
-                      fontWeight: FontWeight.bold,
-                      letterSpacing: 0.8,
-                      color: AppColors.starlightGold,
+              const Expanded(
+                child: Row(
+                  children: [
+                    Icon(Icons.format_quote_rounded,
+                        color: AppColors.starlightGold, size: 20),
+                    SizedBox(width: 6),
+                    Expanded(
+                      child: Text(
+                        'GÜNÜN KOZMİK MOTİVASYON SÖZÜ',
+                        maxLines: 1,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          letterSpacing: 0.8,
+                          color: AppColors.starlightGold,
+                        ),
+                      ),
                     ),
-                  ),
-                ],
+                  ],
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                 decoration: BoxDecoration(
@@ -2683,34 +2708,41 @@ class _HomeScreenState extends State<HomeScreen> {
         Row(
           mainAxisAlignment: MainAxisAlignment.spaceBetween,
           children: [
-            Row(
-              children: [
-                Container(
-                  width: 8,
-                  height: 8,
-                  decoration: const BoxDecoration(
-                    color: AppColors.pastelMint,
-                    shape: BoxShape.circle,
-                    boxShadow: [
-                      BoxShadow(
-                        color: AppColors.pastelMint,
-                        blurRadius: 6,
-                        spreadRadius: 2,
-                      ),
-                    ],
+            Expanded(
+              child: Row(
+                children: [
+                  Container(
+                    width: 8,
+                    height: 8,
+                    decoration: const BoxDecoration(
+                      color: AppColors.pastelMint,
+                      shape: BoxShape.circle,
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.pastelMint,
+                          blurRadius: 6,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
                   ),
-                ),
-                const SizedBox(width: 8),
-                Text(
-                  'CANLI GÖKYÜZÜ & AY GEÇİŞLERİ',
-                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                        letterSpacing: 1.2,
-                        color: AppColors.pastelMint,
-                        fontWeight: FontWeight.bold,
-                      ),
-                ),
-              ],
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      'CANLI GÖKYÜZÜ & AY GEÇİŞLERİ',
+                      maxLines: 1,
+                      overflow: TextOverflow.ellipsis,
+                      style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                            letterSpacing: 1.2,
+                            color: AppColors.pastelMint,
+                            fontWeight: FontWeight.bold,
+                          ),
+                    ),
+                  ),
+                ],
+              ),
             ),
+            const SizedBox(width: 8),
             InkWell(
               onTap: () => _showAllTransitsModal(context),
               borderRadius: BorderRadius.circular(8),
@@ -2771,14 +2803,19 @@ class _HomeScreenState extends State<HomeScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Text(
-                              moonPhase.phaseName,
-                              style: const TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                            Expanded(
+                              child: Text(
+                                moonPhase.phaseName,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 14,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
                             ),
+                            const SizedBox(width: 8),
                             Container(
                               padding: const EdgeInsets.symmetric(
                                   horizontal: 8, vertical: 2),
@@ -2982,22 +3019,29 @@ class _HomeScreenState extends State<HomeScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                const Icon(Icons.stars_rounded,
-                                    size: 16, color: AppColors.starlightGold),
-                                const SizedBox(width: 6),
-                                Text(
-                                  'AY MENZİLİ & HERMETİK DURAK (${mansion.number}/28)',
-                                  style: const TextStyle(
-                                    fontSize: 11,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.6,
-                                    color: AppColors.starlightGold,
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  const Icon(Icons.stars_rounded,
+                                      size: 16, color: AppColors.starlightGold),
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      'AY MENZİLİ & HERMETİK DURAK (${mansion.number}/28)',
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: const TextStyle(
+                                        fontSize: 11,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.6,
+                                        color: AppColors.starlightGold,
+                                      ),
+                                    ),
                                   ),
-                                ),
-                              ],
+                                ],
+                              ),
                             ),
+                            const SizedBox(width: 8),
                             InkWell(
                               onTap: () => _showAllLunarMansionsModal(context),
                               borderRadius: BorderRadius.circular(6),
@@ -3098,35 +3142,44 @@ class _HomeScreenState extends State<HomeScreen> {
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
                         // Left: Departing
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            const Text(
-                              'Son Temas (Ayrılan)',
-                              style: TextStyle(
-                                  fontSize: 9.5, color: AppColors.textMuted),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              orbit.departingPlanet,
-                              style: const TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.pastelLavender,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              const Text(
+                                'Son Temas (Ayrılan)',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: TextStyle(
+                                    fontSize: 9.5, color: AppColors.textMuted),
                               ),
-                            ),
-                            Text(
-                              orbit.departingAspect,
-                              style: const TextStyle(
-                                  fontSize: 9, color: Colors.white54),
-                            ),
-                          ],
+                              const SizedBox(height: 2),
+                              Text(
+                                orbit.departingPlanet,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.pastelLavender,
+                                ),
+                              ),
+                              Text(
+                                orbit.departingAspect,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                    fontSize: 9, color: Colors.white54),
+                              ),
+                            ],
+                          ),
                         ),
+                        const SizedBox(width: 6),
 
                         // Center: Current Moon
                         Container(
                           padding: const EdgeInsets.symmetric(
-                              horizontal: 10, vertical: 4),
+                              horizontal: 8, vertical: 4),
                           decoration: BoxDecoration(
                             color: AppColors.starlightGold
                                 .withValues(alpha: 0.2),
@@ -3156,31 +3209,43 @@ class _HomeScreenState extends State<HomeScreen> {
                             ],
                           ),
                         ),
+                        const SizedBox(width: 6),
 
                         // Right: Approaching
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.end,
-                          children: [
-                            const Text(
-                              'Sıradaki Temas (Yaklaşan)',
-                              style: TextStyle(
-                                  fontSize: 9.5, color: AppColors.textMuted),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              orbit.approachingPlanet,
-                              style: const TextStyle(
-                                fontSize: 11.5,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.pastelPink,
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.end,
+                            children: [
+                              const Text(
+                                'Sıradaki Temas (Yaklaşan)',
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.end,
+                                style: TextStyle(
+                                    fontSize: 9.5, color: AppColors.textMuted),
                               ),
-                            ),
-                            Text(
-                              orbit.approachingAspect,
-                              style: const TextStyle(
-                                  fontSize: 9, color: Colors.white54),
-                            ),
-                          ],
+                              const SizedBox(height: 2),
+                              Text(
+                                orbit.approachingPlanet,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.end,
+                                style: const TextStyle(
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.pastelPink,
+                                ),
+                              ),
+                              Text(
+                                orbit.approachingAspect,
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                textAlign: TextAlign.end,
+                                style: const TextStyle(
+                                    fontSize: 9, color: Colors.white54),
+                              ),
+                            ],
+                          ),
                         ),
                       ],
                     ),

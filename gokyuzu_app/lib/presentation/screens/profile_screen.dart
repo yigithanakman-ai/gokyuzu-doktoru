@@ -764,20 +764,6 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     backgroundColor: Colors.white10,
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                   ),
-                )
-              else
-                TextButton.icon(
-                  onPressed: _showAdminConsoleDialog,
-                  icon: const Icon(Icons.key_rounded, size: 14, color: Color(0xFFFFD700)),
-                  label: const Text(
-                    'VIP Kod Gir',
-                    style: TextStyle(color: Color(0xFFFFD700), fontSize: 12, fontWeight: FontWeight.bold),
-                  ),
-                  style: TextButton.styleFrom(
-                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                    backgroundColor: const Color(0xFFFFD700).withAlpha(25),
-                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
-                  ),
                 ),
             ],
           ),

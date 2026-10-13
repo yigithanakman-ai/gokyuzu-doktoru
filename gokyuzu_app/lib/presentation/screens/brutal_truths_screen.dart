@@ -172,25 +172,33 @@ class _BrutalTruthsScreenState extends State<BrutalTruthsScreen> {
                           Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 12, vertical: 6),
-                                decoration: BoxDecoration(
-                                  color: cardColor.withValues(alpha: 0.15),
-                                  borderRadius: BorderRadius.circular(10),
-                                  border: Border.all(
-                                      color: cardColor.withValues(alpha: 0.3)),
-                                ),
-                                child: Text(
-                                  truth.title.toUpperCase(),
-                                  style: TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.8,
-                                    color: cardColor,
+                              Expanded(
+                                child: Align(
+                                  alignment: Alignment.centerLeft,
+                                  child: Container(
+                                    padding: const EdgeInsets.symmetric(
+                                        horizontal: 12, vertical: 6),
+                                    decoration: BoxDecoration(
+                                      color: cardColor.withValues(alpha: 0.15),
+                                      borderRadius: BorderRadius.circular(10),
+                                      border: Border.all(
+                                          color: cardColor.withValues(alpha: 0.3)),
+                                    ),
+                                    child: Text(
+                                      truth.title.toUpperCase(),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.bold,
+                                        letterSpacing: 0.6,
+                                        color: cardColor,
+                                      ),
+                                    ),
                                   ),
                                 ),
                               ),
+                              const SizedBox(width: 8),
                               Text(
                                 '${index + 1} / ${widget.truths.length}',
                                 style: const TextStyle(
