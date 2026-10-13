@@ -9,8 +9,8 @@
 
 **1.1. SATICI / HİZMET SAĞLAYICI:**  
 * **Unvan / İsim:** Gökyüzü Doktoru (Yiğithan Akman)  
-* **E-posta:** destek@gokyuzudoktoru.com  
-* **Web:** https://gokyuzudoktoru.com  
+* **E-posta:** yigithanakman@gokyuzudoktoru.com  
+* **Web:** https://yigithanakman-ai.github.io/gokyuzu-doktoru/  
 
 **1.2. ALICI / TÜKETİCİ:**  
 * Uygulama üzerinden hesap oluşturan, VIP üyelik veya dijital rapor satın alan gerçek kişi.

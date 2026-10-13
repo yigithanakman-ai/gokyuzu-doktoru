@@ -137,7 +137,7 @@ class KvkkDialog {
         _SectionData(
           title: '3. Hesap ve Veri Silme Hakkı (Apple 5.1.1 Uyumlu)',
           content:
-              'Kullanıcılarımız diledikleri zaman Profil ekranından veya destek@gokyuzudoktoru.com adresine başvurarak hesaplarını, kayıtlı haritalarını ve tüm verilerini kalıcı olarak sildirebilirler.',
+              'Kullanıcılarımız diledikleri zaman Profil ekranından veya yigithanakman@gokyuzudoktoru.com adresine başvurarak hesaplarını, kayıtlı haritalarını ve tüm verilerini kalıcı olarak sildirebilirler.',
           icon: Icons.delete_forever_rounded,
         ),
       ],

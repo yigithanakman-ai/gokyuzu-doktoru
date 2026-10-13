@@ -2,7 +2,7 @@
 
 **Son Güncelleme Tarihi:** 13 Ekim 2026  
 **Veri Sorumlusu:** Gökyüzü Doktoru (Yiğithan Akman)  
-**İletişim:** destek@gokyuzudoktoru.com  
+**İletişim:** yigithanakman@gokyuzudoktoru.com  
 
 ---
 
@@ -45,4 +45,4 @@ KVKK’nın 11. maddesi uyarınca her kullanıcı:
 * Verilerin aktarıldığı üçüncü kişilere bu işlemlerin bildirilmesini isteme,
 * Verilerin kanuna aykırı olarak işlenmesi sebebiyle zarara uğraması hâlinde zararın giderilmesini talep etme haklarına sahiptir.
 
-Haklarınızı kullanmak için **destek@gokyuzudoktoru.com** adresine e-posta gönderebilirsiniz.
+Haklarınızı kullanmak için **yigithanakman@gokyuzudoktoru.com** adresine e-posta gönderebilirsiniz.

@@ -21,4 +21,4 @@ Kullanıcılar periyodik aboneliklerini (aylık/yıllık) diledikleri zaman bir 
 * Abonelik iptal edildiğinde mevcut dönemin sonuna kadar tüm VIP haklarınız geçerliliğini korur. Dönem bitiminde kartınızdan yeni bir çekim yapılmaz.
 
 ### 4. Hatalı / Çift Çekim Durumları
-Teknik bir aksaklık sebebiyle aynı sipariş için mükerrer (çift) tahsilat yapılması durumunda; işlem dekontu veya sipariş numarasıyla birlikte **destek@gokyuzudoktoru.com** adresine başvurulması halinde mükerrer çekilen tutar derhal incelenerek iade prosedürü başlatılır.
+Teknik bir aksaklık sebebiyle aynı sipariş için mükerrer (çift) tahsilat yapılması durumunda; işlem dekontu veya sipariş numarasıyla birlikte **yigithanakman@gokyuzudoktoru.com** adresine başvurulması halinde mükerrer çekilen tutar derhal incelenerek iade prosedürü başlatılır.

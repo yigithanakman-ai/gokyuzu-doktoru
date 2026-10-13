@@ -3,7 +3,7 @@
 **Son Güncelleme:** 13 Ekim 2026  
 **Uygulama Adı:** Gökyüzü Doktoru  
 **Geliştirici / Veri Sorumlusu:** Yiğithan Akman  
-**İletişim:** destek@gokyuzudoktoru.com  
+**İletişim:** yigithanakman@gokyuzudoktoru.com  
 **Web:** https://yigithanakman-ai.github.io/gokyuzu-doktoru/  
 
 ---
@@ -70,7 +70,7 @@ Hesap ve profil verileriniz, siz hesabınızı silene kadar saklanır. Uygulamay
 * Verilerinizin kalıcı olarak silinmesini talep etme,
 * Veri işlemeye verdiğiniz rızayı dilediğiniz an geri çekme haklarına sahipsiniz.
 
-Başvuru için: **destek@gokyuzudoktoru.com** adresine e-posta gönderebilirsiniz. Ayrıca Türkiye'de Kişisel Verileri Koruma Kurumu'na (KVKK Kurumu) şikâyette bulunma hakkınız saklıdır.
+Başvuru için: **yigithanakman@gokyuzudoktoru.com** adresine e-posta gönderebilirsiniz. Ayrıca Türkiye'de Kişisel Verileri Koruma Kurumu'na (KVKK Kurumu) şikâyette bulunma hakkınız saklıdır.
 
 ---
 

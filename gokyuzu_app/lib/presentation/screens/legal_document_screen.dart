@@ -139,14 +139,14 @@ class LegalDocumentScreen extends StatelessWidget {
                 '• Yanlış veya eksik bilgilerin düzeltilmesini isteme,\n'
                 '• Hesabınızın ve tüm verilerinizin kalıcı olarak silinmesini talep etme,\n'
                 '• Otomatik kararlara ve yapay zekâ analizlerine itiraz etme.\n\n'
-                'Talepleriniz için: destek@gokyuzudoktoru.com',
+                'Talepleriniz için: yigithanakman@gokyuzudoktoru.com',
           },
           {
             'title': '8. Hesap ve Veri Silme (Apple 5.1.1 Uyumlu)',
             'body':
                 'Apple App Store Kural 5.1.1 uyarınca, hesabınızı ve tüm verilerinizi uygulama içerisinden kolayca silebilirsiniz:\n\n'
                 '• Profil sekmesindeki "Hesabımı ve Verilerimi Kalıcı Olarak Sil" butonuna tıklayarak anında silebilirsiniz.\n'
-                '• Veya destek@gokyuzudoktoru.com adresine e-posta göndererek talep edebilirsiniz.\n\n'
+                '• Veya yigithanakman@gokyuzudoktoru.com adresine e-posta göndererek talep edebilirsiniz.\n\n'
                 '⚠️ ÖNEMLİ: Uygulamadaki hesabınızı silmek, Apple App Store veya Google Play aboneliğinizi otomatik olarak iptal etmez. Aboneliğinizi cihaz ayarlarınızdan (Abonelikler menüsü) ayrıca iptal etmelisiniz.',
           },
           {
@@ -160,35 +160,47 @@ class LegalDocumentScreen extends StatelessWidget {
           {
             'title': '1. Hizmetin Niteliği ve Kapsamı',
             'body':
-                'Gökyüzü Yapay Zeka Sistemi; klasik ve modern Batı astrolojisi, kadim efemeris tabloları ve sembolik yaşam analizleri sunan dijital bir kişisel farkındalık platformudur.',
+                'Gökyüzü Doktoru; doğum haritası, yükselen burç, gezegen konumları, İkincil İlerletim, Solar/Lunar Return, Zodiacal Releasing ve benzeri astrolojik öngörü ve analizler sunar.\n\n'
+                'Yorumlar EĞLENCE VE KİŞİSEL DÜŞÜNME (ÖZ FARKINDALIK) AMAÇLIDIR, yapay zekâ (Google Gemini AI) ile desteklenir, hata içerebilir ve KESİNLİKLE TIBBİ, HUKUKİ, FİNANSAL VEYA PSİKOLOJİK TAVSİYE DEĞİLDİR. Hayati kararlarınızı bu yorumlara dayandırmayınız.',
           },
           {
-            'title': '2. Yasal Sorumluluk Reddi (Disclaimer)',
+            'title': '2. Hesap ve Yaş Şartı (16 Yaş Kuralı)',
             'body':
-                'Uygulama içerisinde yer alan hiçbir yorum, harita analizi, transit öngörüsü, rektifikasyon veya astrolojik hesaplama; TIBBİ, HUKUKİ, PSİKİYATRİK VEYA FİNANSAL YATIRIM TAVSİYESİ NİTELİĞİNDE DEĞİLDİR. Hayati kararlarınızda daima yetkili profesyonel hekim, uzman veya hukuk danışmanlarına başvurunuz.',
+                'Hesap oluşturmak ve uygulamayı kullanabilmek için en az 16 yaşında olmalısınız. Hesap bilgilerinizin doğruluğundan ve güvenliğinden siz sorumlusunuz. Hesabınızı ve tüm harita verilerinizi dilediğiniz zaman Profil ekranındaki "Hesabımı ve Verilerimi Kalıcı Olarak Sil" butonundan silebilirsiniz.',
           },
           {
-            'title': '3. Fikri Mülkiyet ve Telif Hakları',
+            'title': '3. Ücretsiz Haklar ve Reklamlar',
             'body':
-                'Uygulamada yer alan özgün algoritmalar, arayüz tasarımları, metinler, Kabala ağacı şemaları ve astroloji motoru Gökyüzü Doktoru\'na aittir. İzinsiz kopyalanamaz, çoğaltılamaz veya ticari amaçla dağıtılamaz.',
+                'Temel astrolojik göstergeler ücretsiz sunulur. Ücretsiz kullanıcılar sponsorlu video reklam izleyerek ek analiz hakkı açabilirler. Bu hakların veya kredilerin hiçbir maddi değeri yoktur, devredilemez ve nakde çevrilemez.',
           },
           {
-            'title': '4. VIP Abonelik, Cayma Hakkı İstisnası & Ücret İadesi Yapılmaması',
+            'title': '4. VIP Abonelik & Otomatik Yenileme',
             'body':
-                'Dijital ortamda anında teslim edilen ve ifa edilen gayri maddi haklar kapsamında (6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği Madde 15/1-ğ uyarınca), satın alınan Silver, Gold ve Platinum VIP aboneliklerinde ve dijital analiz paketlerinde KESİNLİKLE ÜCRET İADESİ YAPILMAZ. Kullanıcı ödemeyi gerçekleştirerek cayma hakkından feragat ettiğini peşinen kabul ve taahhüt eder.',
+                '• VIP üyelik, aylık veya yıllık otomatik yenilenen bir aboneliktir. Fiyatı satın alma anında mağazanın gösterdiği tutardır.\n'
+                '• Ödeme doğrudan Apple App Store veya Google Play hesabınızdan tahsil edilir. Kredi kartı bilgilerinize biz asla erişmeyiz.\n'
+                '• Abonelik, cari dönemin bitiminden en az 24 saat önce iptal edilmedikçe otomatik olarak yenilenir.\n'
+                '• İptal Adımları: iOS (Ayarlar > Apple Kimliği > Abonelikler > İptal Et); Android (Play Store > Profil > Ödemeler ve Abonelikler > İptal Et).\n'
+                '• Dijital ortamda anında ifa edilen hizmetler kapsamında (6502 sayılı Kanun Md. 15/1-ğ) mağaza kurallarına tabidir.',
           },
           {
-            'title': '5. Abonelik İptali & Otomatik Yenilemenin Kapatılması',
+            'title': '5. Kabul Edilebilir Kullanım & Güvenlik',
             'body':
-                'Kullanıcı, dilediği zaman aboneliğini satın aldığı resmi mağaza üzerinden iptal edebilir:\n'
-                '• Apple App Store (iOS): Cihazınızda Ayarlar > [Adınız / Apple Kimliği] > Abonelikler > Gökyüzü Doktoru > "Aboneliği İptal Et" adımlarını uygulayınız.\n'
-                '• Google Play Store (Android): Google Play Store uygulaması > Profil Simgesi > Ödemeler ve Abonelikler > Abonelikler > Gökyüzü Doktoru > "Aboneliği İptal Et" adımlarını uygulayınız.\n'
-                '• Abonelik iptal edildiğinde, bedeli ödenmiş olan cari fatura ve kullanım ayı/yılı sonuna kadar tüm VIP haklar eksiksiz ve kesintisiz devam eder. Dönem sonunda yeni ücret çekilmez ve abonelik otomatik olarak yenilenmez.',
+                'Uygulamayı yasalara aykırı amaçlarla kullanmamayı, sistemi manipüle etmemeyi (VIP kontrollerini hileyle atlatma, otomatik bot kullanımı, tersine mühendislik), ve istek/öneri alanlarına küfür, hakaret, tehdit, taciz veya kişilik haklarını ihlal eden içerik girmemeyi kabul edersiniz. Aykırı kullanımda hesabınız derhal kapatılabilir.',
           },
           {
-            'title': '6. Reşit Olma ve Yaş Şartı (16 Yaş)',
+            'title': '6. Fikri Mülkiyet & Paylaşım Hakları',
             'body':
-                'Bu sözleşmeyi onaylamak ve uygulama servislerinden bağımsız olarak faydalanmak için kullanıcının en az 16 yaşında olması zorunludur. 16 yaş altındaki kullanıcılar yalnızca ebeveyn onay ve denetiminde işlem yapabilir.',
+                'Uygulamanın tasarımı, metinleri, görselleri, efemeris algoritmaları ve yazılımı Yiğithan Akman\'a aittir. Paylaşım özelliğiyle üretilen harita ve PDF analiz görsellerini kişisel amaçla sosyal medyada paylaşabilirsiniz; ticari olarak satılamaz veya çoğaltılamaz.',
+          },
+          {
+            'title': '7. Sorumluluğun Sınırı ("Olduğu Gibi")',
+            'body':
+                'Uygulama "olduğu gibi" sunulur. Yasaların izin verdiği ölçüde, kesintisiz veya hatasız çalışacağını garanti etmeyiz ve dolaylı zararlardan hukuken sorumlu tutulamayız. Bu madde tüketici mevzuatından doğan zorunlu haklarınızı etkilemez.',
+          },
+          {
+            'title': '8. Değişiklikler, Hukuk ve İletişim',
+            'body':
+                'Bu şartlar zaman zaman güncellenebilir; güncel sürüm bu ekranda ve web sitemizde yayınlanır. Bu şartlara Türkiye Cumhuriyeti hukuku uygulanır. Sorularınız için: yigithanakman@gokyuzudoktoru.com',
           },
         ];
       case LegalDocType.advertising:
@@ -229,7 +241,7 @@ class LegalDocumentScreen extends StatelessWidget {
           {
             'title': '4. Hatalı ve Mükerrer Çekimler',
             'body':
-                'Teknik aksaklık kaynaklı mükerrer tahsilat durumunda, işlem dekontuyla birlikte destek@gokyuzudoktoru.com adresine başvurulması halinde ivedilikle inceleme yapılıp iade sağlanır.',
+                'Teknik aksaklık kaynaklı mükerrer tahsilat durumunda, işlem dekontuyla birlikte yigithanakman@gokyuzudoktoru.com adresine başvurulması halinde ivedilikle inceleme yapılıp iade sağlanır.',
           },
         ];
       case LegalDocType.disclaimer:
