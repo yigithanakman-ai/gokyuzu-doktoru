@@ -63,10 +63,13 @@ class UserProfile {
   );
 }
 
+enum VipTier { free, silver, gold, platinum }
+
 class StorageService {
   static const _profileKey = 'gokyuzu_user_profile';
   static const _chartKey = 'gokyuzu_cached_chart';
   static const _vipKey = 'gokyuzu_vip_status';
+  static const _vipTierKey = 'gokyuzu_vip_tier';
   static const _languageKey = 'gokyuzu_selected_language';
 
   // Valid VIP promotional & sharing codes (Master VIP Code: gkyz2453)
@@ -118,6 +121,7 @@ class StorageService {
     if (_validVipCodes.contains(clean) || clean.startsWith('VIP-')) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_vipKey, true);
+      await prefs.setString(_vipTierKey, 'platinum'); // Master kod Platinum açar!
       final currentProfile = await getProfile();
       if (currentProfile != null) {
         final updated = UserProfile(
@@ -151,9 +155,83 @@ class StorageService {
 
   static Future<bool> isVipUnlocked() => isVip();
 
+  static Future<VipTier> getVipTier() async {
+    final isVipActive = await isVip();
+    if (!isVipActive) return VipTier.free;
+
+    final prefs = await SharedPreferences.getInstance();
+    final tierStr = prefs.getString(_vipTierKey);
+    switch (tierStr) {
+      case 'silver':
+        return VipTier.silver;
+      case 'gold':
+        return VipTier.gold;
+      case 'platinum':
+      default:
+        return VipTier.platinum;
+    }
+  }
+
+  static Future<void> setVipTier(VipTier tier) async {
+    final prefs = await SharedPreferences.getInstance();
+    if (tier == VipTier.free) {
+      await deactivateVip();
+    } else {
+      await prefs.setBool(_vipKey, true);
+      await prefs.setString(_vipTierKey, tier.name);
+      final currentProfile = await getProfile();
+      if (currentProfile != null && !currentProfile.isVip) {
+        await saveProfile(UserProfile(
+          name: currentProfile.name,
+          birthDate: currentProfile.birthDate,
+          birthTime: currentProfile.birthTime,
+          birthCountry: currentProfile.birthCountry,
+          birthCity: currentProfile.birthCity,
+          sunSign: currentProfile.sunSign,
+          moonSign: currentProfile.moonSign,
+          risingSign: currentProfile.risingSign,
+          gender: currentProfile.gender,
+          language: currentProfile.language,
+          isVip: true,
+          rawChart: currentProfile.rawChart,
+        ));
+      }
+    }
+  }
+
+  static Future<int> getMonthlyPdfAllowance() async {
+    final tier = await getVipTier();
+    switch (tier) {
+      case VipTier.silver:
+        return 1;
+      case VipTier.gold:
+        return 2;
+      case VipTier.platinum:
+        return 999;
+      case VipTier.free:
+        return 0;
+    }
+  }
+
+  static Future<bool> canAccessSynastry() async {
+    final tier = await getVipTier();
+    return tier == VipTier.gold || tier == VipTier.platinum;
+  }
+
+  static Future<bool> canAccessLunarAndLifeCycles() async {
+    final tier = await getVipTier();
+    return tier == VipTier.gold || tier == VipTier.platinum;
+  }
+
+  static Future<bool> canAccessAdvancedModules() async {
+    final tier = await getVipTier();
+    return tier == VipTier.platinum;
+  }
+
   static Future<void> deactivateVip() async {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_vipKey, false);
+    await prefs.remove(_vipTierKey);
     final currentProfile = await getProfile();
     if (currentProfile != null) {
       final updated = UserProfile(

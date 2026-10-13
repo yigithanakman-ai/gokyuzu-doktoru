@@ -22,6 +22,8 @@ import '../widgets/solar_return_modal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/services/pdf_report_service.dart';
 import '../../data/services/predictive_astrology_service.dart';
+import '../../data/services/ad_service.dart';
+import 'numerology_screen.dart';
 import '../widgets/lunar_return_modal.dart';
 import '../widgets/rectification_modal.dart';
 
@@ -688,32 +690,32 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                           const SizedBox(width: 16),
-                          const Column(
+                          Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Row(
                                 children: [
-                                  Text(
+                                  const Text(
                                     'VIP Kozmik Danışmanlık',
                                     style: TextStyle(
-                                      fontSize: 16,
+                                      fontSize: 15,
                                       fontWeight: FontWeight.bold,
                                       color: AppColors.starlightGold,
                                     ),
                                   ),
-                                  SizedBox(width: 8),
+                                  const SizedBox(width: 8),
                                   Text(
-                                    'AÇIK',
+                                    _isVipUnlocked ? 'AÇIK 👑' : 'VIP ÖZEL 🔒',
                                     style: TextStyle(
                                       fontSize: 10,
                                       fontWeight: FontWeight.bold,
-                                      color: AppColors.pastelMint,
+                                      color: _isVipUnlocked ? AppColors.pastelMint : AppColors.starlightGold,
                                     ),
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 2),
-                              Text(
+                              const SizedBox(height: 2),
+                              const Text(
                                 'Sinastri, Solar Return ve Özel Raporlar',
                                 style: TextStyle(
                                   fontSize: 12,
@@ -726,6 +728,82 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const Icon(Icons.stars_rounded,
                           size: 22, color: AppColors.starlightGold),
+                    ],
+                  ),
+                ),
+              ),
+              const SizedBox(height: 12),
+
+              // KOZMİK NUMEROLOJİ & YAŞAM YOLU MATRİSİ KARTI (YENİ ✨)
+              InkWell(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => NumerologyScreen(profile: widget.profile),
+                    ),
+                  );
+                },
+                borderRadius: BorderRadius.circular(20),
+                child: GlassCard(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                  borderColor: AppColors.pastelLavender.withValues(alpha: 0.45),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(10),
+                            decoration: BoxDecoration(
+                              color: AppColors.pastelLavender.withValues(alpha: 0.2),
+                              borderRadius: BorderRadius.circular(14),
+                            ),
+                            child: const Icon(
+                              Icons.auto_awesome_rounded,
+                              color: AppColors.pastelLavender,
+                              size: 24,
+                            ),
+                          ),
+                          const SizedBox(width: 16),
+                          const Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Row(
+                                children: [
+                                  Text(
+                                    'Kozmik Numeroloji Matrisi',
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  SizedBox(width: 8),
+                                  Text(
+                                    'YENİ ✨',
+                                    style: TextStyle(
+                                      fontSize: 10,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.starlightGold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                              SizedBox(height: 2),
+                              Text(
+                                'Yaşam Yolu, Kader Sayısı ve 2026 Döngüsü',
+                                style: TextStyle(
+                                  fontSize: 12,
+                                  color: AppColors.textMuted,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ],
+                      ),
+                      const Icon(Icons.arrow_forward_ios_rounded,
+                          size: 16, color: AppColors.pastelLavender),
                     ],
                   ),
                 ),
@@ -1229,42 +1307,55 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 10),
 
-                  // Package 1: Platinum VIP (Kraliyet)
+                  // Package 1: Platinum VIP (Yıllık Avantajlı)
                   _buildPackageOption(
-                    title: 'Platinum VIP (Kraliyet)',
-                    price: '399 ₺',
-                    period: 'Yıllık Erişim',
-                    badge: 'HER ŞEY AÇIK 👑',
+                    title: 'Platinum VIP (Yıllık İndirimli)',
+                    price: '4.199 ₺ / yıl',
+                    period: '12 Ay Peşin (Aylık 10\$)',
+                    badge: '%25 İNDİRİM 👑',
                     badgeColor: AppColors.starlightGold,
                     isHighlight: true,
-                    subtitle: 'Ayda 3 PDF İndirme • Tüm Modüllere & Kabala Ağacına Sınırsız Ulaşım',
-                    onTap: () => _showPaymentOptions(context, 'Platinum VIP (399 ₺)'),
+                    subtitle: 'HER ŞEY AÇIK • Sınırsız PDF • Tüm Kozmik Modüller & İleri Öngörüler • Sıfır Reklam',
+                    onTap: () => _showPaymentOptions(context, 'Platinum VIP (Yıllık)', VipTier.platinum),
                   ),
                   const SizedBox(height: 10),
 
-                  // Package 2: Gold VIP (Altın / En Popüler)
+                  // Package 2: Platinum VIP (Aylık)
+                  _buildPackageOption(
+                    title: 'Platinum VIP (Aylık)',
+                    price: '459 ₺ / ay',
+                    period: 'Aylık Abonelik (13\$)',
+                    badge: 'TAM ERİŞİM 💎',
+                    badgeColor: AppColors.starlightGold,
+                    isHighlight: false,
+                    subtitle: 'HER ŞEY AÇIK • Sınırsız PDF • Tüm Modüller & Derin Analizler • Sıfır Reklam',
+                    onTap: () => _showPaymentOptions(context, 'Platinum VIP (Aylık)', VipTier.platinum),
+                  ),
+                  const SizedBox(height: 10),
+
+                  // Package 3: Gold VIP (Aylık)
                   _buildPackageOption(
                     title: 'Gold VIP (Altın Paket)',
-                    price: '199 ₺',
-                    period: '3 Aylık Erişim',
+                    price: '319 ₺ / ay',
+                    period: 'Aylık Abonelik (9\$)',
                     badge: 'EN POPÜLER ⭐',
                     badgeColor: AppColors.pastelMint,
                     isHighlight: false,
-                    subtitle: 'Ayda 2 PDF • Sinastri, Lunar Return, Yaşam Döngüleri, Tam Harita Çarkı',
-                    onTap: () => _showPaymentOptions(context, 'Gold VIP (199 ₺)'),
+                    subtitle: 'Ayda 2 PDF • Sinastri, Lunar Return, Yaşam Döngüleri, Tam Harita Çarkı • Sıfır Reklam',
+                    onTap: () => _showPaymentOptions(context, 'Gold VIP (Aylık)', VipTier.gold),
                   ),
                   const SizedBox(height: 10),
 
-                  // Package 3: Silver VIP (Gümüş / Başlangıç)
+                  // Package 4: Silver VIP (Gümüş / Başlangıç)
                   _buildPackageOption(
                     title: 'Silver VIP (Gümüş Paket)',
-                    price: '79 ₺',
-                    period: 'Aylık Erişim',
+                    price: '179 ₺ / ay',
+                    period: 'Aylık Abonelik (5\$)',
                     badge: 'BAŞLANGIÇ 🌙',
                     badgeColor: AppColors.pastelLavender,
                     isHighlight: false,
-                    subtitle: 'Ayda 1 PDF • Melekler, Mısır Dekanları, Çakralar, Sabitler, Günlük & Arşiv',
-                    onTap: () => _showPaymentOptions(context, 'Silver VIP (79 ₺)'),
+                    subtitle: 'Ayda 1 PDF • Melekler, Dekanlar, Çakralar, Sabitler, Tam Harita & Anasayfa • Sıfır Reklam',
+                    onTap: () => _showPaymentOptions(context, 'Silver VIP (Aylık)', VipTier.silver),
                   ),
 
                   const SizedBox(height: 24),
@@ -1277,7 +1368,7 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showPaymentOptions(BuildContext context, String packageName) {
+  void _showPaymentOptions(BuildContext context, String packageName, VipTier tier) {
     showModalBottomSheet(
       context: context,
       backgroundColor: Colors.transparent,
@@ -1332,7 +1423,7 @@ class _HomeScreenState extends State<HomeScreen> {
               trailing: const Icon(Icons.chevron_right, color: AppColors.textMuted),
               onTap: () {
                 Navigator.of(ctx).pop();
-                _simulatePaymentSuccess(context);
+                _simulatePaymentSuccess(context, packageName, tier);
               },
             ),
             const Divider(color: Colors.white10),
@@ -1357,7 +1448,7 @@ class _HomeScreenState extends State<HomeScreen> {
               trailing: const Icon(Icons.chevron_right, color: AppColors.textMuted),
               onTap: () {
                 Navigator.of(ctx).pop();
-                _simulatePaymentSuccess(context);
+                _simulatePaymentSuccess(context, packageName, tier);
               },
             ),
           ],
@@ -1366,8 +1457,8 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _simulatePaymentSuccess(BuildContext context) async {
-    await StorageService.activateVipCode('gkyz2453');
+  void _simulatePaymentSuccess(BuildContext context, String packageName, VipTier tier) async {
+    await StorageService.setVipTier(tier);
     if (mounted) {
       setState(() {
         _isVipUnlocked = true;
@@ -1376,10 +1467,10 @@ class _HomeScreenState extends State<HomeScreen> {
     }
     if (context.mounted) {
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Text('🎉 Tebrikler! VIP Kozmik Üyeliğiniz başarıyla aktif edildi.'),
-          backgroundColor: Color(0xFF1D5A3A),
-          duration: Duration(seconds: 3),
+        SnackBar(
+          content: Text('🎉 Tebrikler! $packageName başarıyla aktif edildi.'),
+          backgroundColor: const Color(0xFF1D5A3A),
+          duration: const Duration(seconds: 3),
         ),
       );
     }
@@ -1700,110 +1791,165 @@ class _HomeScreenState extends State<HomeScreen> {
                       icon: Icons.favorite_rounded,
                       color: AppColors.pastelPink,
                       title: 'Sinastri & İlişki Uyumu (Synastry)',
-                      badge: 'ÖZEL MODÜL',
+                      badge: 'GOLD & PLATINUM ⭐',
                       description:
                           'İki kişinin haritasının Placidus evler ve açılarla çakıştırılması. Güneş-Ay ruh bağı, Venüs-Mars tutku ve çekim dinamiği.',
-                      onTap: () => _showSynastryDemo(context),
+                      onTap: () => _handleVipModuleTap(
+                        context: context,
+                        moduleName: 'Sinastri & İlişki Uyumu',
+                        requiredTier: VipTier.gold,
+                        onAccessGranted: () => _showSynastryDemo(context),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     _buildVipModuleCard(
                       icon: Icons.wb_sunny_rounded,
                       color: AppColors.starlightGold,
                       title: 'Solar Return (Yıllık Öngörü Haritası)',
-                      badge: 'YILLIK DÖNGÜ',
+                      badge: 'PLATINUM ÖZEL 👑',
                       description:
                           'Güneş\'in doğum anındaki tam derecesine döndüğü anın haritası. 1 yıllık dönemin yükselen burcu, kilit temaları ve dönüm noktaları.',
-                      onTap: () => _showSolarReturnDemo(context),
+                      onTap: () => _handleVipModuleTap(
+                        context: context,
+                        moduleName: 'Solar Return (Yıllık Öngörü)',
+                        requiredTier: VipTier.platinum,
+                        onAccessGranted: () => _showSolarReturnDemo(context),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     _buildVipModuleCard(
                       icon: Icons.auto_graph_rounded,
                       color: AppColors.pastelLavender,
                       title: 'Secondary Progress (İkincil İlerletim)',
-                      badge: 'ÖNGÖRÜ METODU',
+                      badge: 'PLATINUM ÖZEL 👑',
                       description:
                           '1 Gün = 1 Yıl kuralı. İlerletilmiş Ay fazı, burç ve ev değişimleri; ruhun içsel psikolojik olgunlaşma ve evrim saati.',
-                      onTap: () => _showSecondaryProgressDemo(context),
+                      onTap: () => _handleVipModuleTap(
+                        context: context,
+                        moduleName: 'Secondary Progress (İkincil İlerletim)',
+                        requiredTier: VipTier.platinum,
+                        onAccessGranted: () => _showSecondaryProgressDemo(context),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     _buildVipModuleCard(
                       icon: Icons.radar_rounded,
                       color: AppColors.pastelPeach,
                       title: 'Solar Arc Directions (Güneş Yayı Yönelimi)',
-                      badge: 'OLAY ZAMANLAMA',
+                      badge: 'PLATINUM ÖZEL 👑',
                       description:
                           'Doğum haritasındaki tüm gezegenlerin Güneş hızıyla (yaklaşık 1° = 1 Yıl) ilerletilmesi. Somut dışsal olayları ve evlilik/kariyer piklerini tespit eder.',
-                      onTap: () => _showSolarArcDemo(context),
+                      onTap: () => _handleVipModuleTap(
+                        context: context,
+                        moduleName: 'Solar Arc Directions',
+                        requiredTier: VipTier.platinum,
+                        onAccessGranted: () => _showSolarArcDemo(context),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     _buildVipModuleCard(
                       icon: Icons.nightlight_round,
                       color: AppColors.pastelBlue,
                       title: 'Lunar Return (Aylık Ay Dönüşü Haritası)',
-                      badge: '27.3 GÜNLÜK DÖNGÜ',
+                      badge: 'GOLD & PLATINUM ⭐',
                       description:
                           'Ay\'ın doğum derecesine döndüğü anın haritası. Her 27.3 günde bir yenilenen duygusal hava durumu, ailevi odak ve ayın kritik günleri.',
-                      onTap: () => _showLunarReturnDemo(context),
+                      onTap: () => _handleVipModuleTap(
+                        context: context,
+                        moduleName: 'Lunar Return (Aylık Ay Dönüşü)',
+                        requiredTier: VipTier.gold,
+                        onAccessGranted: () => _showLunarReturnDemo(context),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     _buildVipModuleCard(
                       icon: Icons.schedule_rounded,
                       color: AppColors.starlightGold,
                       title: 'Firdaria (Klasik Gezegen Dönemleri)',
-                      badge: 'ORTAÇAĞ ZAMAN YÖNETİCİSİ',
+                      badge: 'PLATINUM ÖZEL 👑',
                       description:
                           'Gündüz veya gece doğuşuna göre hayatın 75 yıllık dönemlerini yöneten ana ve alt gezegen yöneticileri (Al-Biruni ve Bonatti tekniği).',
-                      onTap: () => _showFirdariaDemo(context),
+                      onTap: () => _handleVipModuleTap(
+                        context: context,
+                        moduleName: 'Firdaria (Klasik Gezegen Dönemleri)',
+                        requiredTier: VipTier.platinum,
+                        onAccessGranted: () => _showFirdariaDemo(context),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     _buildVipModuleCard(
                       icon: Icons.cached_rounded,
                       color: AppColors.pastelMint,
                       title: 'Yıllık Ev Profeksiyonu (Annual Profections)',
-                      badge: 'LORD OF THE YEAR',
+                      badge: 'PLATINUM ÖZEL 👑',
                       description:
                           'Doğumdan itibaren her yaş bir evi aktive eder (Örn: 24 yaş = 1. Ev, 25 yaş = 2. Ev). Yılın Efendisi gezegen ve o yıl tetiklenen hayat alanları.',
-                      onTap: () => _showProfectionDemo(context),
+                      onTap: () => _handleVipModuleTap(
+                        context: context,
+                        moduleName: 'Yıllık Ev Profeksiyonu',
+                        requiredTier: VipTier.platinum,
+                        onAccessGranted: () => _showProfectionDemo(context),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     _buildVipModuleCard(
                       icon: Icons.hourglass_full_rounded,
                       color: AppColors.warningOrange,
                       title: 'Zodiacal Releasing (Helenistik Burç Salımı)',
-                      badge: 'PİK DÖNEMLERİ',
+                      badge: 'PLATINUM ÖZEL 👑',
                       description:
                           'Ruh ve Şans Noktası üzerinden hayatın 4 seviyeli kariyer ve yaşam zirvelerini, hazırlık evrelerini ve kriz geçişlerini gösteren antik yöntem.',
-                      onTap: () => _showZodiacalReleasingDemo(context),
+                      onTap: () => _handleVipModuleTap(
+                        context: context,
+                        moduleName: 'Zodiacal Releasing',
+                        requiredTier: VipTier.platinum,
+                        onAccessGranted: () => _showZodiacalReleasingDemo(context),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     _buildVipModuleCard(
                       icon: Icons.all_inclusive_rounded,
                       color: AppColors.pastelLavender,
                       title: 'Majör Gezegensel Yaşam Döngüleri',
-                      badge: 'KOZMİK EŞİKLER',
+                      badge: 'GOLD & PLATINUM ⭐',
                       description:
                           '29.5 Yaş Satürn Dönüşü, 12 Yıllık Jüpiter Fırsat Dönüşü, 42 Yaş Uranüs Karşıtlığı (Orta Yaş Eşiği) ve Chiron Yarası şifalanması.',
-                      onTap: () => _showPlanetaryCyclesDemo(context),
+                      onTap: () => _handleVipModuleTap(
+                        context: context,
+                        moduleName: 'Majör Gezegensel Yaşam Döngüleri',
+                        requiredTier: VipTier.gold,
+                        onAccessGranted: () => _showPlanetaryCyclesDemo(context),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     _buildVipModuleCard(
                       icon: Icons.access_time_filled_rounded,
                       color: AppColors.pastelLavender,
                       title: 'Rektifikasyon (Hassas Saat Doğrulama)',
-                      badge: 'UZMAN ARAÇ',
+                      badge: 'PLATINUM ÖZEL 👑',
                       description:
                           'Doğum saati net bilinmeyen haritalar için; geçmiş önemli tarihler üzerinden dakika düzeyinde doğum saati tespiti ve kalibrasyonu.',
-                      onTap: () => _showRectificationDemo(context),
+                      onTap: () => _handleVipModuleTap(
+                        context: context,
+                        moduleName: 'Rektifikasyon Doğrulama',
+                        requiredTier: VipTier.platinum,
+                        onAccessGranted: () => _showRectificationDemo(context),
+                      ),
                     ),
                     const SizedBox(height: 12),
                     _buildVipModuleCard(
                       icon: Icons.picture_as_pdf_rounded,
                       color: AppColors.pastelMint,
                       title: '10 Sayfalık Kapsamlı Harita Kitapçığı',
-                      badge: 'PDF RAPOR',
+                      badge: 'TÜM VIP KATMANLARI 📄',
                       description:
                           'Tüm gezegen konumları, 12 ev, temel açılar, sabit yıldızlar, Chiron ve Ay Düğümleri analizini içeren dijital arşiv raporu.',
-                      onTap: () => _showPdfReportDemo(context),
+                      onTap: () => _handleVipModuleTap(
+                        context: context,
+                        moduleName: '10 Sayfalık Harita Kitapçığı',
+                        requiredTier: VipTier.silver,
+                        onAccessGranted: () => _showPdfReportDemo(context),
+                      ),
                     ),
                     const SizedBox(height: 24),
                   ],
@@ -1928,6 +2074,93 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  Future<void> _handleVipModuleTap({
+    required BuildContext context,
+    required String moduleName,
+    required VipTier requiredTier,
+    required VoidCallback onAccessGranted,
+  }) async {
+    final currentTier = await StorageService.getVipTier();
+    if (currentTier == VipTier.free) {
+      if (context.mounted) _showPurchaseModal(context);
+      return;
+    }
+
+    if (requiredTier == VipTier.platinum && currentTier != VipTier.platinum) {
+      if (context.mounted) {
+        _showTierUpgradeModal(context, moduleName, 'Platinum VIP');
+      }
+      return;
+    }
+
+    if (requiredTier == VipTier.gold && currentTier == VipTier.silver) {
+      if (context.mounted) {
+        _showTierUpgradeModal(context, moduleName, 'Gold veya Platinum VIP');
+      }
+      return;
+    }
+
+    onAccessGranted();
+  }
+
+  void _showTierUpgradeModal(BuildContext context, String moduleName, String requiredTierName) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1B2E),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: AppColors.starlightGold, width: 1.2),
+        ),
+        title: Row(
+          children: [
+            const Icon(Icons.stars_rounded, color: AppColors.starlightGold, size: 24),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '$requiredTierName Ayrıcalığı',
+                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '“$moduleName” modülü $requiredTierName paketine özeldir.',
+              style: const TextStyle(color: Colors.white, fontSize: 13, height: 1.4),
+            ),
+            const SizedBox(height: 10),
+            const Text(
+              'Mevcut üyeliğinizi yükselterek bu derin astrolojik analiz aracına ve tüm gelişmiş öngörülere anında erişebilirsiniz.',
+              style: TextStyle(color: AppColors.textMuted, fontSize: 12, height: 1.4),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Kapat', style: TextStyle(color: Colors.white60)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.starlightGold,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {
+              Navigator.pop(ctx);
+              _showPurchaseModal(context);
+            },
+            child: const Text('Üyeliği Yükselt 👑', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
   // --- VIP Interactive Demo Sheets ---
 
   void _showSynastryDemo(BuildContext context) {
@@ -1977,15 +2210,14 @@ class _HomeScreenState extends State<HomeScreen> {
     final now = DateTime.now();
     final quotaKey = 'pdf_count_${now.year}_${now.month}';
     final prefs = await SharedPreferences.getInstance();
-    final usedCount = prefs.getInt(quotaKey) ?? 0;
-    const maxQuota = 3;
+    final maxQuota = await StorageService.getMonthlyPdfAllowance();
 
     if (usedCount >= maxQuota) {
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
             content: Text(
-              '⚠️ Bu ayki 10 sayfalık PDF indirme kotanızı doldurdunuz ($usedCount/$maxQuota). Gelecek ay kotanız yenilenecektir.',
+              '⚠️ Bu ayki 10 sayfalık PDF indirme kotanızı doldurdunuz ($usedCount/$maxQuota). Üyeliğinizi yükselterek kotanızı artırabilirsiniz.',
             ),
             backgroundColor: AppColors.savageRed,
           ),

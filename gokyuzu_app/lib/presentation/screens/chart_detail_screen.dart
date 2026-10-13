@@ -14,6 +14,7 @@ import '../../data/services/kabbalah_tree_service.dart';
 import '../../data/services/predictive_astrology_service.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/chart_wheel_painter.dart';
+import '../../data/services/ad_service.dart';
 import 'aspects_screen.dart';
 
 class ChartDetailScreen extends StatefulWidget {
@@ -478,7 +479,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
     );
   }
 
-  void _onTabSelected(int index) {
+  void _onTabSelected(int index) async {
     if (index == _selectedTabIndex) return;
 
     if ((index == 3 || index == 6) && !_isVip) {
@@ -488,12 +489,15 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
     }
 
     if (!_isVip) {
-      _showInterstitialAdModal(onAdClosed: () {
-        if (mounted) setState(() => _selectedTabIndex = index);
-      });
-    } else {
-      setState(() => _selectedTabIndex = index);
+      final shouldShowAd = await AdService.shouldShowTabInterstitial();
+      if (shouldShowAd && mounted) {
+        _showInterstitialAdModal(onAdClosed: () {
+          if (mounted) setState(() => _selectedTabIndex = index);
+        });
+        return;
+      }
     }
+    setState(() => _selectedTabIndex = index);
   }
 
   // Interstitial Ad Simulation
