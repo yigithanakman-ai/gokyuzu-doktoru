@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/services/storage_service.dart';
 import 'legal_document_screen.dart';
+import 'auth_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final UserProfile profile;
@@ -505,6 +506,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
             // 4. YASAL BİLGİLENDİRME & SÖZLEŞMELER
             _buildLegalDocumentsCard(),
+            const SizedBox(height: 16),
+
+            // 5. HESAP & VERİ SİLME (APPLE 5.1.1 & KVKK UYUMLU)
+            _buildDeleteAccountCard(),
             const SizedBox(height: 24),
           ],
         ),
@@ -1079,6 +1084,129 @@ class _ProfileScreenState extends State<ProfileScreen> {
             const Icon(Icons.arrow_forward_ios, color: Colors.white38, size: 13),
           ],
         ),
+      ),
+    );
+  }
+
+  // 5. HESAP VE VERİ SİLME KARTI (APPLE 5.1.1 & KVKK UYUMLU)
+  Widget _buildDeleteAccountCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: const Color(0xFFC0392B).withValues(alpha: 0.08),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(color: const Color(0xFFE74C3C).withValues(alpha: 0.35), width: 1.2),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            children: const [
+              Icon(Icons.delete_forever_rounded, color: Color(0xFFE74C3C), size: 20),
+              SizedBox(width: 8),
+              Text(
+                'Hesabı & Tüm Verileri Kalıcı Olarak Sil',
+                style: TextStyle(
+                  fontSize: 14.5,
+                  fontWeight: FontWeight.bold,
+                  color: Color(0xFFFFB3C1),
+                ),
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          const Text(
+            'Apple App Store 5.1.1 kuralı ve 6698 sayılı KVKK gereğince; hesabınızı, kayıtlı tüm doğum haritalarınızı, notlarınızı ve arşivinizi cihazınızdan kalıcı olarak silebilirsiniz. Bu işlem geri alınamaz.',
+            style: TextStyle(fontSize: 11, color: Colors.white60, height: 1.35),
+          ),
+          const SizedBox(height: 14),
+          SizedBox(
+            width: double.infinity,
+            height: 42,
+            child: OutlinedButton.icon(
+              onPressed: _showDeleteAccountDialog,
+              style: OutlinedButton.styleFrom(
+                foregroundColor: const Color(0xFFE74C3C),
+                side: const BorderSide(color: Color(0xFFE74C3C), width: 1.2),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+              ),
+              icon: const Icon(Icons.delete_outline_rounded, size: 18),
+              label: const Text(
+                'Hesabımı ve Verilerimi Kalıcı Olarak Sil',
+                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showDeleteAccountDialog() {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF191428),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: Color(0xFFE74C3C), width: 1.2),
+        ),
+        title: Row(
+          children: const [
+            Icon(Icons.warning_amber_rounded, color: Color(0xFFE74C3C), size: 24),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Hesabı Kalıcı Olarak Sil?',
+                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: const [
+            Text(
+              '⚠️ DİKKAT: Hesabınızı ve tüm doğum haritası verilerinizi silmek üzeresiniz.\n\n'
+              '• Kayıtlı tüm profiller, rektifikasyon notları ve yerel ayarlar kalıcı olarak yok edilir.\n'
+              '• Apple App Store veya Google Play üzerinden devam eden bir VIP aboneliğiniz varsa, aboneliği cihaz ayarlarınızdan ayrıca iptal etmelisiniz (hesabı silmek mağaza aboneliğini otomatik iptal etmez).\n\n'
+              'Bu işlemi onaylıyor musunuz?',
+              style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.45),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.pop(ctx),
+            child: const Text('Vazgeç', style: TextStyle(color: Colors.white60)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFFE74C3C),
+              foregroundColor: Colors.white,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () async {
+              Navigator.pop(ctx);
+              await StorageService.clearAll();
+              if (mounted) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Hesabınız ve tüm doğum verileriniz kalıcı olarak silindi.'),
+                    backgroundColor: Colors.redAccent,
+                    duration: Duration(seconds: 4),
+                  ),
+                );
+                Navigator.of(context).pushAndRemoveUntil(
+                  MaterialPageRoute(builder: (_) => const AuthScreen()),
+                  (route) => false,
+                );
+              }
+            },
+            child: const Text('Evet, Kalıcı Olarak Sil', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
       ),
     );
   }

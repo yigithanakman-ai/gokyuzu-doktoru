@@ -82,24 +82,77 @@ class LegalDocumentScreen extends StatelessWidget {
       case LegalDocType.privacy:
         return [
           {
-            'title': '1. Gizlilik Taahhüdümüz',
+            'title': '1. Hangi Verileri Topluyoruz?',
             'body':
-                'Gökyüzü Yapay Zeka Sistemi olarak kullanıcılarımızın mahremiyetine en yüksek derecede saygı gösteriyoruz. Doğum haritası gibi ruhsal ve kişisel verilerinizin gizliliği bizim için en temel ilkedir.',
+                '• Hesap Bilgileri: E-posta adresi ve şifre (şifreler şifrelenerek saklanır, bize dahi görünmez).\n'
+                '• Profil ve Doğum Bilgileri: Adınız/rumuzunuz, cinsiyetiniz, doğum tarihiniz, doğum saatiniz, doğum şehriniz ve coğrafi koordinatlarınız (Placidus haritası ve efemeris için zorunludur).\n'
+                '• Kullanıcı İçerikleri: Rektifikasyon geçmiş yaşam olay notları ve harita niyet metinleri.\n'
+                '• Kullanım Verileri: Kayıtlı harita profilleri (arşiv), tercihler ve VIP üyelik durumu.\n'
+                '• Reklam ve Cihaz Verileri: İsteğe bağlı ödüllü sponsorlu reklam izlendiğinde Google AdMob; reklam kimliği ve cihaz teknik verilerini işleyebilir.\n'
+                '• Satın Alma Bilgileri: VIP aboneliği doğrudan Apple App Store veya Google Play Store üzerinden alınır. Kredi kartı ve ödeme bilgilerinize biz asla erişmeyiz.',
           },
           {
-            'title': '2. Veri Depolama ve Şifreleme Güvenliği',
+            'title': '2. Verileri Neden Kullanıyoruz?',
             'body':
-                'Doğum haritası bilgileriniz, arşiv profilleriniz ve astrolojik notlarınız cihazınızda güvenli yerel depolama standartları (AES / Keychain / SharedPreferences) kullanılarak saklanır. Sunucu iletişimleri uçtan uca TLS 1.3 / SSL şifreleme protokolleri ile korunmaktadır.',
+                '• Kişiselleştirilmiş doğum haritası, yükselen burç ve gezegen konumlarını hesaplamak,\n'
+                '• İkincil İlerletim, Solar/Lunar Return, Zodiacal Releasing ve Profeksiyon öngörü analizlerini üretmek,\n'
+                '• 10 sayfalık profesyonel PDF analiz kitapçığını oluşturmak,\n'
+                '• VIP abonelik, reklam ve arşivleme sistemlerini işletmek,\n'
+                '• Yasal yükümlülüklere uymak ve müşteri destek taleplerini yanıtlamak.',
           },
           {
-            'title': '3. Hesap Silme ve Veri İmhası',
+            'title': '3. Yapay Zekâ (Google Gemini AI) Kullanımı',
             'body':
-                'Uygulama içerisindeki "Profili Sıfırla" veya hesap ayarları üzerinden tek bir dokunuşla tüm kayıtlı doğum verilerinizi, arşivinizi ve notlarınızı kalıcı olarak silebilirsiniz. Silinen veriler hiçbir yedeklemede tutulmaz.',
+                'Uygulamamız, kadim astroloji kurallarını modern yorumlarla sentezlemek amacıyla Google Gemini Yapay Zekâ altyapısından faydalanmaktadır.\n\n'
+                '• Yalnızca astrolojik gezegen konumları, açılar ve harita verileri Gemini API modeline güvenli şifreli kanalla iletilir.\n'
+                '• Kimlik ve doğrudan iletişim bilgileriniz modele gönderilmez.\n'
+                '• Yapay zekâya sağlık, tıbbi teşhis, banka/finans şifresi gibi hassas kişisel verilerin girilmemesi kullanıcının sorumluluğundadır.\n'
+                '• Yapay zekâ çıktıları bilgilendirme ve farkındalık amaçlıdır; tıbbi, hukuki veya yatırım tavsiyesi niteliği taşımaz.',
           },
           {
-            'title': '4. Çocukların Gizliliği & Yaş Sınırı (16 Yaş Kuralı)',
+            'title': '4. Verilerinizi Kimlerle Paylaşıyoruz?',
             'body':
-                'Uygulamamız 16 yaş altındaki kişilerin ebeveyn veya yasal vasi izni olmaksızın kişisel veri sağlamasına yönelik değildir. 16 yaşından küçüklerin doğum haritaları ve verileri yalnızca ebeveyn veya yasal vasileri tarafından arşivlenebilir ve sisteme kaydedilebilir.',
+                'Kişisel verileriniz hiçbir üçüncü tarafa SATILMAZ veya kiralanmaz. Yalnızca şu zorunlu altyapı sağlayıcıları ile paylaşılır:\n\n'
+                '• Apple App Store & Google Play: Abonelik doğrulama ve mağaza altyapısı.\n'
+                '• Google Gemini AI: Doğum haritası yorumlarının üretilmesi için yapay zekâ motoru.\n'
+                '• Google AdMob: Yalnızca ödüllü reklam gösterimleri (ücretsiz kullanıcılar için).\n'
+                '• Güvenli Veritabanı ve Bulut: Verileriniz yüksek güvenlikli sunucularda şifreli saklanır.\n'
+                '• Adli/Resmi Makamlar: Yalnızca yasal bir mahkeme kararı veya resmi zorunluluk halinde.',
+          },
+          {
+            'title': '5. Reklam ve Takip İzinleri',
+            'body':
+                '• Google AdMob: Ücretsiz özelliklerde ödüllü reklamlar sunulur. VIP üyeler için tüm reklamlar %100 devre dışıdır.\n'
+                '• iOS Uygulama Takibi (ATT): iOS cihazlarda kişiselleştirilmiş reklam için onayınız istenir. İzni dilediğiniz an Ayarlar > Gizlilik > Takip altından kapatabilirsiniz.',
+          },
+          {
+            'title': '6. Veri Saklama Süresi',
+            'body':
+                '• Cihaz Verileri: Kayıtlı haritalarınız ve notlarınız uygulamayı silene kadar cihazınızda kalır.\n'
+                '• Sunucu Verileri: Hesabınız aktif olduğu sürece saklanır. Hesabınızı sildiğinizde veya talep ettiğinizde 30 gün içinde tüm sistemlerden kalıcı olarak yok edilir.',
+          },
+          {
+            'title': '7. KVKK ve GDPR Kapsamındaki Haklarınız',
+            'body':
+                '6698 sayılı KVKK ve AB GDPR uyarınca şu haklara sahipsiniz:\n'
+                '• Hangi verilerinizin işlendiğini öğrenme ve bir kopyasını talep etme,\n'
+                '• Yanlış veya eksik bilgilerin düzeltilmesini isteme,\n'
+                '• Hesabınızın ve tüm verilerinizin kalıcı olarak silinmesini talep etme,\n'
+                '• Otomatik kararlara ve yapay zekâ analizlerine itiraz etme.\n\n'
+                'Talepleriniz için: destek@gokyuzudoktoru.com',
+          },
+          {
+            'title': '8. Hesap ve Veri Silme (Apple 5.1.1 Uyumlu)',
+            'body':
+                'Apple App Store Kural 5.1.1 uyarınca, hesabınızı ve tüm verilerinizi uygulama içerisinden kolayca silebilirsiniz:\n\n'
+                '• Profil sekmesindeki "Hesabımı ve Verilerimi Kalıcı Olarak Sil" butonuna tıklayarak anında silebilirsiniz.\n'
+                '• Veya destek@gokyuzudoktoru.com adresine e-posta göndererek talep edebilirsiniz.\n\n'
+                '⚠️ ÖNEMLİ: Uygulamadaki hesabınızı silmek, Apple App Store veya Google Play aboneliğinizi otomatik olarak iptal etmez. Aboneliğinizi cihaz ayarlarınızdan (Abonelikler menüsü) ayrıca iptal etmelisiniz.',
+          },
+          {
+            'title': '9. Çocukların Gizliliği & Yaş Sınırı (16 Yaş Kuralı)',
+            'body':
+                'Uygulamamız 16 yaş altındaki kişilerin tek başına kullanımına yönelik değildir. 16 yaşından küçüklerin doğum haritaları yalnızca ebeveyn veya yasal vasileri tarafından arşivlenebilir ve kaydedilebilir. Ebeveyn izni olmadan kaydedilmiş bir veri tespit edilirse derhal silinir.',
           },
         ];
       case LegalDocType.terms:
