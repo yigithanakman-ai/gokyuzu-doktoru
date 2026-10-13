@@ -745,7 +745,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   onPressed: () async {
                     await StorageService.deactivateVip();
                     setState(() => _isVip = false);
-                    if (context.mounted) {
+                    if (mounted) {
                       ScaffoldMessenger.of(context).showSnackBar(
                         const SnackBar(
                           content: Text('Standart Kullanıcı Moduna geçildi (VIP kilitlendi). Müşteri deneyimini test edebilirsiniz.'),

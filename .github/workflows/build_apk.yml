@@ -1,0 +1,69 @@
+name: Android APK Derle ve Yayınla
+
+on:
+  push:
+    branches: [ main ]
+  workflow_dispatch:
+
+jobs:
+  build-apk:
+    name: Android APK Build
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: Kodları Çek (Checkout)
+        uses: actions/checkout@v4
+
+      - name: Java 17 Kurulumu
+        uses: actions/setup-java@v4
+        with:
+          distribution: 'temurin'
+          java-version: '17'
+          cache: 'gradle'
+
+      - name: Flutter Kurulumu
+        uses: subosito/flutter-action@v2
+        with:
+          channel: 'stable'
+          cache: true
+
+      - name: Paketleri İndir (pub get)
+        run: |
+          cd gokyuzu_app
+          flutter pub get
+
+      - name: Release APK Derle
+        run: |
+          cd gokyuzu_app
+          flutter build apk --release --no-tree-shake-icons
+
+      - name: APK Dosyasını Kopyala
+        run: |
+          cp gokyuzu_app/build/app/outputs/flutter-apk/app-release.apk ./gokyuzu-doktoru.apk
+
+      - name: Artifact Olarak Yükle (GitHub Actions İndirme)
+        uses: actions/upload-artifact@v4
+        with:
+          name: gokyuzu-doktoru-apk
+          path: gokyuzu-doktoru.apk
+          retention-days: 30
+
+      - name: GitHub Release Olarak Yayınla (Doğrudan Telefona İndirme)
+        uses: softprops/action-gh-release@v2
+        if: github.ref == 'refs/heads/main'
+        with:
+          tag_name: v1.0.0-apk
+          name: "📱 Gökyüzü Doktoru - Test APK (v1.0.0)"
+          body: |
+            ### 🪐 Gökyüzü Doktoru Android Test Sürümü
+
+            Bu APK dosyası, uygulamanızı Google Play Store'a göndermeden önce kendi Android cep telefonunuzda test etmeniz için otomatik olarak üretilmiştir.
+
+            #### 📲 Telefona Nasıl Yüklenir?
+            1. Aşağıdaki **Assets** bölümünden **`gokyuzu-doktoru.apk`** dosyasına dokunun ve telefonunuza indirin.
+            2. Telefonunuzun bildirim panelinden veya Dosya Yöneticisi'nden indirilen dosyaya dokunun.
+            3. Eğer "Bilinmeyen kaynaklardan yüklemeye izin verilsin mi?" uyarısı çıkarsa **İzin Ver / Aç** seçeneğini seçin.
+            4. **Yükle** butonuna basın ve uygulamayı açın!
+          files: gokyuzu-doktoru.apk
