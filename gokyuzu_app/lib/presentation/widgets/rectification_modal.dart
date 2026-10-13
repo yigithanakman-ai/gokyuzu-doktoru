@@ -742,20 +742,27 @@ class _RectificationModalContentState extends State<RectificationModalContent> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Row(
-                            children: [
-                              Icon(Icons.history_edu_rounded, size: 18, color: AppColors.pastelMint),
-                              SizedBox(width: 8),
-                              Text(
-                                'Kişisel Yaşam Olayları & Örnek Tarihler',
-                                style: TextStyle(
-                                  fontSize: 12.5,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.pastelMint,
+                          const Expanded(
+                            child: Row(
+                              children: [
+                                Icon(Icons.history_edu_rounded, size: 18, color: AppColors.pastelMint),
+                                SizedBox(width: 8),
+                                Expanded(
+                                  child: Text(
+                                    'Kişisel Yaşam Olayları & Örnek Tarihler',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 12,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.pastelMint,
+                                    ),
+                                  ),
                                 ),
-                              ),
-                            ],
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                             decoration: BoxDecoration(

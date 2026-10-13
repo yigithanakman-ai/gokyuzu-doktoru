@@ -214,57 +214,68 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                           child: Row(
                             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                             children: [
-                              Row(
-                                children: [
-                                  Container(
-                                    padding: const EdgeInsets.all(10),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.starlightGold.withValues(alpha: 0.2),
-                                      borderRadius: BorderRadius.circular(12),
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.starlightGold.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Icon(
+                                        Icons.grid_on_rounded,
+                                        color: AppColors.starlightGold,
+                                        size: 22,
+                                      ),
                                     ),
-                                    child: const Icon(
-                                      Icons.grid_on_rounded,
-                                      color: AppColors.starlightGold,
-                                      size: 22,
-                                    ),
-                                  ),
-                                  const SizedBox(width: 14),
-                                  const Column(
-                                    crossAxisAlignment: CrossAxisAlignment.start,
-                                    children: [
-                                      Row(
+                                    const SizedBox(width: 14),
+                                    const Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
-                                          Text(
-                                            'Açılar Matrisi & Gezegen Açıları',
-                                            style: TextStyle(
-                                              fontSize: 14,
-                                              fontWeight: FontWeight.bold,
-                                              color: Colors.white,
-                                            ),
+                                          Row(
+                                            children: [
+                                              Flexible(
+                                                child: Text(
+                                                  'Açılar Matrisi & Gezegen Açıları',
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                              SizedBox(width: 6),
+                                              Text(
+                                                'YENİ',
+                                                style: TextStyle(
+                                                  fontSize: 9,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: AppColors.pastelMint,
+                                                ),
+                                              ),
+                                            ],
                                           ),
-                                          SizedBox(width: 6),
+                                          SizedBox(height: 2),
                                           Text(
-                                            'YENİ',
+                                            'Klasik Üçgen Izgara, Majör/Minör Açılar & Transitler',
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                             style: TextStyle(
-                                              fontSize: 9,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColors.pastelMint,
+                                              fontSize: 11,
+                                              color: AppColors.textSecondary,
                                             ),
                                           ),
                                         ],
                                       ),
-                                      SizedBox(height: 2),
-                                      Text(
-                                        'Klasik Üçgen Izgara, Majör/Minör Açılar & Transitler',
-                                        style: TextStyle(
-                                          fontSize: 11,
-                                          color: AppColors.textSecondary,
-                                        ),
-                                      ),
-                                    ],
-                                  ),
-                                ],
+                                    ),
+                                  ],
+                                ),
                               ),
+                              const SizedBox(width: 8),
                               const Icon(
                                 Icons.arrow_forward_ios_rounded,
                                 size: 14,
@@ -316,51 +327,60 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                               child: Row(
                                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                                 children: [
-                                  Row(
-                                    children: [
-                                      Container(
-                                        width: 38,
-                                        height: 38,
-                                        decoration: BoxDecoration(
-                                          color: AppColors.surfaceLight,
-                                          borderRadius: BorderRadius.circular(10),
-                                        ),
-                                        child: Center(
-                                          child: Text(
-                                            _getPlanetSymbol(entry.key),
-                                            style: const TextStyle(
-                                              fontSize: 18,
-                                              color: AppColors.pastelLavender,
-                                            ),
+                                  Expanded(
+                                    child: Row(
+                                      children: [
+                                        Container(
+                                          width: 38,
+                                          height: 38,
+                                          decoration: BoxDecoration(
+                                            color: AppColors.surfaceLight,
+                                            borderRadius: BorderRadius.circular(10),
                                           ),
-                                        ),
-                                      ),
-                                      const SizedBox(width: 14),
-                                      Column(
-                                        crossAxisAlignment:
-                                            CrossAxisAlignment.start,
-                                        children: [
-                                          Text(
-                                            planet.name,
-                                            style: const TextStyle(
-                                              fontSize: 15,
-                                              fontWeight: FontWeight.bold,
-                                              color: AppColors.textPrimary,
-                                            ),
-                                          ),
-                                          if (planet.isRetrograde)
-                                            const Text(
-                                              'Retrograde (Geri Harekette)',
-                                              style: TextStyle(
-                                                fontSize: 11,
-                                                color: AppColors.warningOrange,
-                                                fontWeight: FontWeight.w600,
+                                          child: Center(
+                                            child: Text(
+                                              _getPlanetSymbol(entry.key),
+                                              style: const TextStyle(
+                                                fontSize: 18,
+                                                color: AppColors.pastelLavender,
                                               ),
                                             ),
-                                        ],
-                                      ),
-                                    ],
+                                          ),
+                                        ),
+                                        const SizedBox(width: 14),
+                                        Expanded(
+                                          child: Column(
+                                            crossAxisAlignment:
+                                                CrossAxisAlignment.start,
+                                            children: [
+                                              Text(
+                                                planet.name,
+                                                maxLines: 1,
+                                                overflow: TextOverflow.ellipsis,
+                                                style: const TextStyle(
+                                                  fontSize: 15,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: AppColors.textPrimary,
+                                                ),
+                                              ),
+                                              if (planet.isRetrograde)
+                                                const Text(
+                                                  'Retrograde (Geri Harekette)',
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: TextStyle(
+                                                    fontSize: 11,
+                                                    color: AppColors.warningOrange,
+                                                    fontWeight: FontWeight.w600,
+                                                  ),
+                                                ),
+                                            ],
+                                          ),
+                                        ),
+                                      ],
+                                    ),
                                   ),
+                                  const SizedBox(width: 8),
                                   Row(
                                     children: [
                                       Column(
@@ -4271,36 +4291,44 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
               children: [
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
-                      children: [
-                        Text(crystal.symbol, style: const TextStyle(fontSize: 22)),
-                        const SizedBox(width: 10),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              crystal.turkishName,
-                              style: const TextStyle(
-                                fontSize: 14.5,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
-                              ),
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Text(crystal.symbol, style: const TextStyle(fontSize: 22)),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  crystal.turkishName,
+                                  maxLines: 2,
+                                  overflow: TextOverflow.ellipsis,
+                                  style: const TextStyle(
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                                Text(
+                                  crystal.name,
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    color: AppColors.textMuted,
+                                  ),
+                                ),
+                              ],
                             ),
-                            Text(
-                              crystal.name,
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: AppColors.textMuted,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
+                          ),
+                        ],
+                      ),
                     ),
-                    if (isHighlighted)
+                    if (isHighlighted) ...[
+                      const SizedBox(width: 8),
                       Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                        padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 3),
                         decoration: BoxDecoration(
                           color: AppColors.starlightGold.withValues(alpha: 0.2),
                           borderRadius: BorderRadius.circular(8),
@@ -4311,12 +4339,13 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                         child: const Text(
                           'HARİTANDA AKTİF',
                           style: TextStyle(
-                            fontSize: 9.5,
+                            fontSize: 9.0,
                             fontWeight: FontWeight.bold,
                             color: AppColors.starlightGold,
                           ),
                         ),
                       ),
+                    ],
                   ],
                 ),
                 const SizedBox(height: 10),
@@ -4940,14 +4969,19 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          Text(
-                            s.turkishName,
-                            style: const TextStyle(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                          Expanded(
+                            child: Text(
+                              s.turkishName,
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 13.5,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 8),
                           Text(
                             s.hebrewName.split(' ').first,
                             style: const TextStyle(

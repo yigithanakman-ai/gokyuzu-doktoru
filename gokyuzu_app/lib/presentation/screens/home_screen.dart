@@ -619,46 +619,55 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: AppColors.pastelPeach.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(14),
-                            ),
-                            child: const Icon(
-                              Icons.pie_chart_outline_rounded,
-                              color: AppColors.pastelPeach,
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                'Tam Doğum Haritası',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textPrimary,
-                                ),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: AppColors.pastelPeach.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(14),
                               ),
-                              SizedBox(height: 2),
-                              Text(
-                                '12 Ev, Gezegen Dereceleri, Elementler',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.textMuted,
-                                ),
+                              child: const Icon(
+                                Icons.pie_chart_outline_rounded,
+                                color: AppColors.pastelPeach,
+                                size: 24,
                               ),
-                            ],
-                          ),
-                        ],
+                            ),
+                            const SizedBox(width: 14),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    'Tam Doğum Haritası',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 15,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.textPrimary,
+                                    ),
+                                  ),
+                                  SizedBox(height: 2),
+                                  Text(
+                                    '12 Ev, Gezegen Dereceleri, Elementler',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      color: AppColors.textMuted,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       const Icon(Icons.arrow_forward_ios_rounded,
-                          size: 16, color: AppColors.pastelLavender),
+                          size: 15, color: AppColors.pastelLavender),
                     ],
                   ),
                 ),
@@ -670,71 +679,90 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(20),
                 child: GlassCard(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                   borderColor: AppColors.starlightGold.withValues(alpha: 0.5),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: AppColors.starlightGold.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(14),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: AppColors.starlightGold.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: const Icon(
+                                Icons.workspace_premium_rounded,
+                                color: AppColors.starlightGold,
+                                size: 24,
+                              ),
                             ),
-                            child: const Icon(
-                              Icons.workspace_premium_rounded,
-                              color: AppColors.starlightGold,
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                            const SizedBox(width: 14),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  const Text(
-                                    'VIP Kozmik Danışmanlık',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.starlightGold,
-                                    ),
+                                  Wrap(
+                                    crossAxisAlignment: WrapCrossAlignment.center,
+                                    spacing: 6,
+                                    runSpacing: 2,
+                                    children: [
+                                      const Text(
+                                        'VIP Kozmik Danışmanlık',
+                                        style: TextStyle(
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.starlightGold,
+                                        ),
+                                      ),
+                                      Container(
+                                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                        decoration: BoxDecoration(
+                                          color: (_isVipUnlocked ? AppColors.pastelMint : AppColors.starlightGold).withValues(alpha: 0.15),
+                                          borderRadius: BorderRadius.circular(6),
+                                          border: Border.all(
+                                            color: (_isVipUnlocked ? AppColors.pastelMint : AppColors.starlightGold).withValues(alpha: 0.4),
+                                          ),
+                                        ),
+                                        child: Text(
+                                          _isVipUnlocked ? 'AÇIK 👑' : 'VIP ÖZEL 🔒',
+                                          style: TextStyle(
+                                            fontSize: 9.5,
+                                            fontWeight: FontWeight.bold,
+                                            color: _isVipUnlocked ? AppColors.pastelMint : AppColors.starlightGold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  const SizedBox(width: 8),
-                                  Text(
-                                    _isVipUnlocked ? 'AÇIK 👑' : 'VIP ÖZEL 🔒',
+                                  const SizedBox(height: 3),
+                                  const Text(
+                                    'Sinastri, Solar Return ve Özel Raporlar',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: _isVipUnlocked ? AppColors.pastelMint : AppColors.starlightGold,
+                                      fontSize: 11.5,
+                                      color: AppColors.textMuted,
                                     ),
                                   ),
                                 ],
                               ),
-                              const SizedBox(height: 2),
-                              const Text(
-                                'Sinastri, Solar Return ve Özel Raporlar',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.textMuted,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       const Icon(Icons.stars_rounded,
-                          size: 22, color: AppColors.starlightGold),
+                          size: 20, color: AppColors.starlightGold),
                     ],
                   ),
                 ),
               ),
               const SizedBox(height: 12),
 
-              // KOZMİK NUMEROLOJİ & YAŞAM YOLU MATRİSİ KARTI (YENİ ✨)
+              // KOZMİK NUMEROLOJİ & YAŞAM YOLU MATRİSİ KARTI (HERKESE AÇIK ✨)
               InkWell(
                 onTap: () {
                   Navigator.of(context).push(
@@ -746,64 +774,73 @@ class _HomeScreenState extends State<HomeScreen> {
                 borderRadius: BorderRadius.circular(20),
                 child: GlassCard(
                   padding:
-                      const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                      const EdgeInsets.symmetric(horizontal: 18, vertical: 16),
                   borderColor: AppColors.pastelLavender.withValues(alpha: 0.45),
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(10),
-                            decoration: BoxDecoration(
-                              color: AppColors.pastelLavender.withValues(alpha: 0.2),
-                              borderRadius: BorderRadius.circular(14),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(10),
+                              decoration: BoxDecoration(
+                                color: AppColors.pastelLavender.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(14),
+                              ),
+                              child: const Icon(
+                                Icons.auto_awesome_rounded,
+                                color: AppColors.pastelLavender,
+                                size: 24,
+                              ),
                             ),
-                            child: const Icon(
-                              Icons.auto_awesome_rounded,
-                              color: AppColors.pastelLavender,
-                              size: 24,
-                            ),
-                          ),
-                          const SizedBox(width: 16),
-                          const Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
+                            const SizedBox(width: 14),
+                            const Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
-                                  Text(
-                                    'Kozmik Numeroloji Matrisi',
-                                    style: TextStyle(
-                                      fontSize: 15,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
+                                  Wrap(
+                                    crossAxisAlignment: WrapCrossAlignment.center,
+                                    spacing: 6,
+                                    runSpacing: 2,
+                                    children: [
+                                      Text(
+                                        'Kozmik Numeroloji Matrisi',
+                                        style: TextStyle(
+                                          fontSize: 14.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: Colors.white,
+                                        ),
+                                      ),
+                                      Text(
+                                        'HERKESE AÇIK ✨',
+                                        style: TextStyle(
+                                          fontSize: 9.5,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.starlightGold,
+                                        ),
+                                      ),
+                                    ],
                                   ),
-                                  SizedBox(width: 8),
+                                  SizedBox(height: 3),
                                   Text(
-                                    'YENİ ✨',
+                                    'Yaşam Yolu, Kader Sayısı ve 2026 Döngüsü',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                      fontSize: 10,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.starlightGold,
+                                      fontSize: 11.5,
+                                      color: AppColors.textMuted,
                                     ),
                                   ),
                                 ],
                               ),
-                              SizedBox(height: 2),
-                              Text(
-                                'Yaşam Yolu, Kader Sayısı ve 2026 Döngüsü',
-                                style: TextStyle(
-                                  fontSize: 12,
-                                  color: AppColors.textMuted,
-                                ),
-                              ),
-                            ],
-                          ),
-                        ],
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       const Icon(Icons.arrow_forward_ios_rounded,
-                          size: 16, color: AppColors.pastelLavender),
+                          size: 15, color: AppColors.pastelLavender),
                     ],
                   ),
                 ),
@@ -832,9 +869,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
-                                    fontSize: 12,
+                                    fontSize: 11.5,
                                     fontWeight: FontWeight.bold,
-                                    letterSpacing: 0.8,
+                                    letterSpacing: 0.2,
                                     color: AppColors.starlightGold,
                                   ),
                                 ),
@@ -1981,6 +2018,7 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Row(
               mainAxisAlignment: MainAxisAlignment.spaceBetween,
+              crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Expanded(
                   child: Row(
@@ -1997,10 +2035,10 @@ class _HomeScreenState extends State<HomeScreen> {
                       Expanded(
                         child: Text(
                           title,
-                          maxLines: 1,
+                          maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
-                            fontSize: 14,
+                            fontSize: 13.5,
                             fontWeight: FontWeight.bold,
                             color: color,
                           ),
