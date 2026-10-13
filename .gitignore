@@ -8,6 +8,10 @@ token*.json
 client_secret*.json
 *.pem
 *.key
+*.tar.gz
+*.zip
+*.dmg
+*.pkg
 
 # Python
 __pycache__/
