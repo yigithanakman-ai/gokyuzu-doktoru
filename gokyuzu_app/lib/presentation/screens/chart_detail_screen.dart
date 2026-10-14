@@ -602,7 +602,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                       ),
                       SizedBox(height: 6),
                       Text(
-                        'Reklamsız kesintisiz deneyim, 35+ sayfa PDF harita kitapçığı, Sinastri ve tüm ileri öngörü modelleri sizi bekliyor.',
+                        'Reklamsız kesintisiz deneyim, 10 sayfalık PDF harita kitapçığı, Sinastri ve tüm ileri öngörü modelleri sizi bekliyor.',
                         textAlign: TextAlign.center,
                         style: TextStyle(
                           fontSize: 12,
@@ -3139,10 +3139,13 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
               const SizedBox(height: 8),
 
               // Chips: Mantra & Crystals
-              Row(
+              Wrap(
+                spacing: 8,
+                runSpacing: 6,
+                crossAxisAlignment: WrapCrossAlignment.center,
                 children: [
                   Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
                       color: Colors.white10,
                       borderRadius: BorderRadius.circular(6),
@@ -3152,13 +3155,16 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                       style: const TextStyle(fontSize: 10.5, fontWeight: FontWeight.bold, color: Colors.white),
                     ),
                   ),
-                  const SizedBox(width: 8),
-                  Expanded(
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: c.color.withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(color: c.color.withValues(alpha: 0.25)),
+                    ),
                     child: Text(
                       '💎 ${c.crystals}',
-                      maxLines: 1,
-                      overflow: TextOverflow.ellipsis,
-                      style: const TextStyle(fontSize: 10.5, color: Colors.white60),
+                      style: const TextStyle(fontSize: 10.5, color: Colors.white70),
                     ),
                   ),
                 ],

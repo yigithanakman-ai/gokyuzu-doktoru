@@ -2682,15 +2682,17 @@ class _HomeScreenState extends State<HomeScreen> {
                         color: AppColors.starlightGold, size: 20),
                     SizedBox(width: 6),
                     Expanded(
-                      child: Text(
-                        'GÜNÜN KOZMİK MOTİVASYON SÖZÜ',
-                        maxLines: 1,
-                        overflow: TextOverflow.ellipsis,
-                        style: TextStyle(
-                          fontSize: 11,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.8,
-                          color: AppColors.starlightGold,
+                      child: FittedBox(
+                        fit: BoxFit.scaleDown,
+                        alignment: Alignment.centerLeft,
+                        child: Text(
+                          'GÜNÜN KOZMİK MOTİVASYONU',
+                          style: TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            letterSpacing: 0.5,
+                            color: AppColors.starlightGold,
+                          ),
                         ),
                       ),
                     ),

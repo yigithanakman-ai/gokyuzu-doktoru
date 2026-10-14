@@ -766,21 +766,24 @@ class _OnboardingInputScreenState extends State<OnboardingInputScreen> {
                               ),
                             ],
                           )
-                        : const Row(
-                            mainAxisAlignment: MainAxisAlignment.center,
-                            children: [
-                              Text(
-                                'Gerçeklerle Yüzleşmeye Hazır mısın?',
-                                style: TextStyle(
-                                  fontSize: 16,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.textDark,
+                        : const FittedBox(
+                            fit: BoxFit.scaleDown,
+                            child: Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              children: [
+                                Text(
+                                  'Gerçeklerle Yüzleşmeye Hazır mısın?',
+                                  style: TextStyle(
+                                    fontSize: 15,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.textDark,
+                                  ),
                                 ),
-                              ),
-                              SizedBox(width: 8),
-                              Icon(Icons.arrow_forward_rounded,
-                                  color: AppColors.textDark, size: 20),
-                            ],
+                                SizedBox(width: 8),
+                                Icon(Icons.arrow_forward_rounded,
+                                    color: AppColors.textDark, size: 20),
+                              ],
+                            ),
                           ),
                   ),
                 ),

@@ -27,12 +27,16 @@ class _AspectsScreenState extends State<AspectsScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Açılar Matrisi & Etkileşimler',
-          style: TextStyle(
-            fontSize: 18,
-            fontWeight: FontWeight.bold,
-            letterSpacing: 0.6,
+        title: const FittedBox(
+          fit: BoxFit.scaleDown,
+          alignment: Alignment.centerLeft,
+          child: Text(
+            'Açılar Matrisi & Etkileşimler',
+            style: TextStyle(
+              fontSize: 16,
+              fontWeight: FontWeight.bold,
+              letterSpacing: 0.5,
+            ),
           ),
         ),
         actions: [
@@ -102,35 +106,38 @@ class _AspectsScreenState extends State<AspectsScreen> {
                                   onTap: () => setState(() => _isTriangleGridView = true),
                                   borderRadius: BorderRadius.circular(10),
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                                     decoration: BoxDecoration(
                                       color: _isTriangleGridView
                                           ? AppColors.starlightGold.withValues(alpha: 0.2)
                                           : Colors.transparent,
                                       borderRadius: BorderRadius.circular(10),
                                     ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.grid_on_rounded,
-                                          size: 15,
-                                          color: _isTriangleGridView
-                                              ? AppColors.starlightGold
-                                              : AppColors.textMuted,
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          'Üçgen Izgara (Grid)',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.grid_on_rounded,
+                                            size: 14,
                                             color: _isTriangleGridView
                                                 ? AppColors.starlightGold
                                                 : AppColors.textMuted,
                                           ),
-                                        ),
-                                      ],
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Izgara (Grid)',
+                                            style: TextStyle(
+                                              fontSize: 11.5,
+                                              fontWeight: FontWeight.bold,
+                                              color: _isTriangleGridView
+                                                  ? AppColors.starlightGold
+                                                  : AppColors.textMuted,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -140,35 +147,38 @@ class _AspectsScreenState extends State<AspectsScreen> {
                                   onTap: () => setState(() => _isTriangleGridView = false),
                                   borderRadius: BorderRadius.circular(10),
                                   child: Container(
-                                    padding: const EdgeInsets.symmetric(vertical: 8),
+                                    padding: const EdgeInsets.symmetric(vertical: 8, horizontal: 4),
                                     decoration: BoxDecoration(
                                       color: !_isTriangleGridView
                                           ? AppColors.starlightGold.withValues(alpha: 0.2)
                                           : Colors.transparent,
                                       borderRadius: BorderRadius.circular(10),
                                     ),
-                                    child: Row(
-                                      mainAxisAlignment: MainAxisAlignment.center,
-                                      children: [
-                                        Icon(
-                                          Icons.view_list_rounded,
-                                          size: 15,
-                                          color: !_isTriangleGridView
-                                              ? AppColors.starlightGold
-                                              : AppColors.textMuted,
-                                        ),
-                                        const SizedBox(width: 6),
-                                        Text(
-                                          'Açı Listesi',
-                                          style: TextStyle(
-                                            fontSize: 12,
-                                            fontWeight: FontWeight.bold,
+                                    child: FittedBox(
+                                      fit: BoxFit.scaleDown,
+                                      child: Row(
+                                        mainAxisAlignment: MainAxisAlignment.center,
+                                        children: [
+                                          Icon(
+                                            Icons.view_list_rounded,
+                                            size: 14,
                                             color: !_isTriangleGridView
                                                 ? AppColors.starlightGold
                                                 : AppColors.textMuted,
                                           ),
-                                        ),
-                                      ],
+                                          const SizedBox(width: 4),
+                                          Text(
+                                            'Açı Listesi',
+                                            style: TextStyle(
+                                              fontSize: 11.5,
+                                              fontWeight: FontWeight.bold,
+                                              color: !_isTriangleGridView
+                                                  ? AppColors.starlightGold
+                                                  : AppColors.textMuted,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
                                     ),
                                   ),
                                 ),
@@ -183,7 +193,7 @@ class _AspectsScreenState extends State<AspectsScreen> {
                         onTap: () => _showAspectsGuideModal(context),
                         borderRadius: BorderRadius.circular(12),
                         child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 9),
+                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
                           decoration: BoxDecoration(
                             color: AppColors.pastelLavender.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(12),
@@ -191,14 +201,15 @@ class _AspectsScreenState extends State<AspectsScreen> {
                                 color: AppColors.pastelLavender.withValues(alpha: 0.3)),
                           ),
                           child: const Row(
+                            mainAxisSize: MainAxisSize.min,
                             children: [
                               Icon(Icons.auto_stories_rounded,
-                                  size: 15, color: AppColors.pastelLavender),
-                              SizedBox(width: 6),
+                                  size: 14, color: AppColors.pastelLavender),
+                              SizedBox(width: 4),
                               Text(
-                                'Açılar Rehberi',
+                                'Rehber',
                                 style: TextStyle(
-                                  fontSize: 12,
+                                  fontSize: 11.5,
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.pastelLavender,
                                 ),
@@ -242,22 +253,28 @@ class _AspectsScreenState extends State<AspectsScreen> {
           color: isSelected ? AppColors.pastelLavender : Colors.transparent,
           borderRadius: BorderRadius.circular(12),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            Icon(icon,
-                size: 15,
-                color: isSelected ? Colors.black87 : AppColors.textSecondary),
-            const SizedBox(width: 6),
-            Text(
-              title,
-              style: TextStyle(
-                fontSize: 12,
-                fontWeight: FontWeight.bold,
-                color: isSelected ? Colors.black87 : AppColors.textSecondary,
-              ),
+        child: FittedBox(
+          fit: BoxFit.scaleDown,
+          child: Padding(
+            padding: const EdgeInsets.symmetric(horizontal: 4),
+            child: Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                Icon(icon,
+                    size: 15,
+                    color: isSelected ? Colors.black87 : AppColors.textSecondary),
+                const SizedBox(width: 6),
+                Text(
+                  title,
+                  style: TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: isSelected ? Colors.black87 : AppColors.textSecondary,
+                  ),
+                ),
+              ],
             ),
-          ],
+          ),
         ),
       ),
     );
@@ -449,47 +466,56 @@ class _AspectsScreenState extends State<AspectsScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.all(8),
-                            decoration: BoxDecoration(
-                              color: item.color.withValues(alpha: 0.15),
-                              borderRadius: BorderRadius.circular(10),
-                            ),
-                            child: Text(
-                              item.aspectSymbol,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: item.color,
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: item.color.withValues(alpha: 0.15),
+                                borderRadius: BorderRadius.circular(10),
                               ),
-                            ),
-                          ),
-                          const SizedBox(width: 12),
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '${item.planetA} - ${item.planetB}',
-                                style: const TextStyle(
-                                  fontSize: 14.5,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                              Text(
-                                '${item.aspectName} Açı (Orb: ${item.orbStr})',
+                              child: Text(
+                                item.aspectSymbol,
                                 style: TextStyle(
-                                  fontSize: 11.5,
+                                  fontSize: 18,
+                                  fontWeight: FontWeight.bold,
                                   color: item.color,
-                                  fontWeight: FontWeight.w600,
                                 ),
                               ),
-                            ],
-                          ),
-                        ],
+                            ),
+                            const SizedBox(width: 12),
+                            Expanded(
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '${item.planetA} - ${item.planetB}',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: const TextStyle(
+                                      fontSize: 14,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                  ),
+                                  Text(
+                                    '${item.aspectName} Açı (Orb: ${item.orbStr})',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      color: item.color,
+                                      fontWeight: FontWeight.w600,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                         decoration: BoxDecoration(
