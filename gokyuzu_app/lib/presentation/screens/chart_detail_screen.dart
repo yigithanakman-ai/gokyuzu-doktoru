@@ -108,7 +108,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                           : _selectedTabIndex == 1
                               ? _buildWheelView()
                               : _selectedTabIndex == 2
-                                  ? _buildFixedStarsView()
+                                  ? (_isVip ? _buildFixedStarsView() : _buildVipLockedFixedStarsView())
                                   : _selectedTabIndex == 3
                                       ? (_isVip ? _buildSacredAstrologyView() : _buildVipLockedSacredView())
                                       : _selectedTabIndex == 4
@@ -441,7 +441,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
           children: [
             _buildTabItem(0, 'Evler & Liste', Icons.format_list_bulleted_rounded),
             _buildTabItem(1, '360° Çark', Icons.pie_chart_rounded),
-            _buildTabItem(2, 'Sabit Yıldız', Icons.star_rounded),
+            _buildTabItem(2, 'Sabit Yıldız 👑', Icons.star_rounded),
             _buildTabItem(3, 'Dekan & Melek 👑', Icons.auto_awesome_rounded),
             _buildTabItem(4, 'Çakra & Beden ✨', Icons.spa_rounded),
             _buildTabItem(5, 'Doğal Taşlar 💎', Icons.diamond_rounded),
@@ -454,7 +454,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
 
   Widget _buildTabItem(int index, String label, IconData icon) {
     final isSelected = _selectedTabIndex == index;
-    final isVipTab = index == 3 || index == 6;
+    final isVipTab = index == 2 || index == 3 || index == 6;
     final isVipLocked = isVipTab && !_isVip;
 
     return InkWell(
@@ -502,7 +502,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
   void _onTabSelected(int index) async {
     if (index == _selectedTabIndex) return;
 
-    if ((index == 3 || index == 6) && !_isVip) {
+    if ((index == 2 || index == 3 || index == 6) && !_isVip) {
       // User tapped on VIP-locked tab without VIP
       setState(() => _selectedTabIndex = index);
       return;
@@ -713,22 +713,30 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
           const SizedBox(height: 16),
 
           // Wheel Canvas
-          SizedBox(
-            width: 330,
-            height: 330,
-            child: CustomPaint(
-              painter: ChartWheelPainter(
-                planets: _chart!.planets.map((k, v) => MapEntry(k, {
-                      'sign': v.sign,
-                      'degree': _parseDegreeFromFormatted(v.formatted),
-                      'isRetrograde': v.isRetrograde,
-                    })),
-                ascendantSign: _chart!.risingSign,
-                ascDegree: _parseDegreeFromFormatted(_chart!.risingFormatted),
-                mcSign: _chart!.planets['mc']?.sign ?? 'Kova',
-                mcDegree: _parseDegreeFromFormatted(_chart!.planets['mc']?.formatted ?? '14°30\' Kova'),
-              ),
-            ),
+          // Wheel Canvas
+          LayoutBuilder(
+            builder: (context, constraints) {
+              final canvasSize = constraints.maxWidth.clamp(260.0, 320.0);
+              return Center(
+                child: SizedBox(
+                  width: canvasSize,
+                  height: canvasSize,
+                  child: CustomPaint(
+                    painter: ChartWheelPainter(
+                      planets: _chart!.planets.map((k, v) => MapEntry(k, {
+                            'sign': v.sign,
+                            'degree': _parseDegreeFromFormatted(v.formatted),
+                            'isRetrograde': v.isRetrograde,
+                          })),
+                      ascendantSign: _chart!.risingSign,
+                      ascDegree: _parseDegreeFromFormatted(_chart!.risingFormatted),
+                      mcSign: _chart!.planets['mc']?.sign ?? 'Kova',
+                      mcDegree: _parseDegreeFromFormatted(_chart!.planets['mc']?.formatted ?? '14°30\' Kova'),
+                    ),
+                  ),
+                ),
+              );
+            },
           ),
           const SizedBox(height: 16),
 
@@ -795,53 +803,61 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Text(
-                            _getPlanetSymbol(entry.key),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: AppColors.starlightGold,
-                            ),
-                          ),
-                          const SizedBox(width: 10),
-                          Text(
-                            _getTurkishPlanetName(entry.key),
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          if (p.isRetrograde) ...[
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 6, vertical: 1),
-                              decoration: BoxDecoration(
-                                color: AppColors.savageRed
-                                    .withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(4),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Text(
+                              _getPlanetSymbol(entry.key),
+                              style: const TextStyle(
+                                fontSize: 16,
+                                color: AppColors.starlightGold,
                               ),
-                              child: const Text('Geri Hareket',
-                                  style: TextStyle(
-                                      fontSize: 8.5,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.savageRed)),
                             ),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                _getTurkishPlanetName(entry.key),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 13,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                            ),
+                            if (p.isRetrograde) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 5, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: AppColors.savageRed
+                                      .withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text('Rx (Geri)',
+                                    style: TextStyle(
+                                        fontSize: 8.5,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.savageRed)),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Row(
+                        mainAxisSize: MainAxisSize.min,
                         children: [
                           Text(
                             '${p.sign} (${p.formatted})',
                             style: const TextStyle(
-                              fontSize: 12,
+                              fontSize: 11.5,
                               color: AppColors.textSecondary,
                             ),
                           ),
-                          const SizedBox(width: 6),
+                          const SizedBox(width: 4),
                           const Icon(Icons.arrow_forward_ios_rounded,
                               size: 11, color: AppColors.textMuted),
                         ],
@@ -945,10 +961,13 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'HARİTANIZLA KAVUŞUM YAPAN SABİT YILDIZLAR',
-                style: Theme.of(context).textTheme.labelSmall,
+              Expanded(
+                child: Text(
+                  'HARİTANIZLA KAVUŞUM YAPAN SABİT YILDIZLAR',
+                  style: Theme.of(context).textTheme.labelSmall,
+                ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
@@ -1019,25 +1038,31 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                   children: [
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                      crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Row(
-                          children: [
-                            Text(
-                              _getPlanetSymbol(hit['planet'] as String),
-                              style: const TextStyle(
-                                  fontSize: 18, color: AppColors.starlightGold),
-                            ),
-                            const SizedBox(width: 8),
-                            Text(
-                              '${_getTurkishPlanetName(hit['planet'] as String)} ☌ ${star.name}',
-                              style: const TextStyle(
-                                fontSize: 14.5,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                        Expanded(
+                          child: Row(
+                            children: [
+                              Text(
+                                _getPlanetSymbol(hit['planet'] as String),
+                                style: const TextStyle(
+                                    fontSize: 18, color: AppColors.starlightGold),
                               ),
-                            ),
-                          ],
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  '${_getTurkishPlanetName(hit['planet'] as String)} ☌ ${star.name}',
+                                  style: const TextStyle(
+                                    fontSize: 14.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
                         ),
+                        const SizedBox(width: 8),
                         Container(
                           padding: const EdgeInsets.symmetric(
                               horizontal: 8, vertical: 3),
@@ -1058,7 +1083,10 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                       ],
                     ),
                     const SizedBox(height: 6),
-                    Row(
+                    Wrap(
+                      spacing: 10,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
                         Text(
                           '${star.degree.toInt()}° ${star.sign} (${hit['formatted']})',
@@ -1068,7 +1096,6 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                             color: AppColors.starlightGold,
                           ),
                         ),
-                        const SizedBox(width: 10),
                         Text(
                           'Yönetici: ${star.rulingPlanets}',
                           style: const TextStyle(
@@ -1521,25 +1548,30 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Icon(
-                        interceptedList.isNotEmpty ? Icons.lock_outline_rounded : Icons.lock_open_rounded,
-                        color: interceptedList.isNotEmpty ? AppColors.starlightGold : AppColors.pastelMint,
-                        size: 18,
-                      ),
-                      const SizedBox(width: 8),
-                      const Text(
-                        'KISTIRILMIŞ BURÇLAR (INTERCEPTED SIGNS)',
-                        style: TextStyle(
-                          fontSize: 12.5,
-                          fontWeight: FontWeight.bold,
-                          letterSpacing: 0.5,
-                          color: Colors.white,
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Icon(
+                          interceptedList.isNotEmpty ? Icons.lock_outline_rounded : Icons.lock_open_rounded,
+                          color: interceptedList.isNotEmpty ? AppColors.starlightGold : AppColors.pastelMint,
+                          size: 18,
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 8),
+                        const Expanded(
+                          child: Text(
+                            'KISTIRILMIŞ BURÇLAR (INTERCEPTED SIGNS)',
+                            style: TextStyle(
+                              fontSize: 12.5,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                              color: Colors.white,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                     decoration: BoxDecoration(
@@ -1640,26 +1672,34 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
         ),
 
         // --- 3. 12 PLACIDUS EV LİSTESİ ---
-        Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Text(
-              '12 EV ANALİZİ (PLACIDUS AKS & YÖNETİCİLER)',
-              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                    letterSpacing: 0.8,
-                    fontWeight: FontWeight.bold,
-                  ),
-            ),
-            const Row(
+            Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
-                Icon(Icons.touch_app_rounded,
-                    size: 14, color: AppColors.starlightGold),
-                SizedBox(width: 4),
+                Expanded(
+                  child: Text(
+                    '12 EV ANALİZİ (PLACIDUS AKS & YÖNETİCİLER)',
+                    style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                          letterSpacing: 0.8,
+                          fontWeight: FontWeight.bold,
+                        ),
+                  ),
+                ),
+              ],
+            ),
+            const SizedBox(height: 4),
+            Row(
+              children: [
+                const Icon(Icons.touch_app_rounded,
+                    size: 13, color: AppColors.starlightGold),
+                const SizedBox(width: 4),
                 Text(
-                  'Detay için dokun',
+                  'Detaylar için ev kartına dokunun',
                   style: TextStyle(
                     fontSize: 11,
-                    color: AppColors.starlightGold,
+                    color: AppColors.starlightGold.withValues(alpha: 0.9),
                     fontWeight: FontWeight.w600,
                   ),
                 ),
@@ -2840,6 +2880,148 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
     );
   }
 
+  // --- VIP Locked Fixed Stars View (Sabit Yıldızlar Kilidi) ---
+  Widget _buildVipLockedFixedStarsView() {
+    return Center(
+      child: SingleChildScrollView(
+        padding: const EdgeInsets.all(24),
+        child: Container(
+          padding: const EdgeInsets.all(24),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              begin: Alignment.topLeft,
+              end: Alignment.bottomRight,
+              colors: [
+                const Color(0xFF2C1A4D).withValues(alpha: 0.95),
+                const Color(0xFF140E24).withValues(alpha: 0.98),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(24),
+            border: Border.all(
+              color: AppColors.starlightGold.withValues(alpha: 0.6),
+              width: 1.5,
+            ),
+            boxShadow: [
+              BoxShadow(
+                color: AppColors.starlightGold.withValues(alpha: 0.15),
+                blurRadius: 24,
+                spreadRadius: 2,
+              ),
+            ],
+          ),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Container(
+                width: 68,
+                height: 68,
+                decoration: BoxDecoration(
+                  shape: BoxShape.circle,
+                  color: AppColors.starlightGold.withValues(alpha: 0.15),
+                  border: Border.all(color: AppColors.starlightGold, width: 2),
+                ),
+                child: const Icon(
+                  Icons.stars_rounded,
+                  size: 34,
+                  color: AppColors.starlightGold,
+                ),
+              ),
+              const SizedBox(height: 18),
+              const Text(
+                'SABİT YILDIZLAR & KOZMİK HİZALANMALAR',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 15.5,
+                  fontWeight: FontWeight.bold,
+                  letterSpacing: 1.1,
+                  color: AppColors.starlightGold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Doğum haritanızdaki gezegenlerin gökyüzünün en kudretli kadim sabit yıldızlarıyla (Sirius, Aldebaran, Regulus, Antares, Spica, Algol vb.) kurduğu kavuşumlar ve kader kapıları VIP üyelerimize özel derin astrolojik analizlerdir.',
+                textAlign: TextAlign.center,
+                style: TextStyle(
+                  fontSize: 12.5,
+                  height: 1.5,
+                  color: Colors.white70,
+                ),
+              ),
+              const SizedBox(height: 18),
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.black26,
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: const Column(
+                  children: [
+                    Row(
+                      children: [
+                        Icon(Icons.check_circle_rounded, size: 16, color: AppColors.pastelMint),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            '1° toleranslı hassas Kraliyet Yıldızları & Behenian analizi',
+                            style: TextStyle(fontSize: 11.5, color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(Icons.check_circle_rounded, size: 16, color: AppColors.pastelMint),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Talih, şan, iktidar ve karma uyarıları taşıyan kozmik etkiler',
+                            style: TextStyle(fontSize: 11.5, color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                    SizedBox(height: 6),
+                    Row(
+                      children: [
+                        Icon(Icons.check_circle_rounded, size: 16, color: AppColors.pastelMint),
+                        SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            'Sabit yıldızların gezegenleriniz üzerindeki kader mühürleri',
+                            style: TextStyle(fontSize: 11.5, color: Colors.white),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 22),
+              ElevatedButton.icon(
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.starlightGold,
+                  foregroundColor: Colors.black87,
+                  padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 13),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+                onPressed: () => _showVipCodeModal(context),
+                icon: const Icon(Icons.stars_rounded, size: 20),
+                label: const Text(
+                  'VIP Üyeliğe Yükselt / Kod Gir',
+                  style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+
   void _showVipCodeModal(BuildContext context) {
     final controller = TextEditingController();
     showDialog(
@@ -2984,13 +3166,16 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                'HARİTANIZA GÖRE ÇAKRA DURUMU',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      letterSpacing: 0.8,
-                      fontWeight: FontWeight.bold,
-                    ),
+              Expanded(
+                child: Text(
+                  'HARİTANIZA GÖRE ÇAKRA DURUMU',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        letterSpacing: 0.8,
+                        fontWeight: FontWeight.bold,
+                      ),
+                ),
               ),
+              const SizedBox(width: 8),
               const Row(
                 children: [
                   Icon(Icons.touch_app_rounded, size: 14, color: AppColors.pastelMint),
@@ -3033,50 +3218,55 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Row(
-                    children: [
-                      Container(
-                        width: 32,
-                        height: 32,
-                        decoration: BoxDecoration(
-                          color: c.color.withValues(alpha: 0.2),
-                          shape: BoxShape.circle,
-                          border: Border.all(color: c.color, width: 1.5),
-                        ),
-                        child: Center(
-                          child: Text(
-                            '${c.number}',
-                            style: TextStyle(
-                              fontSize: 14,
-                              fontWeight: FontWeight.bold,
-                              color: c.color,
+                  Expanded(
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 32,
+                          height: 32,
+                          decoration: BoxDecoration(
+                            color: c.color.withValues(alpha: 0.2),
+                            shape: BoxShape.circle,
+                            border: Border.all(color: c.color, width: 1.5),
+                          ),
+                          child: Center(
+                            child: Text(
+                              '${c.number}',
+                              style: TextStyle(
+                                fontSize: 14,
+                                fontWeight: FontWeight.bold,
+                                color: c.color,
+                              ),
                             ),
                           ),
                         ),
-                      ),
-                      const SizedBox(width: 10),
-                      Column(
-                        crossAxisAlignment: CrossAxisAlignment.start,
-                        children: [
-                          Text(
-                            c.name,
-                            style: const TextStyle(
-                              fontSize: 14.5,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                c.name,
+                                style: const TextStyle(
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
+                              Text(
+                                c.sanskritName,
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  color: c.color.withValues(alpha: 0.9),
+                                ),
+                              ),
+                            ],
                           ),
-                          Text(
-                            c.sanskritName,
-                            style: TextStyle(
-                              fontSize: 11,
-                              color: c.color.withValues(alpha: 0.9),
-                            ),
-                          ),
-                        ],
-                      ),
-                    ],
+                        ),
+                      ],
+                    ),
                   ),
+                  const SizedBox(width: 8),
                   Container(
                     padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 3),
                     decoration: BoxDecoration(
@@ -3102,9 +3292,11 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                 children: [
                   const Icon(Icons.stars_rounded, size: 14, color: AppColors.starlightGold),
                   const SizedBox(width: 5),
-                  Text(
-                    'Gezegen: ${c.rulingPlanets} (${c.element})',
-                    style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: AppColors.starlightGold),
+                  Expanded(
+                    child: Text(
+                      'Gezegen: ${c.rulingPlanets} (${c.element})',
+                      style: const TextStyle(fontSize: 11.5, fontWeight: FontWeight.bold, color: AppColors.starlightGold),
+                    ),
                   ),
                 ],
               ),
@@ -4788,14 +4980,18 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              Text(
-                '10 KUTSAL SEFİRA & GEZEGEN KARŞILIKLARI',
-                style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                      color: AppColors.starlightGold,
-                      letterSpacing: 1.1,
-                    ),
+              Expanded(
+                child: Text(
+                  '10 KUTSAL SEFİRA & GEZEGEN KARŞILIKLARI',
+                  style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                        color: AppColors.starlightGold,
+                        letterSpacing: 1.1,
+                      ),
+                ),
               ),
+              const SizedBox(width: 8),
               const Row(
+                mainAxisSize: MainAxisSize.min,
                 children: [
                   Icon(Icons.touch_app_rounded, size: 13, color: AppColors.starlightGold),
                   SizedBox(width: 4),

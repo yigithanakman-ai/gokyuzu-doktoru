@@ -270,14 +270,17 @@ class _SynastryModalContentState extends State<SynastryModalContent> {
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
-                          const Text(
-                            'Karşılaştırılacak Haritaları Seçin',
-                            style: TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                          const Expanded(
+                            child: Text(
+                              'Karşılaştırılacak Haritaları Seçin',
+                              style: TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
                           ),
+                          const SizedBox(width: 8),
                           InkWell(
                             onTap: () {
                               Navigator.of(context).pop();
@@ -427,20 +430,23 @@ class _SynastryModalContentState extends State<SynastryModalContent> {
                           borderRadius: BorderRadius.circular(22),
                           border: Border.all(color: AppColors.pastelPink),
                         ),
-                        child: Row(
-                          mainAxisSize: MainAxisSize.min,
-                          children: [
-                            const Icon(Icons.stars_rounded, color: Colors.amber, size: 18),
-                            const SizedBox(width: 8),
-                            Text(
-                              'Genel Uyum Skoru: %$score (Kozmik Rezonans)',
-                              style: const TextStyle(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                        child: FittedBox(
+                          fit: BoxFit.scaleDown,
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              const Icon(Icons.stars_rounded, color: Colors.amber, size: 18),
+                              const SizedBox(width: 8),
+                              Text(
+                                'Genel Uyum Skoru: %$score (Kozmik Rezonans)',
+                                style: const TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                       ),
                     ],

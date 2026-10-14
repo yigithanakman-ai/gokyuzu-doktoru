@@ -185,128 +185,122 @@ class _HomeScreenState extends State<HomeScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Column(
-                    crossAxisAlignment: CrossAxisAlignment.start,
-                    children: [
-                      Text(
-                        'KOZMİK DOKTOR',
-                        style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                              color: AppColors.pastelLavender,
-                              letterSpacing: 1.5,
-                            ),
-                      ),
-                      const SizedBox(height: 2),
-                      Text(
-                        'Merhaba, ${_capitalize(widget.profile.name)}',
-                        style: Theme.of(context)
-                            .textTheme
-                            .displayMedium
-                            ?.copyWith(fontSize: 22),
-                      ),
-                      const SizedBox(height: 6),
-                      InkWell(
-                        onTap: () async {
-                          await Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => ProfileScreen(profile: widget.profile),
-                            ),
-                          );
-                          _checkVipStatus();
-                        },
-                        borderRadius: BorderRadius.circular(20),
-                        child: Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                          decoration: BoxDecoration(
-                            color: _isVipUnlocked
-                                ? const Color(0xFFFFD700).withAlpha(35)
-                                : Colors.white.withAlpha(16),
-                            borderRadius: BorderRadius.circular(20),
-                            border: Border.all(
-                              color: _isVipUnlocked
-                                  ? const Color(0xFFFFD700).withAlpha(140)
-                                  : Colors.white24,
-                              width: 1,
-                            ),
-                          ),
-                          child: Row(
-                            mainAxisSize: MainAxisSize.min,
-                            children: [
-                              Icon(
-                                _isVipUnlocked
-                                    ? Icons.stars_rounded
-                                    : Icons.account_circle_outlined,
-                                size: 14,
-                                color: _isVipUnlocked
-                                    ? const Color(0xFFFFD700)
-                                    : AppColors.pastelLavender,
+                  Expanded(
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text(
+                          'KOZMİK DOKTOR',
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                color: AppColors.pastelLavender,
+                                letterSpacing: 1.5,
                               ),
-                              const SizedBox(width: 5),
-                              Text(
-                                _isVipUnlocked
-                                    ? 'VIP Profil & Üyelik'
-                                    : 'Profil & Giriş / Kayıt',
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.bold,
+                        ),
+                        const SizedBox(height: 2),
+                        Text(
+                          'Merhaba, ${_capitalize(widget.profile.name)}',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context)
+                              .textTheme
+                              .displayMedium
+                              ?.copyWith(fontSize: 22),
+                        ),
+                        const SizedBox(height: 6),
+                        InkWell(
+                          onTap: () async {
+                            await Navigator.of(context).push(
+                              MaterialPageRoute(
+                                builder: (_) => ProfileScreen(profile: widget.profile),
+                              ),
+                            );
+                            _checkVipStatus();
+                          },
+                          borderRadius: BorderRadius.circular(20),
+                          child: Container(
+                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                            decoration: BoxDecoration(
+                              color: _isVipUnlocked
+                                  ? const Color(0xFFFFD700).withAlpha(35)
+                                  : Colors.white.withAlpha(16),
+                              borderRadius: BorderRadius.circular(20),
+                              border: Border.all(
+                                color: _isVipUnlocked
+                                    ? const Color(0xFFFFD700).withAlpha(140)
+                                    : Colors.white24,
+                                width: 1,
+                              ),
+                            ),
+                            child: Row(
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                Icon(
+                                  _isVipUnlocked
+                                      ? Icons.stars_rounded
+                                      : Icons.account_circle_outlined,
+                                  size: 14,
                                   color: _isVipUnlocked
                                       ? const Color(0xFFFFD700)
-                                      : Colors.white,
+                                      : AppColors.pastelLavender,
                                 ),
-                              ),
-                              const SizedBox(width: 4),
-                              const Icon(
-                                Icons.arrow_forward_ios_rounded,
-                                size: 10,
-                                color: Colors.white54,
-                              ),
-                            ],
+                                const SizedBox(width: 5),
+                                Text(
+                                  _isVipUnlocked
+                                      ? 'VIP Profil & Üyelik'
+                                      : 'Profil & Giriş / Kayıt',
+                                  style: TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: _isVipUnlocked
+                                        ? const Color(0xFFFFD700)
+                                        : Colors.white,
+                                  ),
+                                ),
+                                const SizedBox(width: 4),
+                                const Icon(
+                                  Icons.arrow_forward_ios_rounded,
+                                  size: 10,
+                                  color: Colors.white54,
+                                ),
+                              ],
+                            ),
                           ),
                         ),
-                      ),
-                    ],
+                      ],
+                    ),
                   ),
-                  Row(
-                    children: [
-                      IconButton(
-                        onPressed: () async {
-                          await Navigator.of(context).push(
-                            MaterialPageRoute(
-                              builder: (_) => ProfileScreen(profile: widget.profile),
-                            ),
-                          );
-                          _checkVipStatus();
-                        },
-                        icon: Icon(
-                          _isVipUnlocked ? Icons.stars_rounded : Icons.person_rounded,
+                  const SizedBox(width: 8),
+                  IconButton(
+                    onPressed: () async {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => ProfileScreen(profile: widget.profile),
+                        ),
+                      );
+                      _checkVipStatus();
+                    },
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: _isVipUnlocked
+                            ? const Color(0xFFFFD700).withAlpha(35)
+                            : Colors.white10,
+                        border: Border.all(
                           color: _isVipUnlocked
-                              ? const Color(0xFFFFD700)
-                              : AppColors.pastelLavender,
+                              ? const Color(0xFFFFD700).withAlpha(150)
+                              : Colors.white24,
                         ),
-                        tooltip: 'Profil & Üyelik İşlemleri',
                       ),
-                      IconButton(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const ArchiveScreen()),
-                        ),
-                        icon: const Icon(Icons.folder_shared_rounded,
-                            color: AppColors.starlightGold),
-                        tooltip: 'Kozmik Harita Arşivi',
+                      child: Icon(
+                        _isVipUnlocked ? Icons.stars_rounded : Icons.person_rounded,
+                        size: 20,
+                        color: _isVipUnlocked
+                            ? const Color(0xFFFFD700)
+                            : AppColors.pastelLavender,
                       ),
-                      IconButton(
-                        onPressed: () => Navigator.of(context).push(
-                          MaterialPageRoute(builder: (_) => const CosmicNotesScreen()),
-                        ),
-                        icon: const Icon(Icons.menu_book_rounded,
-                            color: AppColors.pastelMint),
-                        tooltip: 'Kozmik Günlük & Hatırlatıcı',
-                      ),
-                      IconButton(
-                        onPressed: _handleResetProfile,
-                        icon: const Icon(Icons.refresh_rounded,
-                            color: AppColors.textMuted),
-                        tooltip: 'Haritayı Değiştir',
-                      ),
-                    ],
+                    ),
+                    tooltip: 'Profil & Üyelik İşlemleri',
                   ),
                 ],
               ),
@@ -406,7 +400,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 14),
 
-              // Quick Access: Harita Arşivi & Kozmik Günlük Cards
+              // Quick Access: Harita Arşivi, Doğum Günü & Profili Sıfırla (3 Eşit Buton)
               Row(
                 children: [
                   Expanded(
@@ -416,7 +410,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       borderRadius: BorderRadius.circular(14),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
                         decoration: BoxDecoration(
                           color: AppColors.starlightGold.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(14),
@@ -424,31 +418,30 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: AppColors.starlightGold.withValues(alpha: 0.35),
                           ),
                         ),
-                        child: const Row(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.folder_shared_rounded,
-                                size: 18, color: AppColors.starlightGold),
-                            SizedBox(width: 8),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Harita Arşivi',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  Text(
-                                    '3 Kişi Ücretsiz • Kasa',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: AppColors.starlightGold,
-                                    ),
-                                  ),
-                                ],
+                            const Icon(Icons.folder_shared_rounded,
+                                size: 20, color: AppColors.starlightGold),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Harita Arşivi',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Kayıtlılar',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 9.5,
+                                color: AppColors.starlightGold.withValues(alpha: 0.9),
                               ),
                             ),
                           ],
@@ -456,7 +449,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                   ),
-                  const SizedBox(width: 10),
+                  const SizedBox(width: 8),
                   Expanded(
                     child: InkWell(
                       onTap: () => Navigator.of(context).push(
@@ -464,7 +457,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       borderRadius: BorderRadius.circular(14),
                       child: Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
                         decoration: BoxDecoration(
                           color: AppColors.pastelMint.withValues(alpha: 0.12),
                           borderRadius: BorderRadius.circular(14),
@@ -472,31 +465,75 @@ class _HomeScreenState extends State<HomeScreen> {
                             color: AppColors.pastelMint.withValues(alpha: 0.35),
                           ),
                         ),
-                        child: const Row(
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
                           children: [
-                            Icon(Icons.auto_stories_rounded,
-                                size: 18, color: AppColors.pastelMint),
-                            SizedBox(width: 8),
-                            Expanded(
-                              child: Column(
-                                crossAxisAlignment: CrossAxisAlignment.start,
-                                children: [
-                                  Text(
-                                    'Kozmik Günlük',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: Colors.white,
-                                    ),
-                                  ),
-                                  Text(
-                                    'VIP Not & Doğum Günü',
-                                    style: TextStyle(
-                                      fontSize: 10,
-                                      color: AppColors.pastelMint,
-                                    ),
-                                  ),
-                                ],
+                            const Icon(Icons.cake_rounded,
+                                size: 20, color: AppColors.pastelMint),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Doğum Günü',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Hatırlatıcı',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 9.5,
+                                color: AppColors.pastelMint.withValues(alpha: 0.9),
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: InkWell(
+                      onTap: _handleResetProfile,
+                      borderRadius: BorderRadius.circular(14),
+                      child: Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
+                        decoration: BoxDecoration(
+                          color: AppColors.pastelLavender.withValues(alpha: 0.12),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: AppColors.pastelLavender.withValues(alpha: 0.35),
+                          ),
+                        ),
+                        child: Column(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            const Icon(Icons.refresh_rounded,
+                                size: 20, color: AppColors.pastelLavender),
+                            const SizedBox(height: 6),
+                            const Text(
+                              'Profili Sıfırla',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              'Yeni Harita',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: TextStyle(
+                                fontSize: 9.5,
+                                color: AppColors.pastelLavender.withValues(alpha: 0.9),
                               ),
                             ),
                           ],
@@ -920,7 +957,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const SizedBox(height: 14),
-                    // Direct links row
+                    // Direct links row (3 Eşit Buton)
                     Row(
                       children: [
                         // Instagram
@@ -931,7 +968,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderRadius: BorderRadius.circular(12),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  vertical: 10, horizontal: 8),
+                                  vertical: 12, horizontal: 8),
                               decoration: BoxDecoration(
                                 color: AppColors.pastelPink
                                     .withValues(alpha: 0.15),
@@ -941,22 +978,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                         .withValues(alpha: 0.4)),
                               ),
                               child: const Column(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(Icons.camera_alt_rounded,
-                                      size: 18, color: AppColors.pastelPink),
-                                  SizedBox(height: 4),
+                                      size: 20, color: AppColors.pastelPink),
+                                  SizedBox(height: 6),
                                   Text(
                                     'Instagram',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                        fontSize: 11,
+                                        fontSize: 12,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white),
-                                  ),
-                                  Text(
-                                    '@yigithan.akman',
-                                    style: TextStyle(
-                                        fontSize: 9.5,
-                                        color: AppColors.pastelPink),
                                   ),
                                 ],
                               ),
@@ -972,7 +1006,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderRadius: BorderRadius.circular(12),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  vertical: 10, horizontal: 8),
+                                  vertical: 12, horizontal: 8),
                               decoration: BoxDecoration(
                                 color: AppColors.pastelMint
                                     .withValues(alpha: 0.15),
@@ -982,22 +1016,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                         .withValues(alpha: 0.4)),
                               ),
                               child: const Column(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(Icons.chat_bubble_outline_rounded,
-                                      size: 18, color: AppColors.pastelMint),
-                                  SizedBox(height: 4),
+                                      size: 20, color: AppColors.pastelMint),
+                                  SizedBox(height: 6),
                                   Text(
                                     'WhatsApp',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                        fontSize: 11,
+                                        fontSize: 12,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white),
-                                  ),
-                                  Text(
-                                    'VIP Danışmanlık',
-                                    style: TextStyle(
-                                        fontSize: 9.5,
-                                        color: AppColors.pastelMint),
                                   ),
                                 ],
                               ),
@@ -1013,7 +1044,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderRadius: BorderRadius.circular(12),
                             child: Container(
                               padding: const EdgeInsets.symmetric(
-                                  vertical: 10, horizontal: 8),
+                                  vertical: 12, horizontal: 8),
                               decoration: BoxDecoration(
                                 color: AppColors.pastelBlue
                                     .withValues(alpha: 0.15),
@@ -1023,22 +1054,19 @@ class _HomeScreenState extends State<HomeScreen> {
                                         .withValues(alpha: 0.4)),
                               ),
                               child: const Column(
+                                mainAxisSize: MainAxisSize.min,
                                 children: [
                                   Icon(Icons.send_rounded,
-                                      size: 18, color: AppColors.pastelBlue),
-                                  SizedBox(height: 4),
+                                      size: 20, color: AppColors.pastelBlue),
+                                  SizedBox(height: 6),
                                   Text(
                                     'Telegram',
+                                    maxLines: 1,
+                                    overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
-                                        fontSize: 11,
+                                        fontSize: 12,
                                         fontWeight: FontWeight.bold,
                                         color: Colors.white),
-                                  ),
-                                  Text(
-                                    '@destek_bot',
-                                    style: TextStyle(
-                                        fontSize: 9.5,
-                                        color: AppColors.pastelBlue),
                                   ),
                                 ],
                               ),
@@ -2608,15 +2636,19 @@ class _HomeScreenState extends State<HomeScreen> {
         children: [
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              Text(
-                aspect,
-                style: const TextStyle(
-                  fontSize: 13,
-                  fontWeight: FontWeight.bold,
-                  color: Colors.white,
+              Expanded(
+                child: Text(
+                  aspect,
+                  style: const TextStyle(
+                    fontSize: 13,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.white,
+                  ),
                 ),
               ),
+              const SizedBox(width: 8),
               Container(
                 padding:
                     const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -4082,20 +4114,25 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Row(
-                      children: [
-                        Icon(Icons.verified_rounded, size: 14, color: AppColors.starlightGold),
-                        SizedBox(width: 5),
-                        Text(
-                          'Solar Fire Motoru (1 Gün = 1 Yıl)',
-                          style: TextStyle(
-                            fontSize: 12.5,
-                            fontWeight: FontWeight.bold,
-                            color: AppColors.pastelLavender,
+                    const Expanded(
+                      child: Row(
+                        children: [
+                          Icon(Icons.verified_rounded, size: 14, color: AppColors.starlightGold),
+                          SizedBox(width: 5),
+                          Expanded(
+                            child: Text(
+                              'Solar Fire Motoru (1 Gün = 1 Yıl)',
+                              style: TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.pastelLavender,
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
@@ -4142,21 +4179,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.nightlight_round, color: AppColors.starlightGold, size: 20),
-                        const SizedBox(width: 8),
-                        Text(
-                          'İLERLETİLMİŞ AY (PROGRESSED MOON)',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.8,
-                            color: AppColors.starlightGold,
+                    Expanded(
+                      child: Row(
+                        children: [
+                          const Icon(Icons.nightlight_round, color: AppColors.starlightGold, size: 20),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'İLERLETİLMİŞ AY (PROGRESSED MOON)',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.8,
+                                color: AppColors.starlightGold,
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(
@@ -4395,14 +4437,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Ortaçağ Zaman Yöneticiliği Sistemi (Al-Biruni)',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.starlightGold,
+                    const Expanded(
+                      child: Text(
+                        'Ortaçağ Zaman Yöneticiliği Sistemi (Al-Biruni)',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.starlightGold,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
@@ -4535,14 +4580,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Yaşa Göre Aktif Ev ve Lord of the Year',
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.pastelMint,
+                    const Expanded(
+                      child: Text(
+                        'Yaşa Göre Aktif Ev ve Lord of the Year',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.pastelMint,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
                       decoration: BoxDecoration(
@@ -4669,21 +4717,26 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Row(
-                      children: [
-                        const Icon(Icons.stars_rounded, color: AppColors.warningOrange, size: 20),
-                        const SizedBox(width: 8),
-                        const Text(
-                          'AKTİF SEVİYE 1 (L1) DÖNEMİ',
-                          style: TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            letterSpacing: 0.8,
-                            color: AppColors.warningOrange,
+                    const Expanded(
+                      child: Row(
+                        children: [
+                          Icon(Icons.stars_rounded, color: AppColors.warningOrange, size: 20),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              'AKTİF SEVİYE 1 (L1) DÖNEMİ',
+                              style: TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                letterSpacing: 0.8,
+                                color: AppColors.warningOrange,
+                              ),
+                            ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                    const SizedBox(width: 8),
                     Container(
                       padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
                       decoration: BoxDecoration(

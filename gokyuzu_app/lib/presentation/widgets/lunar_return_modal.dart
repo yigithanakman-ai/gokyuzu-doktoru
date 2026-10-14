@@ -306,42 +306,48 @@ class _LunarReturnModalContentState extends State<LunarReturnModalContent> {
                       const SizedBox(height: 12),
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                        crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
-                          Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                children: [
-                                  const Text(
-                                    'Aylık Yükselen (Lunar ASC)',
-                                    style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
-                                  ),
-                                  const SizedBox(width: 8),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.pastelMint.withAlpha(35),
-                                      borderRadius: BorderRadius.circular(6),
-                                      border: Border.all(color: AppColors.pastelMint.withAlpha(100), width: 0.8),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Wrap(
+                                  spacing: 6,
+                                  runSpacing: 4,
+                                  crossAxisAlignment: WrapCrossAlignment.center,
+                                  children: [
+                                    const Text(
+                                      'Aylık Yükselen (Lunar ASC)',
+                                      style: TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
                                     ),
-                                    child: Text(
-                                      'Döngü: ${lunarData['returnDate']}',
-                                      style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: AppColors.pastelMint),
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.pastelMint.withAlpha(35),
+                                        borderRadius: BorderRadius.circular(6),
+                                        border: Border.all(color: AppColors.pastelMint.withAlpha(100), width: 0.8),
+                                      ),
+                                      child: Text(
+                                        'Döngü: ${lunarData['returnDate']}',
+                                        style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: AppColors.pastelMint),
+                                      ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 2),
-                              Text(
-                                lunarData['ascSign'],
-                                style: const TextStyle(
-                                  fontSize: 18,
-                                  fontWeight: FontWeight.bold,
-                                  color: AppColors.pastelBlue,
+                                  ],
                                 ),
-                              ),
-                            ],
+                                const SizedBox(height: 2),
+                                Text(
+                                  lunarData['ascSign'],
+                                  style: const TextStyle(
+                                    fontSize: 18,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.pastelBlue,
+                                  ),
+                                ),
+                              ],
+                            ),
                           ),
+                          const SizedBox(width: 8),
                           Container(
                             padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                             decoration: BoxDecoration(
