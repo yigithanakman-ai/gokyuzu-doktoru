@@ -51,27 +51,8 @@ jobs:
       - name: Release APK ve Play Store App Bundle (AAB) Derle
         run: |
           cd gokyuzu_app
-          flutter build apk --release --no-tree-shake-icons > /tmp/build_apk.log 2>&1
-          flutter build appbundle --release --no-tree-shake-icons > /tmp/build_aab.log 2>&1
-
-      - name: Debug Loglarini Push Et
-        if: always()
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git checkout -B debug-build-log
-          cp /tmp/build_*.log ./ 2>/dev/null || true
-          git add build_*.log 2>/dev/null || true
-          git commit -m "chore: debug build logs" || true
-          git push -f origin debug-build-log || true
-
-      - name: Build Kontrol
-        run: |
-          if [ ! -f "gokyuzu_app/build/app/outputs/flutter-apk/app-release.apk" ]; then
-            echo "APK build failed!"
-            cat /tmp/build_apk.log | tail -n 50
-            exit 1
-          fi
+          flutter build apk --release --no-tree-shake-icons
+          flutter build appbundle --release --no-tree-shake-icons
 
       - name: Dağıtım Dosyalarını Kopyala
         run: |
