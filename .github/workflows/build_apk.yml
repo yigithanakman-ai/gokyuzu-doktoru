@@ -34,18 +34,19 @@ jobs:
           cd gokyuzu_app
           flutter pub get
 
-      - name: Dijital İmza (Keystore) Kurulumu
+      - name: Resmi Dijital İmza (Upload Keystore) Otomatik Kurulumu
         run: |
-          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
-            echo "GitHub Secret bulundu, resmi imza dosyası yükleniyor..."
-            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > gokyuzu_app/android/app/upload-keystore.jks
-            echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > gokyuzu_app/android/key.properties
-            echo "keyPassword=${{ secrets.KEYSTORE_PASSWORD }}" >> gokyuzu_app/android/key.properties
-            echo "keyAlias=upload" >> gokyuzu_app/android/key.properties
-            echo "storeFile=upload-keystore.jks" >> gokyuzu_app/android/key.properties
-          else
-            echo "GitHub Secret henüz tanımlanmamış, derleme hazır yapılandırma ile devam ediyor."
-          fi
+          mkdir -p gokyuzu_app/android/app
+          cat << 'EOF' | base64 -d > gokyuzu_app/android/app/upload-keystore.jks
+          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
+          EOF
+          cat << 'EOF' > gokyuzu_app/android/key.properties
+          storePassword=GokyuzuDoktoru2026!UploadKey
+          keyPassword=GokyuzuDoktoru2026!UploadKey
+          keyAlias=upload
+          storeFile=upload-keystore.jks
+          EOF
+          echo "Resmi imza dosyaları GitHub sunucusuna başarıyla yüklendi ve bağlandı."
 
       - name: Release APK ve Play Store App Bundle (AAB) Derle
         run: |
@@ -76,8 +77,8 @@ jobs:
           body: |
             ### 🪐 Gökyüzü Doktoru Android Sürümleri
 
-            - **`gokyuzu-doktoru.apk`**: Kendi Android telefonunuzda doğrudan test edip kullanmak için yükleme dosyası.
-            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi.
+            - **`gokyuzu-doktoru.apk`**: Kendi Android telefonunuzda doğrudan test edip kullanmak için yükleme dosyası (İmzalı).
+            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı).
 
             #### 📲 Telefona Nasıl Yüklenir (APK)?
             1. Aşağıdaki **Assets** bölümünden **`gokyuzu-doktoru.apk`** dosyasına dokunun ve telefonunuza indirin.
