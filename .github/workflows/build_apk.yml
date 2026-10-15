@@ -51,8 +51,20 @@ jobs:
       - name: Release APK ve Play Store App Bundle (AAB) Derle
         run: |
           cd gokyuzu_app
-          flutter build apk --release --no-tree-shake-icons -v
-          flutter build appbundle --release --no-tree-shake-icons -v
+          flutter build apk --release --no-tree-shake-icons 2>&1 | tee /tmp/build_apk.log || {
+            echo "## APK Derleme Hatası" >> $GITHUB_STEP_SUMMARY
+            echo '```text' >> $GITHUB_STEP_SUMMARY
+            tail -n 60 /tmp/build_apk.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            exit 1
+          }
+          flutter build appbundle --release --no-tree-shake-icons 2>&1 | tee /tmp/build_aab.log || {
+            echo "## AAB Derleme Hatası" >> $GITHUB_STEP_SUMMARY
+            echo '```text' >> $GITHUB_STEP_SUMMARY
+            tail -n 60 /tmp/build_aab.log >> $GITHUB_STEP_SUMMARY
+            echo '```' >> $GITHUB_STEP_SUMMARY
+            exit 1
+          }
 
       - name: Dağıtım Dosyalarını Kopyala
         run: |
