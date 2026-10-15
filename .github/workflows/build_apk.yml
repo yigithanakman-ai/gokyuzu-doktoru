@@ -1,4 +1,4 @@
-name: Android APK Derle ve Yayınla
+name: Android APK ve Play Store AAB Derle ve Yayınla
 
 on:
   push:
@@ -6,8 +6,8 @@ on:
   workflow_dispatch:
 
 jobs:
-  build-apk:
-    name: Android APK Build
+  build-android:
+    name: Android APK ve AAB Build
     runs-on: ubuntu-latest
     permissions:
       contents: write
@@ -34,36 +34,43 @@ jobs:
           cd gokyuzu_app
           flutter pub get
 
-      - name: Release APK Derle
+      - name: Release APK ve Play Store App Bundle (AAB) Derle
         run: |
           cd gokyuzu_app
           flutter build apk --release --no-tree-shake-icons
+          flutter build appbundle --release --no-tree-shake-icons
 
-      - name: APK Dosyasını Kopyala
+      - name: Dağıtım Dosyalarını Kopyala
         run: |
           cp gokyuzu_app/build/app/outputs/flutter-apk/app-release.apk ./gokyuzu-doktoru.apk
+          cp gokyuzu_app/build/app/outputs/bundle/release/app-release.aab ./gokyuzu-doktoru.aab
 
       - name: Artifact Olarak Yükle (GitHub Actions İndirme)
         uses: actions/upload-artifact@v4
         with:
-          name: gokyuzu-doktoru-apk
-          path: gokyuzu-doktoru.apk
+          name: gokyuzu-doktoru-builds
+          path: |
+            gokyuzu-doktoru.apk
+            gokyuzu-doktoru.aab
           retention-days: 30
 
-      - name: GitHub Release Olarak Yayınla (Doğrudan Telefona İndirme)
+      - name: GitHub Release Olarak Yayınla (Doğrudan İndirme ve Play Store)
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
           tag_name: v1.0.0-apk
-          name: "📱 Gökyüzü Doktoru - Test APK (v1.0.0)"
+          name: "📱 Gökyüzü Doktoru - Test APK ve Play Store AAB (v1.0.0)"
           body: |
-            ### 🪐 Gökyüzü Doktoru Android Test Sürümü
+            ### 🪐 Gökyüzü Doktoru Android Sürümleri
 
-            Bu APK dosyası, uygulamanızı Google Play Store'a göndermeden önce kendi Android cep telefonunuzda test etmeniz için otomatik olarak üretilmiştir.
+            - **`gokyuzu-doktoru.apk`**: Kendi Android telefonunuzda doğrudan test edip kullanmak için yükleme dosyası.
+            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi.
 
-            #### 📲 Telefona Nasıl Yüklenir?
+            #### 📲 Telefona Nasıl Yüklenir (APK)?
             1. Aşağıdaki **Assets** bölümünden **`gokyuzu-doktoru.apk`** dosyasına dokunun ve telefonunuza indirin.
             2. Telefonunuzun bildirim panelinden veya Dosya Yöneticisi'nden indirilen dosyaya dokunun.
-            3. Eğer "Bilinmeyen kaynaklardan yüklemeye izin verilsin mi?" uyarısı çıkarsa **İzin Ver / Aç** seçeneğini seçin.
+            3. "Bilinmeyen kaynaklardan yüklemeye izin verilsin mi?" uyarısı çıkarsa **İzin Ver / Aç** seçeneğini seçin.
             4. **Yükle** butonuna basın ve uygulamayı açın!
-          files: gokyuzu-doktoru.apk
+          files: |
+            gokyuzu-doktoru.apk
+            gokyuzu-doktoru.aab

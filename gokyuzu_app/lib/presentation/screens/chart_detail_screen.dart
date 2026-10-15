@@ -1037,29 +1037,35 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.starlightGold.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            _getPlanetSymbol(hit['planet'] as String),
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.starlightGold,
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 8),
                         Expanded(
-                          child: Row(
-                            children: [
-                              Text(
-                                _getPlanetSymbol(hit['planet'] as String),
-                                style: const TextStyle(
-                                    fontSize: 18, color: AppColors.starlightGold),
-                              ),
-                              const SizedBox(width: 8),
-                              Expanded(
-                                child: Text(
-                                  '${_getTurkishPlanetName(hit['planet'] as String)} ☌ ${star.name}',
-                                  style: const TextStyle(
-                                    fontSize: 14.5,
-                                    fontWeight: FontWeight.bold,
-                                    color: Colors.white,
-                                  ),
-                                ),
-                              ),
-                            ],
+                          child: Text(
+                            '${_getTurkishPlanetName(hit['planet'] as String)} ☌ ${star.name}',
+                            style: const TextStyle(
+                              fontSize: 13.5,
+                              fontWeight: FontWeight.bold,
+                              color: Colors.white,
+                              height: 1.25,
+                            ),
+                            maxLines: 2,
+                            overflow: TextOverflow.ellipsis,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -1166,6 +1172,8 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                       children: [
                         Text(
                           'Transit ${t.name} (${t.degreeStr}) ☌ ${star.name}',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -1218,31 +1226,35 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
                   Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Row(
-                        children: [
-                          Icon(Icons.star_rounded, size: 16, color: color),
-                          const SizedBox(width: 6),
-                          Text(
-                            star.name,
-                            style: const TextStyle(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                      Icon(Icons.star_rounded, size: 16, color: color),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Wrap(
+                          spacing: 6,
+                          crossAxisAlignment: WrapCrossAlignment.center,
+                          children: [
+                            Text(
+                              star.name,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            '${star.degree.toInt()}° ${star.sign}',
-                            style: const TextStyle(
-                              fontSize: 11.5,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.starlightGold,
+                            Text(
+                              '${star.degree.toInt()}° ${star.sign}',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.starlightGold,
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Container(
                         padding: const EdgeInsets.symmetric(
                             horizontal: 6, vertical: 2),

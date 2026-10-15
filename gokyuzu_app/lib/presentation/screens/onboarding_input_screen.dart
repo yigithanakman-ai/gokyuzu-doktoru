@@ -492,27 +492,27 @@ class _OnboardingInputScreenState extends State<OnboardingInputScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20, vertical: 16),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.calendar_today_outlined,
-                                color: AppColors.pastelPink, size: 20),
-                            const SizedBox(width: 14),
-                            Text(
-                              dateStr,
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: _selectedDate == null
-                                    ? FontWeight.w400
-                                    : FontWeight.w600,
-                                color: _selectedDate == null
-                                    ? AppColors.textSecondary
-                                    : AppColors.textPrimary,
-                              ),
+                        const Icon(Icons.calendar_today_outlined,
+                            color: AppColors.pastelPink, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            dateStr,
+                            style: TextStyle(
+                              fontSize: 14.5,
+                              fontWeight: _selectedDate == null
+                                  ? FontWeight.w400
+                                  : FontWeight.w600,
+                              color: _selectedDate == null
+                                  ? AppColors.textSecondary
+                                  : AppColors.textPrimary,
                             ),
-                          ],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
+                        const SizedBox(width: 8),
                         const Icon(Icons.arrow_drop_down,
                             color: AppColors.pastelLavender),
                       ],
@@ -534,27 +534,27 @@ class _OnboardingInputScreenState extends State<OnboardingInputScreen> {
                     padding: const EdgeInsets.symmetric(
                         horizontal: 20, vertical: 16),
                     child: Row(
-                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.access_time_outlined,
-                                color: AppColors.pastelMint, size: 20),
-                            const SizedBox(width: 14),
-                            Text(
-                              timeStr,
-                              style: TextStyle(
-                                fontSize: 15,
-                                fontWeight: _selectedTime == null
-                                    ? FontWeight.w400
-                                    : FontWeight.w600,
-                                color: _selectedTime == null
-                                    ? AppColors.textSecondary
-                                    : AppColors.textPrimary,
-                              ),
+                        const Icon(Icons.access_time_outlined,
+                            color: AppColors.pastelMint, size: 20),
+                        const SizedBox(width: 12),
+                        Expanded(
+                          child: Text(
+                            timeStr,
+                            style: TextStyle(
+                              fontSize: 14.5,
+                              fontWeight: _selectedTime == null
+                                  ? FontWeight.w400
+                                  : FontWeight.w600,
+                              color: _selectedTime == null
+                                  ? AppColors.textSecondary
+                                  : AppColors.textPrimary,
                             ),
-                          ],
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                          ),
                         ),
+                        const SizedBox(width: 8),
                         const Icon(Icons.arrow_drop_down,
                             color: AppColors.pastelLavender),
                       ],

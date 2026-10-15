@@ -347,27 +347,41 @@ class KvkkDialog {
                   padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
                   children: [
                     ...sections.map((sec) => _buildSectionCard(sec)),
-                    const SizedBox(height: 16),
-                    SizedBox(
-                      width: double.infinity,
-                      height: 46,
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: color,
-                          foregroundColor: Colors.black,
-                          shape: RoundedRectangleBorder(
-                            borderRadius: BorderRadius.circular(12),
-                          ),
+                    const SizedBox(height: 8),
+                  ],
+                ),
+              ),
+              // Sabit Alt Çubuk (Sistem çubuğundan asla kesilmez)
+              SafeArea(
+                top: false,
+                bottom: true,
+                child: Container(
+                  padding: const EdgeInsets.fromLTRB(20, 10, 20, 16),
+                  decoration: BoxDecoration(
+                    color: const Color(0xFF13111C),
+                    border: Border(
+                      top: BorderSide(color: Colors.white.withValues(alpha: 0.08)),
+                    ),
+                  ),
+                  child: SizedBox(
+                    width: double.infinity,
+                    height: 48,
+                    child: ElevatedButton(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: color,
+                        foregroundColor: Colors.black,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
                         ),
-                        onPressed: () => Navigator.of(ctx).pop(),
-                        child: const Text(
-                          'Okudum ve Anladım',
-                          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14),
-                        ),
+                        elevation: 0,
+                      ),
+                      onPressed: () => Navigator.of(ctx).pop(),
+                      child: const Text(
+                        'Okudum ve Anladım',
+                        style: TextStyle(fontWeight: FontWeight.bold, fontSize: 15),
                       ),
                     ),
-                    const SizedBox(height: 16),
-                  ],
+                  ),
                 ),
               ),
             ],
