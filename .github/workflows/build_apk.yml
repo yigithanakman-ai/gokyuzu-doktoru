@@ -51,8 +51,8 @@ jobs:
       - name: Release APK ve Play Store App Bundle (AAB) Derle
         run: |
           cd gokyuzu_app
-          flutter build apk --release --no-tree-shake-icons > /tmp/build_apk.log 2>&1 || true
-          flutter build appbundle --release --no-tree-shake-icons > /tmp/build_aab.log 2>&1 || true
+          flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation > /tmp/build_apk.log 2>&1 || true
+          flutter build appbundle --release --no-tree-shake-icons --android-skip-build-dependency-validation > /tmp/build_aab.log 2>&1 || true
 
       - name: Debug Loglarini Push Et
         if: always()
