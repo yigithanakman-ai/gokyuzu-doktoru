@@ -26,7 +26,7 @@ android {
     defaultConfig {
         applicationId = "com.gokyuzudoktoru.gokyuzu_app"
         minSdk = 21
-        targetSdk = 35
+        targetSdk = 36
         versionCode = flutter.versionCode
         versionName = flutter.versionName
     }
