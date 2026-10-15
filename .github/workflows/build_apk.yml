@@ -34,6 +34,19 @@ jobs:
           cd gokyuzu_app
           flutter pub get
 
+      - name: Dijital İmza (Keystore) Kurulumu
+        run: |
+          if [ -n "${{ secrets.KEYSTORE_BASE64 }}" ]; then
+            echo "GitHub Secret bulundu, resmi imza dosyası yükleniyor..."
+            echo "${{ secrets.KEYSTORE_BASE64 }}" | base64 -d > gokyuzu_app/android/app/upload-keystore.jks
+            echo "storePassword=${{ secrets.KEYSTORE_PASSWORD }}" > gokyuzu_app/android/key.properties
+            echo "keyPassword=${{ secrets.KEYSTORE_PASSWORD }}" >> gokyuzu_app/android/key.properties
+            echo "keyAlias=upload" >> gokyuzu_app/android/key.properties
+            echo "storeFile=upload-keystore.jks" >> gokyuzu_app/android/key.properties
+          else
+            echo "GitHub Secret henüz tanımlanmamış, derleme hazır yapılandırma ile devam ediyor."
+          fi
+
       - name: Release APK ve Play Store App Bundle (AAB) Derle
         run: |
           cd gokyuzu_app
