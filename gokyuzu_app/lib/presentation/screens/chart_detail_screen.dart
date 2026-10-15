@@ -39,6 +39,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
     super.initState();
     _checkVip();
     _fetchChart();
+    AdService.preloadInterstitial();
   }
 
   Future<void> _checkVip() async {
@@ -511,7 +512,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
     if (!_isVip) {
       final shouldShowAd = await AdService.shouldShowTabInterstitial();
       if (shouldShowAd && mounted) {
-        _showInterstitialAdModal(onAdClosed: () {
+        await AdService.showInterstitialIfReady(onDone: () {
           if (mounted) setState(() => _selectedTabIndex = index);
         });
         return;
