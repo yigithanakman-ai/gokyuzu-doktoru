@@ -5,6 +5,7 @@ import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
 import 'storage_service.dart';
 import 'predictive_astrology_service.dart';
+import 'eclipses_service.dart';
 import '../models/birth_chart_model.dart';
 
 /// Gökyüzü Doktoru Profesyonel 10 Sayfalık Doğum Haritası ve Yaşam Rehberi Raporu (Word Formatı)
@@ -91,6 +92,8 @@ class PdfReportService {
     final zrData = PredictiveAstrologyService.calculateZodiacalReleasing(profile: profile);
     final srData = PredictiveAstrologyService.calculateSolarReturn(profile: profile, selectedCity: birthCity);
     final lrData = PredictiveAstrologyService.calculateLunarReturn(profile: profile, selectedCity: birthCity);
+    final eclipseAnalyses = EclipsesService.analyzePersonalEclipses(profile: profile);
+    final nextEclipse = eclipseAnalyses.isNotEmpty ? eclipseAnalyses.first : null;
 
     // Dinamik Gezegen Haritası ve Element Puanlaması (Standart: ASC, Güneş, Ay: 3 | Merkür, Venüs, Mars, Jüpiter, Satürn, MC: 1 | Toplam 15)
     final planetsMap = <String, PlanetPosition>{};
@@ -744,19 +747,28 @@ class PdfReportService {
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
             children: [
-              buildHeader('HERMETİK YAŞAM REHBERİ & BÜTÜNSEL SENTEZ', 10),
+              buildHeader('KADERSEL TUTULMALAR, HERMETİK REHBER & BÜTÜNSEL SENTEZ', 10),
+              if (nextEclipse != null)
+                buildSectionCard(
+                  '1. Kadersel Tutulma ve Saros Döngüsü (${nextEclipse.eclipse.dateFormatted} • ${nextEclipse.eclipse.fullTypeTitle} • ${nextEclipse.eclipse.degreeSignFormatted})',
+                  'Tetiklenen Placidus Yaşam Aksı: ${nextEclipse.houseAxisTitle}\n'
+                  '• Bireysel Ev Danışmanlığı: ${nextEclipse.personalHouseCounseling}\n'
+                  '• 18 Yıllık Saros Yankısı: ${nextEclipse.sarosEchoMessage}\n'
+                  '• Stratejik Yol Haritası: ${nextEclipse.strategicActionPlan}',
+                  englishSubtitle: 'Upcoming Eclipse Activation | House ${nextEclipse.activatedHouse}',
+                ),
               buildSectionCard(
-                'Şans Noktası (Pars Fortuna) - Dünyevi Refah & Maddi Doyum Anahtarı',
+                '2. Şans Noktası (Pars Fortuna) - Dünyevi Refah & Maddi Doyum Anahtarı',
                 'Güneş, Ay ve Yükselen koordinatlarının harmonik bileşkesidir. Hayatta en çok doyum alacağınız ve kısmetin kendiliğinden akacağı alanı temsil eder. Sezgilerinize güvenip bilgelikle adım attığınızda karşınıza beklenmedik kapılar açılacaktır.',
                 englishSubtitle: 'Part of Fortune | Worldly Prosperity Harmonic',
               ),
               buildSectionCard(
-                'Canlı Transit Ay Menzili (28 Lunar Mansions & Hermetik Durak)',
+                '3. Canlı Transit Ay Menzili (28 Lunar Mansions & Hermetik Durak)',
                 'Ay\'ın gökyüzündeki gerçek zamanlı derecesine göre belirlenen 28 Hermetik menzil; günlük stratejik kararların, sözleşmelerin ve ruhsal odaklanmanın ideal zamanlamasını sunar. Ay döngülerinize göre aksiyon almak veriminizi katlar.',
                 englishSubtitle: '28 Lunar Mansions | Real-time Moon Ingress Timing',
               ),
               buildSectionCard(
-                'Bütünsel Kozmik Reçete (Doğal Taşlar, Frekanslar & Yaşam Tavsiyeleri)',
+                '4. Bütünsel Kozmik Reçete (Doğal Taşlar, Frekanslar & Yaşam Tavsiyeleri)',
                 '- Uyumlu Doğal Taşlar: Akuamarin (Zihin berraklığı), Ametist (Ruhsal koruma), Labradorit (Aura kalkanı).\n'
                 '- Rezonans Frekansları: 528 Hz (Dönüşüm ve DNA şifası) ve 432 Hz (Evrensel ahenk).\n'
                 '- Odak Enerji Merkezleri: Boğaz Çakrası (Doğru ve etkili ifade) ve Üçüncü Göz (Yüksek sezgisel kavrayış).\n'
