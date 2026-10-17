@@ -397,17 +397,17 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'GEZEGEN KONUMLARI & NOKTALAR',
+                            AppTranslationService.tr('GEZEGEN KONUMLARI & NOKTALAR'),
                             style: Theme.of(context).textTheme.labelSmall,
                           ),
-                          const Row(
+                          Row(
                             children: [
-                              Icon(Icons.touch_app_rounded,
+                              const Icon(Icons.touch_app_rounded,
                                   size: 14, color: AppColors.starlightGold),
-                              SizedBox(width: 4),
+                              const SizedBox(width: 4),
                               Text(
-                                'Detay için dokun',
-                                style: TextStyle(
+                                AppTranslationService.tr('Detay için dokun'),
+                                style: const TextStyle(
                                   fontSize: 11,
                                   color: AppColors.starlightGold,
                                   fontWeight: FontWeight.w600,
@@ -459,7 +459,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                                                 CrossAxisAlignment.start,
                                             children: [
                                               Text(
-                                                planet.name,
+                                                AppTranslationService.planetName(planet.name),
                                                 maxLines: 1,
                                                 overflow: TextOverflow.ellipsis,
                                                 style: const TextStyle(
@@ -469,11 +469,11 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                                                 ),
                                               ),
                                               if (planet.isRetrograde)
-                                                const Text(
-                                                  'Retrograde (Geri Harekette)',
+                                                Text(
+                                                  AppTranslationService.tr('Retrograde (Geri Harekette)'),
                                                   maxLines: 1,
                                                   overflow: TextOverflow.ellipsis,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     fontSize: 11,
                                                     color: AppColors.warningOrange,
                                                     fontWeight: FontWeight.w600,
@@ -492,7 +492,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                                         crossAxisAlignment: CrossAxisAlignment.end,
                                         children: [
                                           Text(
-                                            planet.sign,
+                                            AppTranslationService.signName(planet.sign),
                                             style: const TextStyle(
                                               fontSize: 15,
                                               fontWeight: FontWeight.w600,
@@ -500,7 +500,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                                             ),
                                           ),
                                           Text(
-                                            planet.formatted,
+                                            AppTranslationService.tr(planet.formatted),
                                             style: const TextStyle(
                                               fontSize: 12,
                                               color: AppColors.textSecondary,
@@ -791,11 +791,14 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                                       .withValues(alpha: 0.2),
                                   borderRadius: BorderRadius.circular(4),
                                 ),
-                                child: const Text('Rx (Geri)',
-                                    style: TextStyle(
-                                        fontSize: 8.5,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.savageRed)),
+                                child: Text(
+                                  AppTranslationService.tr('Rx (Geri)'),
+                                  style: const TextStyle(
+                                    fontSize: 8.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.savageRed,
+                                  ),
+                                ),
                               ),
                             ],
                           ],
@@ -1451,7 +1454,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        sectName,
+                        AppTranslationService.tr(sectName),
                         style: TextStyle(
                           fontSize: 14,
                           fontWeight: FontWeight.bold,
@@ -1467,7 +1470,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                       borderRadius: BorderRadius.circular(8),
                     ),
                     child: Text(
-                      isDayChart ? '☉ GÜNDÜZ' : '☽ GECE',
+                      AppTranslationService.tr(isDayChart ? '☉ GÜNDÜZ' : '☽ GECE'),
                       style: TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.bold,
@@ -1489,7 +1492,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
               ),
               const SizedBox(height: 10),
               Text(
-                sectDesc,
+                AppTranslationService.tr(sectDesc),
                 style: const TextStyle(fontSize: 11.5, height: 1.45, color: Colors.white70),
               ),
             ],
@@ -1524,10 +1527,10 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                           size: 18,
                         ),
                         const SizedBox(width: 8),
-                        const Expanded(
+                        Expanded(
                           child: Text(
-                            'KISTIRILMIŞ BURÇLAR (INTERCEPTED SIGNS)',
-                            style: TextStyle(
+                            AppTranslationService.tr('KISTIRILMIŞ BURÇLAR (INTERCEPTED SIGNS)'),
+                            style: const TextStyle(
                               fontSize: 12.5,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.5,
@@ -1549,8 +1552,8 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                     ),
                     child: Text(
                       interceptedList.isNotEmpty
-                          ? '${interceptedList.length} Burç Kilitli'
-                          : 'Açık Akslar',
+                          ? '${interceptedList.length} ${AppTranslationService.tr('Burç Kilitli')}'
+                          : AppTranslationService.tr('Açık Akslar'),
                       style: TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.bold,
@@ -1561,9 +1564,9 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                 ],
               ),
               const SizedBox(height: 6),
-              const Text(
-                'Placidus ev sisteminde ev boyutları coğrafi enleme göre değişir. Bazı evler 30°\'den geniş olup bir burcu tamamen içine hapseder. Kıstırılmış burçlar doğrudan bir ev girişi bulamadığından içsel potansiyel olarak saklanır.',
-                style: TextStyle(fontSize: 11, height: 1.4, color: AppColors.textSecondary),
+              Text(
+                AppTranslationService.tr('Placidus ev sisteminde ev boyutları coğrafi enleme göre değişir. Bazı evler 30°\'den geniş olup bir burcu tamamen içine hapseder. Kıstırılmış burçlar doğrudan bir ev girişi bulamadığından içsel potansiyel olarak saklanır.'),
+                style: const TextStyle(fontSize: 11, height: 1.4, color: AppColors.textSecondary),
               ),
               if (interceptedList.isNotEmpty) ...[
                 const SizedBox(height: 12),
@@ -1588,7 +1591,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                '${item['symbol']} ${item['sign']} (${item['house']}. Ev)',
+                                '${item['symbol']} ${AppTranslationService.signName(item['sign'] as String)} (${item['house']}. ${AppTranslationService.tr('EV')})',
                                 style: const TextStyle(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.bold,
@@ -1607,7 +1610,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                '${item['oppositeSign']} (${item['oppositeHouse']}. Ev)',
+                                '${AppTranslationService.signName(item['oppositeSign'] as String)} (${item['oppositeHouse']}. ${AppTranslationService.tr('EV')})',
                                 style: const TextStyle(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.bold,
@@ -1619,7 +1622,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          item['desc'] as String,
+                          AppTranslationService.tr(item['desc'] as String),
                           style: const TextStyle(fontSize: 11, height: 1.4, color: Colors.white70),
                         ),
                       ],
@@ -1629,7 +1632,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                 if (duplicatedSigns.isNotEmpty) ...[
                   const SizedBox(height: 4),
                   Text(
-                    '★ Bu dengelenme gereği ${duplicatedSigns.join(" ve ")} burçları ardışık iki evin girişini birden kesmektedir.',
+                    AppTranslationService.tr('★ Bu dengelenme gereği ${duplicatedSigns.join(" ve ")} burçları ardışık iki evin girişini birden kesmektedir.'),
                     style: const TextStyle(fontSize: 10.5, fontStyle: FontStyle.italic, color: AppColors.pastelMint),
                   ),
                 ],
@@ -1647,7 +1650,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
               children: [
                 Expanded(
                   child: Text(
-                    '12 EV ANALİZİ (PLACIDUS AKS & YÖNETİCİLER)',
+                    AppTranslationService.tr('12 EV ANALİZİ (PLACIDUS AKS & YÖNETİCİLER)'),
                     style: Theme.of(context).textTheme.labelSmall?.copyWith(
                           letterSpacing: 0.8,
                           fontWeight: FontWeight.bold,
@@ -1663,7 +1666,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                     size: 13, color: AppColors.starlightGold),
                 const SizedBox(width: 4),
                 Text(
-                  'Detaylar için ev kartına dokunun',
+                  AppTranslationService.tr('Detaylar için ev kartına dokunun'),
                   style: TextStyle(
                     fontSize: 11,
                     color: AppColors.starlightGold.withValues(alpha: 0.9),
@@ -1676,7 +1679,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
         ),
         const SizedBox(height: 4),
         Text(
-          'Yükselen (${_chart!.risingSign}) aksına göre kişisel Placidus ev diziliminiz, her evin tam giriş derecesi, genişliği ve yöneticilikleri.',
+          '${AppTranslationService.tr('Yükselen')} (${AppTranslationService.signName(_chart!.risingSign)}) ${AppTranslationService.tr('aksına göre kişisel Placidus ev diziliminiz, her evin tam giriş derecesi, genişliği ve yöneticilikleri.')}',
           style: const TextStyle(fontSize: 11.5, height: 1.4, color: AppColors.textMuted),
         ),
         const SizedBox(height: 12),
@@ -1721,7 +1724,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                                 border: Border.all(color: AppColors.starlightGold.withValues(alpha: 0.3)),
                               ),
                               child: Text(
-                                '${data['num']}. EV',
+                                '${data['num']}. ${AppTranslationService.tr('EV')}',
                                 style: const TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
@@ -1731,7 +1734,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                             ),
                             const SizedBox(width: 10),
                             Text(
-                              cuspDeg.isNotEmpty ? cuspDeg : houseSign,
+                              AppTranslationService.tr(cuspDeg.isNotEmpty ? cuspDeg : houseSign),
                               style: const TextStyle(
                                 fontSize: 14.5,
                                 fontWeight: FontWeight.bold,
@@ -1747,7 +1750,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            '${span.toStringAsFixed(1)}° Genişlik',
+                            '${span.toStringAsFixed(1)}° ${AppTranslationService.tr('Genişlik')}',
                             style: const TextStyle(
                               fontSize: 10.5,
                               color: AppColors.textMuted,
@@ -1766,7 +1769,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                           border: Border.all(color: AppColors.starlightGold.withValues(alpha: 0.3)),
                         ),
                         child: Text(
-                          '🔒 Kıstırılmış: ${interceptedInHouse.first['sign']} Burcu Bu Evde Kilitli',
+                          '🔒 ${AppTranslationService.tr('Kıstırılmış:')} ${AppTranslationService.signName(interceptedInHouse.first['sign'] as String)} ${AppTranslationService.tr('Burcu Bu Evde Kilitli')}',
                           style: const TextStyle(
                             fontSize: 10.5,
                             fontWeight: FontWeight.w600,
@@ -1777,7 +1780,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                     ],
                     const SizedBox(height: 8),
                     Text(
-                      data['name'] as String,
+                      AppTranslationService.tr(data['name'] as String),
                       style: const TextStyle(
                         fontSize: 12.5,
                         fontWeight: FontWeight.w600,
@@ -1794,7 +1797,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            'Klasik: $cRuler',
+                            '${AppTranslationService.tr('Klasik')}: ${AppTranslationService.planetName(cRuler)}',
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -1810,7 +1813,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                             borderRadius: BorderRadius.circular(6),
                           ),
                           child: Text(
-                            'Modern: $mRuler',
+                            '${AppTranslationService.tr('Modern')}: ${AppTranslationService.planetName(mRuler)}',
                             style: const TextStyle(
                               fontSize: 11,
                               fontWeight: FontWeight.w600,
@@ -1820,7 +1823,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                         ),
                         const SizedBox(width: 8),
                         Text(
-                          'Doğal: ${data['natural']}',
+                          '${AppTranslationService.tr('Doğal')}: ${AppTranslationService.tr(data['natural'] as String)}',
                           style: const TextStyle(
                             fontSize: 10.5,
                             color: AppColors.textMuted,
@@ -1830,7 +1833,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      data['theme'] as String,
+                      AppTranslationService.tr(data['theme'] as String),
                       style: const TextStyle(
                         fontSize: 11.5,
                         height: 1.4,
@@ -1859,11 +1862,11 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
         mainAxisSize: MainAxisSize.min,
         children: [
           Text(
-            '$title: ',
+            '${AppTranslationService.tr(title)}: ',
             style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: color),
           ),
           Text(
-            val,
+            AppTranslationService.tr(val),
             style: const TextStyle(fontSize: 11, fontWeight: FontWeight.w600, color: Colors.white),
           ),
         ],
@@ -1929,7 +1932,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            data['name'] as String,
+                            AppTranslationService.tr(data['name'] as String),
                             style: const TextStyle(
                               fontSize: 16,
                               fontWeight: FontWeight.bold,
@@ -1937,7 +1940,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                             ),
                           ),
                           Text(
-                            'Haritanızdaki Burç: $chartSign (Doğal: ${data['natural']})',
+                            '${AppTranslationService.tr('Haritanızdaki Burç')}: ${AppTranslationService.signName(chartSign)} (${AppTranslationService.tr('Doğal')}: ${AppTranslationService.tr(data['natural'] as String)})',
                             style: const TextStyle(
                               fontSize: 12,
                               color: AppColors.pastelLavender,
@@ -1965,9 +1968,9 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('KLASİK YÖNETİCİ', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: AppColors.starlightGold)),
+                            Text(AppTranslationService.tr('KLASİK YÖNETİCİ'), style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: AppColors.starlightGold)),
                             const SizedBox(height: 2),
-                            Text(classicalRuler, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
+                            Text(AppTranslationService.planetName(classicalRuler), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
                           ],
                         ),
                       ),
@@ -1984,9 +1987,9 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                         child: Column(
                           crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            const Text('MODERN YÖNETİCİ', style: TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: AppColors.pastelMint)),
+                            Text(AppTranslationService.tr('MODERN YÖNETİCİ'), style: const TextStyle(fontSize: 9.5, fontWeight: FontWeight.bold, color: AppColors.pastelMint)),
                             const SizedBox(height: 2),
-                            Text(modernRuler, style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
+                            Text(AppTranslationService.planetName(modernRuler), style: const TextStyle(fontSize: 13, fontWeight: FontWeight.bold, color: Colors.white)),
                           ],
                         ),
                       ),
@@ -2036,7 +2039,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
               Icon(icon, size: 16, color: color),
               const SizedBox(width: 8),
               Text(
-                title,
+                AppTranslationService.tr(title),
                 style: TextStyle(
                   fontSize: 12,
                   fontWeight: FontWeight.bold,
@@ -2047,7 +2050,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
           ),
           const SizedBox(height: 6),
           Text(
-            content,
+            AppTranslationService.tr(content),
             style: const TextStyle(fontSize: 12, height: 1.45, color: Colors.white70),
           ),
         ],
@@ -4187,62 +4190,81 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
   }
 
   String _getTurkishPlanetName(String key) {
+    String name;
     switch (key.toLowerCase()) {
       case 'sun':
       case 'güneş':
-        return 'Güneş';
+        name = 'Güneş';
+        break;
       case 'moon':
       case 'ay':
-        return 'Ay';
+        name = 'Ay';
+        break;
       case 'mercury':
       case 'merkür':
-        return 'Merkür';
+        name = 'Merkür';
+        break;
       case 'venus':
       case 'venüs':
-        return 'Venüs';
+        name = 'Venüs';
+        break;
       case 'mars':
-        return 'Mars';
+        name = 'Mars';
+        break;
       case 'jupiter':
       case 'jüpiter':
-        return 'Jüpiter';
+        name = 'Jüpiter';
+        break;
       case 'saturn':
       case 'satürn':
-        return 'Satürn';
+        name = 'Satürn';
+        break;
       case 'uranus':
       case 'uranüs':
-        return 'Uranüs';
+        name = 'Uranüs';
+        break;
       case 'neptune':
       case 'neptün':
-        return 'Neptün';
+        name = 'Neptün';
+        break;
       case 'pluto':
       case 'plüton':
-        return 'Plüton';
+        name = 'Plüton';
+        break;
       case 'chiron':
       case 'kiron':
-        return 'Kiron (Chiron)';
+        name = 'Chiron';
+        break;
       case 'north_node':
       case 'kuzey ay düğümü':
-        return 'Kuzey Ay Düğümü';
+        name = 'Kuzey Ay Düğümü';
+        break;
       case 'south_node':
       case 'güney ay düğümü':
-        return 'Güney Ay Düğümü';
+        name = 'Güney Ay Düğümü';
+        break;
       case 'ascendant':
       case 'yükselen':
       case 'asc':
-        return 'Yükselen (ASC)';
+        name = 'Yükselen (ASC)';
+        break;
       case 'mc':
       case 'tepe noktası':
-        return 'Tepe Noktası (MC)';
+        name = 'Tepe Noktası (MC)';
+        break;
       case 'ic':
       case 'dip noktası':
-        return 'Dip Noktası (IC)';
+        name = 'Dip Noktası (IC)';
+        break;
       case 'descendant':
       case 'alçalan':
       case 'dsc':
-        return 'Alçalan (DSC)';
+        name = 'Alçalan (DSC)';
+        break;
       default:
-        return _chart?.planets[key]?.name ?? key;
+        name = _chart?.planets[key]?.name ?? key;
     }
+    return AppTranslationService.planetName(name);
   }
 
   String _getPlanetSymbol(String key) {

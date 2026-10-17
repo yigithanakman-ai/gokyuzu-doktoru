@@ -2224,12 +2224,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           Row(
                             children: [
-                              const Flexible(
+                              Flexible(
                                 child: Text(
-                                  'VIP KOZMİK DANIŞMANLIK',
+                                  AppTranslationService.tr('VIP KOZMİK DANIŞMANLIK'),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 16,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 0.6,
@@ -2238,9 +2238,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               const SizedBox(width: 8),
-                              const Text(
-                                'ÖZEL ERİŞİM 👑',
-                                style: TextStyle(
+                              Text(
+                                AppTranslationService.tr('ÖZEL ERİŞİM 👑'),
+                                style: const TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.pastelMint,
@@ -2249,9 +2249,9 @@ class _HomeScreenState extends State<HomeScreen> {
                             ],
                           ),
                           const SizedBox(height: 2),
-                          const Text(
-                            'İleri Düzey Modüller & Kişiye Özel Astrolojik Analizler',
-                            style: TextStyle(
+                          Text(
+                            AppTranslationService.tr('İleri Düzey Modüller & Kişiye Özel Astrolojik Analizler'),
+                            style: const TextStyle(
                                 fontSize: 11.5, color: AppColors.textMuted),
                           ),
                         ],
@@ -2286,14 +2286,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   child: Column(
                     children: [
-                      const Row(
+                      Row(
                         children: [
-                          Icon(Icons.lock_open_rounded,
+                          const Icon(Icons.lock_open_rounded,
                               size: 16, color: AppColors.starlightGold),
-                          SizedBox(width: 8),
+                          const SizedBox(width: 8),
                           Text(
-                            'VIP Ayrıcalıklarını Başlatın',
-                            style: TextStyle(
+                            AppTranslationService.tr('VIP Ayrıcalıklarını Başlatın'),
+                            style: const TextStyle(
                               fontSize: 13,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
@@ -2302,9 +2302,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         ],
                       ),
                       const SizedBox(height: 6),
-                      const Text(
-                        'Tüm kozmik modüllere ve ileri düzey öngörülere tam erişim için VIP üyeliği başlatın.',
-                        style: TextStyle(
+                      Text(
+                        AppTranslationService.tr('Tüm kozmik modüllere ve ileri düzey öngörülere tam erişim için VIP üyeliği başlatın.'),
+                        style: const TextStyle(
                             fontSize: 11.5, height: 1.4, color: AppColors.textMuted),
                       ),
                       const SizedBox(height: 12),
@@ -2321,17 +2321,17 @@ class _HomeScreenState extends State<HomeScreen> {
                                     color: AppColors.pastelMint
                                         .withValues(alpha: 0.5)),
                               ),
-                              child: const Row(
+                              child: Row(
                                 mainAxisAlignment: MainAxisAlignment.center,
                                 children: [
-                                  Icon(Icons.verified_rounded,
+                                  const Icon(Icons.verified_rounded,
                                       color: AppColors.pastelMint, size: 18),
-                                  SizedBox(width: 8),
+                                  const SizedBox(width: 8),
                                   Flexible(
                                     child: Text(
-                                      'VIP ERİŞİMİNİZ AKTİF • TÜM MODÜLLER AÇIK 👑',
+                                      AppTranslationService.tr('VIP ERİŞİMİNİZ AKTİF • TÜM MODÜLLER AÇIK 👑'),
                                       overflow: TextOverflow.ellipsis,
-                                      style: TextStyle(
+                                      style: const TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
                                         color: AppColors.pastelMint,
@@ -2347,9 +2347,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 onPressed: () => _showPurchaseModal(context),
                                 icon: const Icon(Icons.workspace_premium_rounded,
                                     size: 17, color: Colors.black87),
-                                label: const Text(
-                                  'VIP Abonelik Paketlerini İncele 👑',
-                                  style: TextStyle(
+                                label: Text(
+                                  AppTranslationService.tr('VIP Abonelik Paketlerini İncele 👑'),
+                                  style: const TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.black87),
@@ -2602,7 +2602,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       const SizedBox(width: 10),
                       Expanded(
                         child: Text(
-                          title,
+                          AppTranslationService.tr(title),
                           maxLines: 2,
                           overflow: TextOverflow.ellipsis,
                           style: TextStyle(
@@ -2625,7 +2625,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     border: Border.all(color: color.withValues(alpha: 0.4)),
                   ),
                   child: Text(
-                    badge,
+                    AppTranslationService.tr(badge),
                     style: TextStyle(
                       fontSize: 9,
                       fontWeight: FontWeight.bold,
@@ -2638,7 +2638,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(height: 10),
             Text(
-              description,
+              AppTranslationService.tr(description),
               style: const TextStyle(
                 fontSize: 12.5,
                 height: 1.5,
@@ -2660,7 +2660,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   child: Row(
                     children: [
                       Text(
-                        'Modülü Başlat',
+                        AppTranslationService.tr('Modülü Başlat'),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -3256,19 +3256,19 @@ class _HomeScreenState extends State<HomeScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
             children: [
-              const Expanded(
+              Expanded(
                 child: Row(
                   children: [
-                    Icon(Icons.format_quote_rounded,
+                    const Icon(Icons.format_quote_rounded,
                         color: AppColors.starlightGold, size: 20),
-                    SizedBox(width: 6),
+                    const SizedBox(width: 6),
                     Expanded(
                       child: FittedBox(
                         fit: BoxFit.scaleDown,
                         alignment: Alignment.centerLeft,
                         child: Text(
-                          'GÜNÜN KOZMİK MOTİVASYONU',
-                          style: TextStyle(
+                          AppTranslationService.tr('GÜNÜN KOZMİK MOTİVASYONU'),
+                          style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
                             letterSpacing: 0.5,
@@ -3288,7 +3288,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   borderRadius: BorderRadius.circular(8),
                 ),
                 child: Text(
-                  quote.category,
+                  AppTranslationService.tr(quote.category),
                   style: const TextStyle(
                     fontSize: 10,
                     fontWeight: FontWeight.bold,
@@ -3344,7 +3344,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
                       Text(
-                        'Transit Teması: ${quote.transitTheme}',
+                        '${AppTranslationService.tr('Transit Teması:')} ${AppTranslationService.tr(quote.transitTheme)}',
                         style: const TextStyle(
                           fontSize: 10.5,
                           fontWeight: FontWeight.bold,
@@ -3353,7 +3353,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(height: 2),
                       Text(
-                        quote.practicalReflection,
+                        AppTranslationService.tr(quote.practicalReflection),
                         style: const TextStyle(
                           fontSize: 11,
                           height: 1.4,
@@ -3415,7 +3415,7 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(width: 8),
               Text(
-                'CANLI GÖKYÜZÜ & AY GEÇİŞLERİ',
+                AppTranslationService.tr('CANLI GÖKYÜZÜ & AY GEÇİŞLERİ'),
                 style: Theme.of(context).textTheme.labelSmall?.copyWith(
                       letterSpacing: 1.2,
                       color: AppColors.pastelLavender,
@@ -3429,14 +3429,14 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: AppColors.starlightGold.withValues(alpha: 0.15),
                   borderRadius: BorderRadius.circular(8),
                 ),
-                child: const Row(
+                child: Row(
                   children: [
-                    Icon(Icons.lock_rounded,
+                    const Icon(Icons.lock_rounded,
                         size: 11, color: AppColors.starlightGold),
-                    SizedBox(width: 4),
+                    const SizedBox(width: 4),
                     Text(
-                      'KİLİTLİ',
-                      style: TextStyle(
+                      AppTranslationService.tr('KİLİTLİ'),
+                      style: const TextStyle(
                         fontSize: 10,
                         fontWeight: FontWeight.bold,
                         color: AppColors.starlightGold,
@@ -3468,22 +3468,22 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     const SizedBox(width: 14),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'Günlük Ay Fazı & Canlı Transitler',
-                            style: TextStyle(
+                            AppTranslationService.tr('Günlük Ay Fazı & Canlı Transitler'),
+                            style: const TextStyle(
                               fontSize: 14.5,
                               fontWeight: FontWeight.bold,
                               color: Colors.white,
                             ),
                           ),
-                          SizedBox(height: 4),
+                          const SizedBox(height: 4),
                           Text(
-                            'Anlık Ay fazı, aydınlanma oranı, boşlukta takvimi, yanık yol uyarısı ve gezegen transitlerini görüntüleyin.',
-                            style: TextStyle(
+                            AppTranslationService.tr('Anlık Ay fazı, aydınlanma oranı, boşlukta takvimi, yanık yol uyarısı ve gezegen transitlerini görüntüleyin.'),
+                            style: const TextStyle(
                               fontSize: 11.5,
                               color: AppColors.textSecondary,
                             ),
@@ -3501,9 +3501,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () => _showRewardedAdForMoonPhase(context),
                         icon: const Icon(Icons.play_circle_fill_rounded,
                             size: 16, color: Colors.white),
-                        label: const Text(
-                          'Reklam İzle Aç 🎬',
-                          style: TextStyle(
+                        label: Text(
+                          AppTranslationService.tr('Reklam İzle Aç 🎬'),
+                          style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
@@ -3524,9 +3524,9 @@ class _HomeScreenState extends State<HomeScreen> {
                         onPressed: () => _showPurchaseModal(context),
                         icon: const Icon(Icons.workspace_premium_rounded,
                             size: 16, color: AppColors.starlightGold),
-                        label: const Text(
-                          'VIP Sınırsız 👑',
-                          style: TextStyle(
+                        label: Text(
+                          AppTranslationService.tr('VIP Sınırsız 👑'),
+                          style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
                             color: AppColors.starlightGold,
@@ -3583,7 +3583,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: Text(
-                      'CANLI GÖKYÜZÜ & AY GEÇİŞLERİ',
+                      AppTranslationService.tr('CANLI GÖKYÜZÜ & AY GEÇİŞLERİ'),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
                       style: Theme.of(context).textTheme.labelSmall?.copyWith(
@@ -3600,20 +3600,20 @@ class _HomeScreenState extends State<HomeScreen> {
             InkWell(
               onTap: () => _showAllTransitsModal(context),
               borderRadius: BorderRadius.circular(8),
-              child: const Padding(
-                padding: EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
                 child: Row(
                   children: [
                     Text(
-                      'Tüm Geçişler',
-                      style: TextStyle(
+                      AppTranslationService.tr('Tüm Geçişler'),
+                      style: const TextStyle(
                         fontSize: 11,
                         color: AppColors.starlightGold,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(width: 2),
-                    Icon(Icons.arrow_forward_ios_rounded,
+                    const SizedBox(width: 2),
+                    const Icon(Icons.arrow_forward_ios_rounded,
                         size: 11, color: AppColors.starlightGold),
                   ],
                 ),
@@ -3659,7 +3659,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Expanded(
                               child: Text(
-                                moonPhase.phaseName,
+                                AppTranslationService.tr(moonPhase.phaseName),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -3679,7 +3679,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 borderRadius: BorderRadius.circular(8),
                               ),
                               child: Text(
-                                '%${moonPhase.illuminationPercent.toInt()} Aydınlanma',
+                                '%${moonPhase.illuminationPercent.toInt()} ${AppTranslationService.tr('Aydınlanma')}',
                                 style: const TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
@@ -3691,7 +3691,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 3),
                         Text(
-                          moonPhase.astrologicalVibe,
+                          AppTranslationService.tr(moonPhase.astrologicalVibe),
                           style: const TextStyle(
                             fontSize: 11.5,
                             color: AppColors.pastelLavender,
@@ -3735,8 +3735,8 @@ class _HomeScreenState extends State<HomeScreen> {
                     Expanded(
                       child: Text(
                         voc.isVoid
-                            ? 'Ay Boşlukta! Yeni başlangıçlar yerine tamamlamaya odaklanın.'
-                            : 'Ay Boşlukta Değil (Aktif) • Enerjiler akıcı',
+                            ? AppTranslationService.tr('Ay Boşlukta! Yeni başlangıçlar yerine tamamlamaya odaklanın.')
+                            : AppTranslationService.tr('Ay Boşlukta Değil (Aktif) • Enerjiler akıcı'),
                         style: TextStyle(
                           fontSize: 11,
                           fontWeight: FontWeight.bold,
@@ -3749,7 +3749,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     const SizedBox(width: 6),
                     Flexible(
                       child: Text(
-                        'Sonraki: ${voc.nextSign} (${voc.nextIngressTime})',
+                        '${AppTranslationService.tr('Sonraki:')} ${AppTranslationService.signName(voc.nextSign)} (${voc.nextIngressTime})',
                         textAlign: TextAlign.end,
                         style: const TextStyle(
                           fontSize: 9.5,
@@ -3798,7 +3798,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   const SizedBox(width: 6),
                                   Expanded(
                                     child: Text(
-                                      viaCombusta.title,
+                                      AppTranslationService.tr(viaCombusta.title),
                                       style: const TextStyle(
                                         fontSize: 12,
                                         fontWeight: FontWeight.bold,
@@ -3817,7 +3817,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                viaCombusta.statusBadge,
+                                AppTranslationService.tr(viaCombusta.statusBadge),
                                 style: const TextStyle(
                                   fontSize: 9.5,
                                   fontWeight: FontWeight.bold,
@@ -3829,7 +3829,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          'Konum: ${viaCombusta.currentMoonPosition} (Kuşak: ${viaCombusta.zoneRange})',
+                          '${AppTranslationService.tr('Konum:')} ${AppTranslationService.tr(viaCombusta.currentMoonPosition)} (${AppTranslationService.tr('Kuşak:')} ${viaCombusta.zoneRange})',
                           style: const TextStyle(
                             fontSize: 11,
                             fontWeight: FontWeight.bold,
@@ -3838,7 +3838,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          viaCombusta.counsel,
+                          AppTranslationService.tr(viaCombusta.counsel),
                           style: const TextStyle(
                             fontSize: 11,
                             height: 1.4,
@@ -3847,7 +3847,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 4),
                         Text(
-                          viaCombusta.exitEstimation,
+                          AppTranslationService.tr(viaCombusta.exitEstimation),
                           style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.w600,
@@ -3889,7 +3889,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                   const SizedBox(width: 6),
                                   Expanded(
                                     child: Text(
-                                      'AY MENZİLİ & HERMETİK DURAK (${mansion.number}/28)',
+                                      '${AppTranslationService.tr('AY MENZİLİ & HERMETİK DURAK')} (${mansion.number}/28)',
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: const TextStyle(
@@ -3907,11 +3907,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             InkWell(
                               onTap: () => _showAllLunarMansionsModal(context),
                               borderRadius: BorderRadius.circular(6),
-                              child: const Padding(
-                                padding: EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                              child: Padding(
+                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                                 child: Text(
-                                  '28 Menzil Listesi →',
-                                  style: TextStyle(
+                                  AppTranslationService.tr('28 Menzil Listesi →'),
+                                  style: const TextStyle(
                                     fontSize: 10,
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.starlightGold,
@@ -3923,7 +3923,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          '${mansion.name} • ${mansion.signRange}',
+                          '${AppTranslationService.tr(mansion.name)} • ${AppTranslationService.tr(mansion.signRange)}',
                           style: const TextStyle(
                             fontSize: 12,
                             fontWeight: FontWeight.bold,
@@ -3932,12 +3932,12 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(height: 2),
                         Text(
-                          'Hermetik Doğa: ${mansion.nature} (${mansion.element} Unsuru)',
+                          '${AppTranslationService.tr('Hermetik Doğa:')} ${AppTranslationService.tr(mansion.nature)} (${AppTranslationService.tr(mansion.element)} ${AppTranslationService.tr('Unsuru')})',
                           style: const TextStyle(fontSize: 10.5, color: AppColors.pastelMint),
                         ),
                         const SizedBox(height: 6),
                         Text(
-                          mansion.description,
+                          AppTranslationService.tr(mansion.description),
                           style: const TextStyle(fontSize: 11, height: 1.35, color: Colors.white70),
                         ),
                         const SizedBox(height: 6),
@@ -3951,12 +3951,12 @@ class _HomeScreenState extends State<HomeScreen> {
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
                               Text(
-                                '✓ Uğurlu: ${mansion.favorableFor}',
+                                '✓ ${AppTranslationService.tr('Uğurlu:')} ${AppTranslationService.tr(mansion.favorableFor)}',
                                 style: const TextStyle(fontSize: 10.5, color: AppColors.pastelMint),
                               ),
                               const SizedBox(height: 3),
                               Text(
-                                '✗ Sakınılmalı: ${mansion.avoidFor}',
+                                '✗ ${AppTranslationService.tr('Sakınılmalı:')} ${AppTranslationService.tr(mansion.avoidFor)}',
                                 style: const TextStyle(fontSize: 10.5, color: AppColors.pastelPeach),
                               ),
                             ],
@@ -3973,14 +3973,14 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 10),
 
               // Animated Orbital Movement Track
-              const Row(
+              Row(
                 children: [
-                  Icon(Icons.timeline_rounded,
+                  const Icon(Icons.timeline_rounded,
                       size: 15, color: AppColors.starlightGold),
-                  SizedBox(width: 6),
+                  const SizedBox(width: 6),
                   Text(
-                    'AYIN GÖKYÜZÜ YOLCULUĞU & AÇI HATTI',
-                    style: TextStyle(
+                    AppTranslationService.tr('AYIN GÖKYÜZÜ YOLCULUĞU & AÇI HATTI'),
+                    style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 0.6,
@@ -4008,16 +4008,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              const Text(
-                                'Son Temas (Ayrılan)',
+                              Text(
+                                AppTranslationService.tr('Son Temas (Ayrılan)'),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 9.5, color: AppColors.textMuted),
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                orbit.departingPlanet,
+                                AppTranslationService.planetName(orbit.departingPlanet),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -4027,7 +4027,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               Text(
-                                orbit.departingAspect,
+                                AppTranslationService.tr(orbit.departingAspect),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
@@ -4052,16 +4052,16 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                           child: Column(
                             children: [
-                              const Text(
-                                '☽ ŞU AN',
-                                style: TextStyle(
+                              Text(
+                                AppTranslationService.tr('☽ ŞU AN'),
+                                style: const TextStyle(
                                   fontSize: 8.5,
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.starlightGold,
                                 ),
                               ),
                               Text(
-                                '${orbit.currentMoonDegree} ${orbit.currentMoonSign}',
+                                '${orbit.currentMoonDegree} ${AppTranslationService.signName(orbit.currentMoonSign)}',
                                 style: const TextStyle(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.bold,
@@ -4078,17 +4078,17 @@ class _HomeScreenState extends State<HomeScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.end,
                             children: [
-                              const Text(
-                                'Sıradaki Temas (Yaklaşan)',
+                              Text(
+                                AppTranslationService.tr('Sıradaki Temas (Yaklaşan)'),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.end,
-                                style: TextStyle(
+                                style: const TextStyle(
                                     fontSize: 9.5, color: AppColors.textMuted),
                               ),
                               const SizedBox(height: 2),
                               Text(
-                                orbit.approachingPlanet,
+                                AppTranslationService.planetName(orbit.approachingPlanet),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.end,
@@ -4099,7 +4099,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                               ),
                               Text(
-                                orbit.approachingAspect,
+                                AppTranslationService.tr(orbit.approachingAspect),
                                 maxLines: 1,
                                 overflow: TextOverflow.ellipsis,
                                 textAlign: TextAlign.end,
@@ -4234,7 +4234,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => _buildDemoSheet(
         ctx: ctx,
-        title: 'Canlı Gezegen Geçişleri & Sabit Yıldızlar',
+        title: AppTranslationService.tr('Canlı Gezegen Geçişleri & Sabit Yıldızlar'),
         color: AppColors.pastelMint,
         icon: Icons.public_rounded,
         children: [
@@ -4246,15 +4246,15 @@ class _HomeScreenState extends State<HomeScreen> {
               border: Border.all(
                   color: AppColors.pastelMint.withValues(alpha: 0.3)),
             ),
-            child: const Row(
+            child: Row(
               children: [
-                Icon(Icons.info_outline_rounded,
+                const Icon(Icons.info_outline_rounded,
                     color: AppColors.pastelMint, size: 20),
-                SizedBox(width: 10),
+                const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Şu an gökyüzünde gerçekleşen anlık gezegen konumları ve Yiğithan Akman Sabit Yıldızlar Kataloğu dereceleriyle kurulan kavuşumlar gösterilmektedir.',
-                    style: TextStyle(
+                    AppTranslationService.tr('Şu an gökyüzünde gerçekleşen anlık gezegen konumları ve Yiğithan Akman Sabit Yıldızlar Kataloğu dereceleriyle kurulan kavuşumlar gösterilmektedir.'),
+                    style: const TextStyle(
                       fontSize: 12,
                       height: 1.4,
                       color: Colors.white70,
@@ -4300,7 +4300,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  vc.title,
+                                  AppTranslationService.tr(vc.title),
                                   style: const TextStyle(
                                     fontSize: 13.5,
                                     fontWeight: FontWeight.bold,
@@ -4319,7 +4319,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             borderRadius: BorderRadius.circular(8),
                           ),
                           child: Text(
-                            vc.statusBadge,
+                            AppTranslationService.tr(vc.statusBadge),
                             style: const TextStyle(
                               fontSize: 10,
                               fontWeight: FontWeight.bold,
@@ -4331,13 +4331,13 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 8),
                     Text(
-                      vc.description,
+                      AppTranslationService.tr(vc.description),
                       style: const TextStyle(
                           fontSize: 11.5, height: 1.4, color: Colors.white70),
                     ),
                     const SizedBox(height: 6),
                     Text(
-                      'Tavsiye: ${vc.counsel}',
+                      '${AppTranslationService.tr('Tavsiye:')} ${AppTranslationService.tr(vc.counsel)}',
                       style: const TextStyle(
                         fontSize: 11,
                         height: 1.35,
@@ -4346,7 +4346,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     const SizedBox(height: 4),
                     Text(
-                      vc.exitEstimation,
+                      AppTranslationService.tr(vc.exitEstimation),
                       style: const TextStyle(
                         fontSize: 10.5,
                         fontWeight: FontWeight.w600,
@@ -4388,7 +4388,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(width: 8),
                             Flexible(
                               child: Text(
-                                t.name,
+                                AppTranslationService.planetName(t.name),
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   fontSize: 14.5,
@@ -4419,7 +4419,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(width: 8),
                       Text(
-                        t.degreeStr,
+                        AppTranslationService.tr(t.degreeStr),
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -4430,7 +4430,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    t.theme,
+                    AppTranslationService.tr(t.theme),
                     style: const TextStyle(
                         fontSize: 11.5, color: AppColors.textSecondary),
                   ),
@@ -4452,7 +4452,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const SizedBox(width: 6),
                               Expanded(
                                 child: Text(
-                                  '${s.name} (${s.degree.toInt()}° ${s.sign}) • ${s.nature} • ${s.meaning}',
+                                  '${AppTranslationService.tr(s.name)} (${s.degree.toInt()}° ${AppTranslationService.signName(s.sign)}) • ${AppTranslationService.tr(s.nature)} • ${AppTranslationService.tr(s.meaning)}',
                                   style: const TextStyle(
                                     fontSize: 10.5,
                                     color: AppColors.starlightGold,
@@ -4484,7 +4484,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => _buildDemoSheet(
         ctx: ctx,
-        title: '28 Kadim Ay Menzili & Hermetik Duraklar',
+        title: AppTranslationService.tr('28 Kadim Ay Menzili & Hermetik Duraklar'),
         color: AppColors.starlightGold,
         icon: Icons.stars_rounded,
         children: [
@@ -4503,7 +4503,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    'Manazil el-Qamar (Kadim Arapça & Hermetik Ay Durakları). Ay her 28 durağı yaklaşık 1 günde geçer. Şu an transit Ay, ${current.number}. Menzil (${current.name}) durağındadır.',
+                    AppTranslationService.tr('Manazil el-Qamar (Kadim Arapça & Hermetik Ay Durakları). Ay her 28 durağı yaklaşık 1 günde geçer. Şu an transit Ay, ${current.number}. Menzil (${current.name}) durağındadır.'),
                     style: const TextStyle(
                         fontSize: 12, height: 1.4, color: Colors.white70),
                   ),
@@ -4546,7 +4546,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 borderRadius: BorderRadius.circular(6),
                               ),
                               child: Text(
-                                '${m.number}. Menzil',
+                                '${m.number}. ${AppTranslationService.tr('Menzil')}',
                                 style: TextStyle(
                                   fontSize: 11,
                                   fontWeight: FontWeight.bold,
@@ -4558,7 +4558,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             const SizedBox(width: 8),
                             Expanded(
                               child: Text(
-                                m.name,
+                                AppTranslationService.tr(m.name),
                                 overflow: TextOverflow.ellipsis,
                                 style: const TextStyle(
                                   fontSize: 13.5,
@@ -4579,9 +4579,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                 AppColors.starlightGold.withValues(alpha: 0.2),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: const Text(
-                            'ŞU AN AKTİF 🌙',
-                            style: TextStyle(
+                          child: Text(
+                            AppTranslationService.tr('ŞU AN AKTİF 🌙'),
+                            style: const TextStyle(
                               fontSize: 9.5,
                               fontWeight: FontWeight.bold,
                               color: AppColors.starlightGold,
@@ -4592,19 +4592,19 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 4),
                   Text(
-                    '${m.arabicName} • ${m.signRange}',
+                    '${m.arabicName} • ${AppTranslationService.tr(m.signRange)}',
                     style: const TextStyle(
                         fontSize: 11, color: AppColors.starlightGold),
                   ),
                   const SizedBox(height: 2),
                   Text(
-                    'Doğa: ${m.nature} • Unsur: ${m.element}',
+                    '${AppTranslationService.tr('Doğa:')} ${AppTranslationService.tr(m.nature)} • ${AppTranslationService.tr('Unsur:')} ${AppTranslationService.tr(m.element)}',
                     style: const TextStyle(
                         fontSize: 10.5, color: AppColors.pastelMint),
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    m.description,
+                    AppTranslationService.tr(m.description),
                     style: const TextStyle(
                         fontSize: 11.5, height: 1.4, color: Colors.white70),
                   ),
@@ -4618,15 +4618,15 @@ class _HomeScreenState extends State<HomeScreen> {
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text('✓ Uğurlu: ${m.favorableFor}',
+                        Text('✓ ${AppTranslationService.tr('Uğurlu:')} ${AppTranslationService.tr(m.favorableFor)}',
                             style: const TextStyle(
                                 fontSize: 10.5, color: AppColors.pastelMint)),
                         const SizedBox(height: 3),
-                        Text('✗ Sakınılmalı: ${m.avoidFor}',
+                        Text('✗ ${AppTranslationService.tr('Sakınılmalı:')} ${AppTranslationService.tr(m.avoidFor)}',
                             style: const TextStyle(
                                 fontSize: 10.5, color: AppColors.pastelPeach)),
                         const SizedBox(height: 3),
-                        Text('🔮 Tılsım Enerjisi: ${m.hermeticTalisman}',
+                        Text('🔮 ${AppTranslationService.tr('Tılsım Enerjisi:')} ${AppTranslationService.tr(m.hermeticTalisman)}',
                             style: const TextStyle(
                                 fontSize: 10.5,
                                 color: AppColors.pastelLavender)),

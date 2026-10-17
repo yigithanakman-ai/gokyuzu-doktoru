@@ -73,6 +73,33 @@ class AppTranslationService {
         }
       }
     }
+    for (final entry in _signTranslations.entries) {
+      if (result.contains(entry.key)) {
+        final replacement = entry.value[lang];
+        if (replacement != null && replacement.isNotEmpty) {
+          result = result.replaceAll(entry.key, replacement);
+          modified = true;
+        }
+      }
+    }
+    for (final entry in _planetTranslations.entries) {
+      if (result.contains(entry.key)) {
+        final replacement = entry.value[lang];
+        if (replacement != null && replacement.isNotEmpty) {
+          result = result.replaceAll(entry.key, replacement);
+          modified = true;
+        }
+      }
+    }
+    for (final entry in _aspectTranslations.entries) {
+      if (result.contains(entry.key)) {
+        final replacement = entry.value[lang];
+        if (replacement != null && replacement.isNotEmpty) {
+          result = result.replaceAll(entry.key, replacement);
+          modified = true;
+        }
+      }
+    }
 
     if (modified) return result;
 
@@ -88,6 +115,14 @@ class AppTranslationService {
     if (map != null && map.containsKey(lang)) {
       return map[lang]!;
     }
+    for (final entry in _signTranslations.entries) {
+      if (clean.toLowerCase() == entry.key.toLowerCase() || clean.contains(entry.key)) {
+        final val = entry.value[lang];
+        if (val != null) {
+          return clean.replaceAll(entry.key, val);
+        }
+      }
+    }
     return clean;
   }
 
@@ -98,6 +133,14 @@ class AppTranslationService {
     final map = _planetTranslations[clean];
     if (map != null && map.containsKey(lang)) {
       return map[lang]!;
+    }
+    for (final entry in _planetTranslations.entries) {
+      if (clean.toLowerCase() == entry.key.toLowerCase() || clean.contains(entry.key)) {
+        final val = entry.value[lang];
+        if (val != null) {
+          return clean.replaceAll(entry.key, val);
+        }
+      }
     }
     return clean;
   }
@@ -161,6 +204,18 @@ class AppTranslationService {
     'Oğlak': {'tr': 'Oğlak', 'en': 'Capricorn', 'ja': '山羊座'},
     'Kova': {'tr': 'Kova', 'en': 'Aquarius', 'ja': '水瓶座'},
     'Balık': {'tr': 'Balık', 'en': 'Pisces', 'ja': '魚座'},
+    'aries': {'tr': 'Koç', 'en': 'Aries', 'ja': '牡羊座'},
+    'taurus': {'tr': 'Boğa', 'en': 'Taurus', 'ja': '牡牛座'},
+    'gemini': {'tr': 'İkizler', 'en': 'Gemini', 'ja': '双子座'},
+    'cancer': {'tr': 'Yengeç', 'en': 'Cancer', 'ja': '蟹座'},
+    'leo': {'tr': 'Aslan', 'en': 'Leo', 'ja': '獅子座'},
+    'virgo': {'tr': 'Başak', 'en': 'Virgo', 'ja': '乙女座'},
+    'libra': {'tr': 'Terazi', 'en': 'Libra', 'ja': '天秤座'},
+    'scorpio': {'tr': 'Akrep', 'en': 'Scorpio', 'ja': '蠍座'},
+    'sagittarius': {'tr': 'Yay', 'en': 'Sagittarius', 'ja': '射手座'},
+    'capricorn': {'tr': 'Oğlak', 'en': 'Capricorn', 'ja': '山羊座'},
+    'aquarius': {'tr': 'Kova', 'en': 'Aquarius', 'ja': '水瓶座'},
+    'pisces': {'tr': 'Balık', 'en': 'Pisces', 'ja': '魚座'},
   };
 
   // --- GEZEGEN VE NOKTA ÇEVİRİ TABLOSU ---
@@ -180,10 +235,27 @@ class AppTranslationService {
     'Kuzey Ay Düğümü': {'tr': 'Kuzey Ay Düğümü', 'en': 'North Node (Rahu)', 'ja': '北ノード (ラーフ)'},
     'Güney Ay Düğümü': {'tr': 'Güney Ay Düğümü', 'en': 'South Node (Ketu)', 'ja': '南ノード (ケートゥ)'},
     'Yükselen': {'tr': 'Yükselen', 'en': 'Ascendant (ASC)', 'ja': '上昇宮 (ASC)'},
+    'Yükselen (ASC)': {'tr': 'Yükselen (ASC)', 'en': 'Ascendant (ASC)', 'ja': '上昇宮 (ASC)'},
     'ASC': {'tr': 'Yükselen (ASC)', 'en': 'Ascendant (ASC)', 'ja': 'アセンダント (ASC)'},
     'MC': {'tr': 'Tepe Noktası (MC)', 'en': 'Midheaven (MC)', 'ja': '天頂 (MC)'},
+    'Tepe Noktası (MC)': {'tr': 'Tepe Noktası (MC)', 'en': 'Midheaven (MC)', 'ja': '天頂 (MC)'},
     'DSC': {'tr': 'Alçalan (DSC)', 'en': 'Descendant (DSC)', 'ja': 'ディセンダント (DSC)'},
+    'Alçalan (DSC)': {'tr': 'Alçalan (DSC)', 'en': 'Descendant (DSC)', 'ja': 'ディセンダント (DSC)'},
     'IC': {'tr': 'Dip Noktası (IC)', 'en': 'Imum Coeli (IC)', 'ja': '天底 (IC)'},
+    'Dip Noktası (IC)': {'tr': 'Dip Noktası (IC)', 'en': 'Imum Coeli (IC)', 'ja': '天底 (IC)'},
+    'Şans Noktası': {'tr': 'Şans Noktası', 'en': 'Part of Fortune', 'ja': '幸運点 (POF)'},
+    'Ruh Noktası': {'tr': 'Ruh Noktası', 'en': 'Part of Spirit', 'ja': '精神点 (POS)'},
+    'sun': {'tr': 'Güneş', 'en': 'Sun', 'ja': '太陽'},
+    'moon': {'tr': 'Ay', 'en': 'Moon', 'ja': '月'},
+    'mercury': {'tr': 'Merkür', 'en': 'Mercury', 'ja': '水星'},
+    'venus': {'tr': 'Venüs', 'en': 'Venus', 'ja': '金星'},
+    'mars': {'tr': 'Mars', 'en': 'Mars', 'ja': '火星'},
+    'jupiter': {'tr': 'Jüpiter', 'en': 'Jupiter', 'ja': '木星'},
+    'saturn': {'tr': 'Satürn', 'en': 'Saturn', 'ja': '土星'},
+    'uranus': {'tr': 'Uranüs', 'en': 'Uranus', 'ja': '天王星'},
+    'neptune': {'tr': 'Neptün', 'en': 'Neptune', 'ja': '海王星'},
+    'pluto': {'tr': 'Plüton', 'en': 'Pluto', 'ja': '冥王星'},
+    'chiron': {'tr': 'Chiron', 'en': 'Chiron', 'ja': 'カイロン'},
   };
 
   // --- ELEMENT ÇEVİRİ TABLOSU ---
@@ -219,6 +291,762 @@ class AppTranslationService {
 
   // --- DOĞRUDAN TÜRKÇE CÜMLE / ETİKET TABLOSU (Her Yerde Kusursuz Çalışır) ---
   static const Map<String, Map<String, String>> _phraseTranslations = {
+    // --- GEZEGEN KONUMLARI & NOKTALAR ---
+    'GEZEGEN KONUMLARI & NOKTALAR': {
+      'tr': 'GEZEGEN KONUMLARI & NOKTALAR',
+      'en': 'PLANETARY POSITIONS & POINTS',
+      'ja': '天体位置＆感受点',
+    },
+    'Detay için dokun': {
+      'tr': 'Detay için dokun',
+      'en': 'Tap for details',
+      'ja': 'タップして詳細を表示',
+    },
+    'Retrograde (Geri Harekette)': {
+      'tr': 'Retrograde (Geri Harekette)',
+      'en': 'Retrograde (Rx)',
+      'ja': '逆行中 (Rx)',
+    },
+    'Rx (Geri)': {
+      'tr': 'Rx (Geri)',
+      'en': 'Rx (Retrograde)',
+      'ja': 'Rx (逆行)',
+    },
+    'Haritandaki Konum': {
+      'tr': 'Haritandaki Konum',
+      'en': 'Position in Chart',
+      'ja': 'チャート上の位置',
+    },
+    'Haritandaki Konum:': {
+      'tr': 'Haritandaki Konum:',
+      'en': 'Position in Chart:',
+      'ja': 'チャート上の位置:',
+    },
+    'TEMSİL ETTİĞİ TEMALAR & YAŞAM ALANI': {
+      'tr': 'TEMSİL ETTİĞİ TEMALAR & YAŞAM ALANI',
+      'en': 'REPRESENTED THEMES & LIFE AREA',
+      'ja': '司るテーマと人生の領域',
+    },
+    'IŞIK VE GÖLGE YÖNLERİ': {
+      'tr': 'IŞIK VE GÖLGE YÖNLERİ',
+      'en': 'LIGHT & SHADOW SIDES',
+      'ja': '光と影の二面性 (長所・短所)',
+    },
+    'Aydınlık / Yüksek Titreşim': {
+      'tr': 'Aydınlık / Yüksek Titreşim',
+      'en': 'Light / High Vibration',
+      'ja': '光の側面 / 高周波エネルギー',
+    },
+    'Gölge / Düşük Titreşim': {
+      'tr': 'Gölge / Düşük Titreşim',
+      'en': 'Shadow / Low Vibration',
+      'ja': '影の側面 / 克服すべき課題',
+    },
+
+    // --- HARİTA MEZHEBİ (SECT) & KISTIRILMIŞ BURÇLAR & 12 EV ---
+    'Gündüz Haritası (Diurnal Sect)': {
+      'tr': 'Gündüz Haritası (Diurnal Sect)',
+      'en': 'Day Chart (Diurnal Sect)',
+      'ja': '昼のチャート (日中区分)',
+    },
+    'Gece Haritası (Nocturnal Sect)': {
+      'tr': 'Gece Haritası (Nocturnal Sect)',
+      'en': 'Night Chart (Nocturnal Sect)',
+      'ja': '夜のチャート (夜間区分)',
+    },
+    '☉ GÜNDÜZ': {
+      'tr': '☉ GÜNDÜZ',
+      'en': '☉ DAY',
+      'ja': '☉ 昼',
+    },
+    '☽ GECE': {
+      'tr': '☽ GECE',
+      'en': '☽ NIGHT',
+      'ja': '☽ 夜',
+    },
+    'Baş Işık': {
+      'tr': 'Baş Işık',
+      'en': 'Primary Luminary',
+      'ja': '主光源',
+    },
+    'Baş İyicil': {
+      'tr': 'Baş İyicil',
+      'en': 'Greater Benefic',
+      'ja': '最大の吉星',
+    },
+    'Zorlayıcı': {
+      'tr': 'Zorlayıcı',
+      'en': 'Greater Malefic',
+      'ja': '試練の星',
+    },
+    'Güneş ☉': {
+      'tr': 'Güneş ☉',
+      'en': 'Sun ☉',
+      'ja': '太陽 ☉',
+    },
+    'Ay ☽': {
+      'tr': 'Ay ☽',
+      'en': 'Moon ☽',
+      'ja': '月 ☽',
+    },
+    'Jüpiter ♃ (Baş İyicil)': {
+      'tr': 'Jüpiter ♃ (Baş İyicil)',
+      'en': 'Jupiter ♃ (Greater Benefic)',
+      'ja': '木星 ♃ (最大の吉星)',
+    },
+    'Venüs ♀ (Baş İyicil)': {
+      'tr': 'Venüs ♀ (Baş İyicil)',
+      'en': 'Venus ♀ (Greater Benefic)',
+      'ja': '金星 ♀ (最大の吉星)',
+    },
+    'Mars ♂ (Zorlayıcı / Gece Fıtratı)': {
+      'tr': 'Mars ♂ (Zorlayıcı / Gece Fıtratı)',
+      'en': 'Mars ♂ (Malefic / Nocturnal Favour)',
+      'ja': '火星 ♂ (夜の試練星)',
+    },
+    'Satürn ♄ (Zorlayıcı / Gündüz Fıtratı)': {
+      'tr': 'Satürn ♄ (Zorlayıcı / Gündüz Fıtratı)',
+      'en': 'Saturn ♄ (Malefic / Diurnal Favour)',
+      'ja': '土星 ♄ (昼の試練星)',
+    },
+    'KISTIRILMIŞ BURÇLAR (INTERCEPTED SIGNS)': {
+      'tr': 'KISTIRILMIŞ BURÇLAR (INTERCEPTED SIGNS)',
+      'en': 'INTERCEPTED SIGNS',
+      'ja': '挟み込みサイン (インターセプト)',
+    },
+    'Burç Kilitli': {
+      'tr': 'Burç Kilitli',
+      'en': 'Signs Intercepted',
+      'ja': 'サイン挟み込み',
+    },
+    'Açık Akslar': {
+      'tr': 'Açık Akslar',
+      'en': 'Clear Axes',
+      'ja': '通常軸',
+    },
+    '12 EV ANALİZİ (PLACIDUS AKS & YÖNETİCİLER)': {
+      'tr': '12 EV ANALİZİ (PLACIDUS AKS & YÖNETİCİLER)',
+      'en': '12 HOUSES ANALYSIS (PLACIDUS AXIS & RULERS)',
+      'ja': '12ハウス詳細分析 (プラシーダス軸＆支配星)',
+    },
+    'Detaylar için ev kartına dokunun': {
+      'tr': 'Detaylar için ev kartına dokunun',
+      'en': 'Tap a house card for details',
+      'ja': '詳細を見るにはハウスカードをタップ',
+    },
+    'Genişlik': {
+      'tr': 'Genişlik',
+      'en': 'Span',
+      'ja': '幅',
+    },
+    'Klasik': {
+      'tr': 'Klasik',
+      'en': 'Traditional',
+      'ja': '伝統支配星',
+    },
+    'Modern': {
+      'tr': 'Modern',
+      'en': 'Modern',
+      'ja': '現代支配星',
+    },
+    'Doğal': {
+      'tr': 'Doğal',
+      'en': 'Natural',
+      'ja': '本来の宮',
+    },
+    'KLASİK YÖNETİCİ': {
+      'tr': 'KLASİK YÖNETİCİ',
+      'en': 'TRADITIONAL RULER',
+      'ja': '伝統的支配星',
+    },
+    'MODERN YÖNETİCİ': {
+      'tr': 'MODERN YÖNETİCİ',
+      'en': 'MODERN RULER',
+      'ja': '現代の支配星',
+    },
+    'Haritanızdaki Burç': {
+      'tr': 'Haritanızdaki Burç',
+      'en': 'Sign in Your Chart',
+      'ja': 'あなたのチャートの星座',
+    },
+    'Haritanızdaki Burç:': {
+      'tr': 'Haritanızdaki Burç:',
+      'en': 'Sign in Your Chart:',
+      'ja': 'あなたのチャートの星座:',
+    },
+    'Temsil Ettiği Yaşam Alanı': {
+      'tr': 'Temsil Ettiği Yaşam Alanı',
+      'en': 'Life Area Represented',
+      'ja': '司る人生の領域',
+    },
+    'Psikolojik Anlamı & Dinamikleri': {
+      'tr': 'Psikolojik Anlamı & Dinamikleri',
+      'en': 'Psychological Meaning & Dynamics',
+      'ja': '心理的意味とダイナミクス',
+    },
+    'Medikal & Beden Temsiliyeti': {
+      'tr': 'Medikal & Beden Temsiliyeti',
+      'en': 'Medical & Body Correspondence',
+      'ja': '医学的対応と身体部位',
+    },
+    'Karmik & Ruhsal Sınavı': {
+      'tr': 'Karmik & Ruhsal Sınavı',
+      'en': 'Karmic & Soul Purpose',
+      'ja': 'カルマと魂の探求',
+    },
+    'Kıstırılmış:': {
+      'tr': 'Kıstırılmış:',
+      'en': 'Intercepted:',
+      'ja': '挟み込み:',
+    },
+    'Bu Evde Kilitli': {
+      'tr': 'Bu Evde Kilitli',
+      'en': 'Intercepted in this House',
+      'ja': 'はこのハウスに挟み込まれています',
+    },
+    'Bu evde kilitli': {
+      'tr': 'Bu evde kilitli',
+      'en': 'intercepted in this house',
+      'ja': 'はこのハウスに挟み込まれています',
+    },
+
+    // --- 12 EV BAŞLIKLARI ---
+    '1. Ev (ASC) — Benlik & Beden': {
+      'tr': '1. Ev (ASC) — Benlik & Beden',
+      'en': '1st House (ASC) — Self & Physical Body',
+      'ja': '第1ハウス (ASC) — 自己と肉体',
+    },
+    '2. Ev — Maddi Kaynaklar & Özdeğer': {
+      'tr': '2. Ev — Maddi Kaynaklar & Özdeğer',
+      'en': '2nd House — Material Resources & Self-Worth',
+      'ja': '第2ハウス — 財産と自己価値',
+    },
+    '3. Ev — İletişim, Zihin & Yakın Çevre': {
+      'tr': '3. Ev — İletişim, Zihin & Yakın Çevre',
+      'en': '3rd House — Communication, Mind & Environment',
+      'ja': '第3ハウス — コミュニケーションと知性',
+    },
+    '4. Ev (IC) — Yuva, Kökler & Aile Temeli': {
+      'tr': '4. Ev (IC) — Yuva, Kökler & Aile Temeli',
+      'en': '4th House (IC) — Home, Roots & Family Foundation',
+      'ja': '第4ハウス (IC) — 家庭・ルーツ・基盤',
+    },
+    '5. Ev — Aşk, Yaratıcılık & Yaşam Sevinci': {
+      'tr': '5. Ev — Aşk, Yaratıcılık & Yaşam Sevinci',
+      'en': '5th House — Love, Creativity & Joy of Living',
+      'ja': '第5ハウス — 恋愛・創造性・人生の歓び',
+    },
+    '6. Ev — Günlük Rutinler, Sağlık & Hizmet': {
+      'tr': '6. Ev — Günlük Rutinler, Sağlık & Hizmet',
+      'en': '6th House — Daily Routines, Health & Service',
+      'ja': '第6ハウス — 日常のルーティン・健康・奉仕',
+    },
+    '7. Ev (DSC) — Evlilik & İkili İlişkiler': {
+      'tr': '7. Ev (DSC) — Evlilik & İkili İlişkiler',
+      'en': '7th House (DSC) — Marriage & Partnerships',
+      'ja': '第7ハウス (DSC) — 結婚・パートナーシップ',
+    },
+    '8. Ev — Krizler, Dönüşüm & Okült Bilgelik': {
+      'tr': '8. Ev — Krizler, Dönüşüm & Okült Bilgelik',
+      'en': '8th House — Crises, Transformation & Occult Wisdom',
+      'ja': '第8ハウス — 危機・変容・神秘の叡智',
+    },
+    '9. Ev — Yüksek Bilgi, İnanç & Vizyon': {
+      'tr': '9. Ev — Yüksek Bilgi, İnanç & Vizyon',
+      'en': '9th House — Higher Knowledge, Faith & Vision',
+      'ja': '第9ハウス — 高度な知識・信仰・哲学',
+    },
+    '10. Ev (MC) — Kariyer, Statü & Hayat Amacı': {
+      'tr': '10. Ev (MC) — Kariyer, Statü & Hayat Amacı',
+      'en': '10th House (MC) — Career, Status & Life Purpose',
+      'ja': '第10ハウス (MC) — キャリア・社会的地位・天命',
+    },
+    '11. Ev — Gelecek Umutları & Dostluklar': {
+      'tr': '11. Ev — Gelecek Umutları & Dostluklar',
+      'en': '11th House — Future Hopes & Friendships',
+      'ja': '第11ハウス — 将来の希望・友情・人脈',
+    },
+    '12. Ev — Bilinçaltı, İnziva & Karmik Çözülüş': {
+      'tr': '12. Ev — Bilinçaltı, İnziva & Karmik Çözülüş',
+      'en': '12th House — Subconscious, Seclusion & Karmic Release',
+      'ja': '第12ハウス — 潜在意識・隠遁・カルマの解消',
+    },
+
+    // --- KOZMİK MOTİVASYON & AY GEÇİŞLERİ ---
+    'GÜNÜN KOZMİK MOTİVASYONU': {
+      'tr': 'GÜNÜN KOZMİK MOTİVASYONU',
+      'en': 'DAILY COSMIC MOTIVATION',
+      'ja': '本日の宇宙のメッセージ',
+    },
+    'Transit Teması:': {
+      'tr': 'Transit Teması:',
+      'en': 'Transit Theme:',
+      'ja': 'トランジットテーマ:',
+    },
+    'Transit Teması': {
+      'tr': 'Transit Teması',
+      'en': 'Transit Theme',
+      'ja': 'トランジットテーマ',
+    },
+    'CANLI GÖKYÜZÜ & AY GEÇİŞLERİ': {
+      'tr': 'CANLI GÖKYÜZÜ & AY GEÇİŞLERİ',
+      'en': 'LIVE SKY & MOON TRANSITS',
+      'ja': 'リアルタイム天空＆月の運行',
+    },
+    'Tüm Geçişler': {
+      'tr': 'Tüm Geçişler',
+      'en': 'All Transits',
+      'ja': 'すべての運行',
+    },
+    'Tüm Geçişler >': {
+      'tr': 'Tüm Geçişler >',
+      'en': 'All Transits >',
+      'ja': 'すべての運行 >',
+    },
+    'Aydınlanma': {
+      'tr': 'Aydınlanma',
+      'en': 'Illumination',
+      'ja': '輝面比',
+    },
+    'Ay Boşlukta Değil (Aktif) • Enerjiler akıcı': {
+      'tr': 'Ay Boşlukta Değil (Aktif) • Enerjiler akıcı',
+      'en': 'Moon is Direct (Active) • Energies Flowing',
+      'ja': '月はアクティブ（ボイドなし）・エネルギー円滑',
+    },
+    'Ay Boşlukta! Yeni başlangıçlar yerine tamamlamaya odaklanın.': {
+      'tr': 'Ay Boşlukta! Yeni başlangıçlar yerine tamamlamaya odaklanın.',
+      'en': 'Moon Void of Course! Focus on completion rather than new beginnings.',
+      'ja': '月がボイドタイム中！新規開始より完了に集中してください。',
+    },
+    'Sonraki:': {
+      'tr': 'Sonraki:',
+      'en': 'Next:',
+      'ja': '次:',
+    },
+    'Sonraki': {
+      'tr': 'Sonraki',
+      'en': 'Next',
+      'ja': '次',
+    },
+    'AY MENZİLİ & HERMETİK DURAK': {
+      'tr': 'AY MENZİLİ & HERMETİK DURAK',
+      'en': 'LUNAR MANSION & HERMETIC STATION',
+      'ja': '月宿（28宿）＆神秘ステーション',
+    },
+    '28 Menzil Listesi →': {
+      'tr': '28 Menzil Listesi →',
+      'en': '28 Mansions List →',
+      'ja': '28月宿一覧 →',
+    },
+    'Hermetik Doğa:': {
+      'tr': 'Hermetik Doğa:',
+      'en': 'Hermetic Nature:',
+      'ja': '性質:',
+    },
+    'Hermetik Doğa': {
+      'tr': 'Hermetik Doğa',
+      'en': 'Hermetic Nature',
+      'ja': '性質',
+    },
+    'Unsuru': {
+      'tr': 'Unsuru',
+      'en': 'Element',
+      'ja': '元素',
+    },
+    'Uğurlu:': {
+      'tr': 'Uğurlu:',
+      'en': 'Favorable:',
+      'ja': '吉:',
+    },
+    'Sakınılmalı:': {
+      'tr': 'Sakınılmalı:',
+      'en': 'Avoid:',
+      'ja': '凶・回避:',
+    },
+    'AYIN GÖKYÜZÜ YOLCULUĞU & AÇI HATTI': {
+      'tr': 'AYIN GÖKYÜZÜ YOLCULUĞU & AÇI HATTI',
+      'en': "THE MOON'S CELESTIAL PATH & ASPECT LINE",
+      'ja': '月の天空航路＆アスペクト軌道',
+    },
+    'Son Temas (Ayrılan)': {
+      'tr': 'Son Temas (Ayrılan)',
+      'en': 'Last Contact (Separating)',
+      'ja': '直前の座相 (離反)',
+    },
+    '☽ ŞU AN': {
+      'tr': '☽ ŞU AN',
+      'en': '☽ CURRENT',
+      'ja': '☽ 現在',
+    },
+    'Sıradaki Temas (Yaklaşan)': {
+      'tr': 'Sıradaki Temas (Yaklaşan)',
+      'en': 'Next Contact (Applying)',
+      'ja': '次の座相 (接近)',
+    },
+    'Ayrılan Açı': {
+      'tr': 'Ayrılan Açı',
+      'en': 'Separating Aspect',
+      'ja': '離反アスペクト',
+    },
+    'Yaklaşan Kavuşum / Açı Ağı': {
+      'tr': 'Yaklaşan Kavuşum / Açı Ağı',
+      'en': 'Applying Conjunction / Aspect Network',
+      'ja': '接近コンジャンクション / アスペクト網',
+    },
+    'Günlük Ay Fazı & Canlı Transitler': {
+      'tr': 'Günlük Ay Fazı & Canlı Transitler',
+      'en': 'Daily Moon Phase & Live Transits',
+      'ja': '本日の月相＆リアルタイム運行',
+    },
+    'Anlık Ay fazı, aydınlanma oranı, boşlukta takvimi, yanık yol uyarısı ve gezegen transitlerini görüntüleyin.': {
+      'tr': 'Anlık Ay fazı, aydınlanma oranı, boşlukta takvimi, yanık yol uyarısı ve gezegen transitlerini görüntüleyin.',
+      'en': 'View real-time Moon phase, illumination, Void of Course calendar, Via Combusta alert, and planetary transits.',
+      'ja': 'リアルタイムの月相、輝面比、ボイドタイム、焦熱の道（Via Combusta）、惑星運行を閲覧します。',
+    },
+    'Reklam İzle Aç 🎬': {
+      'tr': 'Reklam İzle Aç 🎬',
+      'en': 'Watch Ad to Unlock 🎬',
+      'ja': '動画を見て解放 🎬',
+    },
+    'VIP Sınırsız 👑': {
+      'tr': 'VIP Sınırsız 👑',
+      'en': 'VIP Unlimited 👑',
+      'ja': 'VIP無制限 👑',
+    },
+    'KİLİTLİ': {
+      'tr': 'KİLİTLİ',
+      'en': 'LOCKED',
+      'ja': 'ロック中',
+    },
+    'Ay Yanık Yolda (Via Combusta)': {
+      'tr': 'Ay Yanık Yolda (Via Combusta)',
+      'en': 'Moon on the Combust Way (Via Combusta)',
+      'ja': '月が焦熱の道に突入中 (Via Combusta)',
+    },
+    'Ay Yanık Yol Hattının Dışında': {
+      'tr': 'Ay Yanık Yol Hattının Dışında',
+      'en': 'Moon Outside Via Combusta',
+      'ja': '月は焦熱の道の外側（安全圏）',
+    },
+    'DİKKAT & İÇSEL ARINMA': {
+      'tr': 'DİKKAT & İÇSEL ARINMA',
+      'en': 'CAUTION & PURIFICATION',
+      'ja': '警戒＆浄化期間',
+    },
+    'DOĞAL AKIŞ': {
+      'tr': 'DOĞAL AKIŞ',
+      'en': 'NATURAL FLOW',
+      'ja': '自然な流れ',
+    },
+    'Konum:': {
+      'tr': 'Konum:',
+      'en': 'Position:',
+      'ja': '位置:',
+    },
+    'Kuşak:': {
+      'tr': 'Kuşak:',
+      'en': 'Belt:',
+      'ja': '帯域:',
+    },
+
+    // --- VIP KOZMİK DANIŞMANLIK MODAL ---
+    'ÖZEL ERİŞİM 👑': {
+      'tr': 'ÖZEL ERİŞİM 👑',
+      'en': 'EXCLUSIVE ACCESS 👑',
+      'ja': '特別アクセス 👑',
+    },
+    'İleri Düzey Modüller & Kişiye Özel Astrolojik Analizler': {
+      'tr': 'İleri Düzey Modüller & Kişiye Özel Astrolojik Analizler',
+      'en': 'Advanced Modules & Personalized Astrological Analyses',
+      'ja': '高度な占星術モジュール＆個別詳細鑑定',
+    },
+    'Tüm kozmik modüllere ve ileri düzey öngörülere tam erişim için VIP üyeliği başlatın.': {
+      'tr': 'Tüm kozmik modüllere ve ileri düzey öngörülere tam erişim için VIP üyeliği başlatın.',
+      'en': 'Start VIP membership for full access to all cosmic modules and advanced predictions.',
+      'ja': '全モジュールおよび高度な未来予測に無制限アクセスするにはVIPをご利用ください。',
+    },
+    'VIP ERİŞİMİNİZ AKTİF • TÜM MODÜLLER AÇIK 👑': {
+      'tr': 'VIP ERİŞİMİNİZ AKTİF • TÜM MODÜLLER AÇIK 👑',
+      'en': 'VIP ACCESS ACTIVE • ALL MODULES UNLOCKED 👑',
+      'ja': 'VIPアクセス有効 • 全モジュール解放中 👑',
+    },
+    'VIP Abonelik Paketlerini İncele 👑': {
+      'tr': 'VIP Abonelik Paketlerini İncele 👑',
+      'en': 'Explore VIP Subscription Plans 👑',
+      'ja': 'VIPプランを見る 👑',
+    },
+    'Modülü Başlat': {
+      'tr': 'Modülü Başlat',
+      'en': 'Launch Module',
+      'ja': 'モジュール起動',
+    },
+    'Modülü Başlat ->': {
+      'tr': 'Modülü Başlat ->',
+      'en': 'Launch Module ->',
+      'ja': 'モジュール起動 ->',
+    },
+    'Modülü Başlat →': {
+      'tr': 'Modülü Başlat →',
+      'en': 'Launch Module →',
+      'ja': 'モジュール起動 →',
+    },
+    'TÜM VIP KATMANLARI 🌑': {
+      'tr': 'TÜM VIP KATMANLARI 🌑',
+      'en': 'ALL VIP TIERS 🌑',
+      'ja': '全VIP対象 🌑',
+    },
+    'GOLD & PLATINUM ⭐': {
+      'tr': 'GOLD & PLATINUM ⭐',
+      'en': 'GOLD & PLATINUM ⭐',
+      'ja': 'GOLD & PLATINUM ⭐',
+    },
+    'PLATINUM ÖZEL 👑': {
+      'tr': 'PLATINUM ÖZEL 👑',
+      'en': 'PLATINUM EXCLUSIVE 👑',
+      'ja': 'PLATINUM限定 👑',
+    },
+    'TÜM VIP KATMANLARI 📄': {
+      'tr': 'TÜM VIP KATMANLARI 📄',
+      'en': 'ALL VIP TIERS 📄',
+      'ja': '全VIP対象 📄',
+    },
+    'Kadersel Tutulmalar & Harita Danışmanlığı': {
+      'tr': 'Kadersel Tutulmalar & Harita Danışmanlığı',
+      'en': 'Karmic Eclipses & Chart Consultation',
+      'ja': '宿命の食と個別チャート鑑定',
+    },
+    'Sinastri & İlişki Uyumu (Synastry)': {
+      'tr': 'Sinastri & İlişki Uyumu (Synastry)',
+      'en': 'Synastry & Relationship Compatibility',
+      'ja': 'シナストリー＆相性鑑定',
+    },
+    'Sinastri & İlişki Uyumu': {
+      'tr': 'Sinastri & İlişki Uyumu',
+      'en': 'Synastry & Compatibility',
+      'ja': 'シナストリー相性',
+    },
+    'Solar Return (Yıllık Öngörü Haritası)': {
+      'tr': 'Solar Return (Yıllık Öngörü Haritası)',
+      'en': 'Solar Return (Annual Forecast Chart)',
+      'ja': 'ソーラーリターン (年運チャート)',
+    },
+    'Solar Return (Yıllık Öngörü)': {
+      'tr': 'Solar Return (Yıllık Öngörü)',
+      'en': 'Solar Return (Annual Forecast)',
+      'ja': 'ソーラーリターン (年運)',
+    },
+    'Secondary Progress (İkincil İlerletim)': {
+      'tr': 'Secondary Progress (İkincil İlerletim)',
+      'en': 'Secondary Progressions (Inner Evolution)',
+      'ja': 'セカンダリープログレッション (内的進化)',
+    },
+    'Secondary Progress (İkincil İlerleme)': {
+      'tr': 'Secondary Progress (İkincil İlerleme)',
+      'en': 'Secondary Progressions (Inner Evolution)',
+      'ja': 'セカンダリープログレッション (内的進化)',
+    },
+    'Solar Arc Directions (Güneş Yayı Yönelimi)': {
+      'tr': 'Solar Arc Directions (Güneş Yayı Yönelimi)',
+      'en': 'Solar Arc Directions (Life Milestones)',
+      'ja': 'ソーラーアークディレクション (人生の節目)',
+    },
+    'Solar Arc Directions': {
+      'tr': 'Solar Arc Directions',
+      'en': 'Solar Arc Directions',
+      'ja': 'ソーラーアークディレクション',
+    },
+    'Lunar Return (Aylık Ay Dönüşü Haritası)': {
+      'tr': 'Lunar Return (Aylık Ay Dönüşü Haritası)',
+      'en': 'Lunar Return (Monthly Moon Cycle)',
+      'ja': 'ルナーリターン (月運チャート)',
+    },
+    'Lunar Return (Aylık Ay Dönüşü)': {
+      'tr': 'Lunar Return (Aylık Ay Dönüşü)',
+      'en': 'Lunar Return (Monthly Cycle)',
+      'ja': 'ルナーリターン (月運)',
+    },
+    'Firdaria (Klasik Gezegen Dönemleri)': {
+      'tr': 'Firdaria (Klasik Gezegen Dönemleri)',
+      'en': 'Firdaria (Planetary Periods)',
+      'ja': 'フィルダリア (古代惑星時代期)',
+    },
+    'Yıllık Ev Profeksiyonu (Annual Profections)': {
+      'tr': 'Yıllık Ev Profeksiyonu (Annual Profections)',
+      'en': 'Annual Profections (House Chronocrators)',
+      'ja': '年次プロフェクション (ハウス活性化)',
+    },
+    'Yıllık Ev Profeksiyonu': {
+      'tr': 'Yıllık Ev Profeksiyonu',
+      'en': 'Annual Profections',
+      'ja': '年次プロフェクション',
+    },
+    'Zodiacal Releasing (Helenistik Burç Salımı)': {
+      'tr': 'Zodiacal Releasing (Helenistik Burç Salımı)',
+      'en': 'Zodiacal Releasing (Peak Periods)',
+      'ja': 'ゾディアカルリリーシング (人生の頂点)',
+    },
+    'Zodiacal Releasing': {
+      'tr': 'Zodiacal Releasing',
+      'en': 'Zodiacal Releasing',
+      'ja': 'ゾディアカルリリーシング',
+    },
+    'Majör Gezegensel Yaşam Döngüleri': {
+      'tr': 'Majör Gezegensel Yaşam Döngüleri',
+      'en': 'Major Planetary Life Cycles',
+      'ja': '重要惑星ライフサイクル',
+    },
+    'Rektifikasyon (Hassas Saat Doğrulama)': {
+      'tr': 'Rektifikasyon (Hassas Saat Doğrulama)',
+      'en': 'Rectification (Birth Time Correction)',
+      'ja': 'レクティフィケーション (出生時刻補正)',
+    },
+    'Rektifikasyon Doğrulama': {
+      'tr': 'Rektifikasyon Doğrulama',
+      'en': 'Rectification Verification',
+      'ja': 'レクティフィケーション検証',
+    },
+    '10 Sayfalık Kapsamlı Harita Kitapçığı': {
+      'tr': '10 Sayfalık Kapsamlı Harita Kitapçığı',
+      'en': '10-Page Comprehensive Chart Booklet',
+      'ja': '10ページの詳細鑑定ブックレット',
+    },
+    '10 Sayfalık Harita Kitapçığı': {
+      'tr': '10 Sayfalık Harita Kitapçığı',
+      'en': '10-Page Chart Booklet',
+      'ja': '10ページ鑑定ブックレット',
+    },
+    'Ayrıcalığı': {
+      'tr': 'Ayrıcalığı',
+      'en': 'Privilege',
+      'ja': '特典',
+    },
+    'Gold veya Platinum VIP': {
+      'tr': 'Gold veya Platinum VIP',
+      'en': 'Gold or Platinum VIP',
+      'ja': 'ゴールドまたはプラチナムVIP',
+    },
+    'Platinum VIP': {
+      'tr': 'Platinum VIP',
+      'en': 'Platinum VIP',
+      'ja': 'プラチナムVIP',
+    },
+    'Canlı Gezegen Geçişleri & Sabit Yıldızlar': {
+      'tr': 'Canlı Gezegen Geçişleri & Sabit Yıldızlar',
+      'en': 'Live Planetary Transits & Fixed Stars',
+      'ja': 'リアルタイム天体運行＆恒星',
+    },
+    'Şu an gökyüzünde gerçekleşen anlık gezegen konumları ve Yiğithan Akman Sabit Yıldızlar Kataloğu dereceleriyle kurulan kavuşumlar gösterilmektedir.': {
+      'tr': 'Şu an gökyüzünde gerçekleşen anlık gezegen konumları ve Yiğithan Akman Sabit Yıldızlar Kataloğu dereceleriyle kurulan kavuşumlar gösterilmektedir.',
+      'en': 'Real-time planetary coordinates and conjunctions with the Yiğithan Akman Fixed Stars Catalog are displayed.',
+      'ja': '天空のリアルタイム天体位置およびイーギットハン・アクマン恒星カタログの合（コンジャンクション）を表示しています。',
+    },
+    '28 Kadim Ay Menzili & Hermetik Duraklar': {
+      'tr': '28 Kadim Ay Menzili & Hermetik Duraklar',
+      'en': '28 Ancient Lunar Mansions & Hermetic Stations',
+      'ja': '28の古代月宿＆神秘ステーション',
+    },
+    'ŞU AN AKTİF 🌙': {
+      'tr': 'ŞU AN AKTİF 🌙',
+      'en': 'CURRENTLY ACTIVE 🌙',
+      'ja': '現在運行中 🌙',
+    },
+    'Menzil': {
+      'tr': 'Menzil',
+      'en': 'Mansion',
+      'ja': '月宿',
+    },
+    'Doğa:': {
+      'tr': 'Doğa:',
+      'en': 'Nature:',
+      'ja': '性質:',
+    },
+    'Doğa': {
+      'tr': 'Doğa',
+      'en': 'Nature',
+      'ja': '性質',
+    },
+    'Unsur:': {
+      'tr': 'Unsur:',
+      'en': 'Element:',
+      'ja': '元素:',
+    },
+    'Tılsım Enerjisi:': {
+      'tr': 'Tılsım Enerjisi:',
+      'en': 'Talismanic Energy:',
+      'ja': '護符のエネルギー:',
+    },
+    'Tılsım Enerjisi': {
+      'tr': 'Tılsım Enerjisi',
+      'en': 'Talismanic Energy',
+      'ja': '護符のエネルギー',
+    },
+    'Tavsiye:': {
+      'tr': 'Tavsiye:',
+      'en': 'Advice:',
+      'ja': 'アドバイス:',
+    },
+    'Tavsiye': {
+      'tr': 'Tavsiye',
+      'en': 'Advice',
+      'ja': 'アドバイス',
+    },
+    'Stoacılık': {
+      'tr': 'Stoacılık',
+      'en': 'Stoicism',
+      'ja': 'ストア哲学',
+    },
+    'Psikoloji & Derin Bilinç': {
+      'tr': 'Psikoloji & Derin Bilinç',
+      'en': 'Psychology & Deep Consciousness',
+      'ja': '深層心理学＆意識',
+    },
+    'Tasavvuf & Evrensel Aşk': {
+      'tr': 'Tasavvuf & Evrensel Aşk',
+      'en': 'Sufism & Universal Love',
+      'ja': 'スーフィズム＆普遍の愛',
+    },
+    'Bilim & Kozmoloji': {
+      'tr': 'Bilim & Kozmoloji',
+      'en': 'Science & Cosmology',
+      'ja': '科学＆宇宙論',
+    },
+    'Felsefe': {
+      'tr': 'Felsefe',
+      'en': 'Philosophy',
+      'ja': '哲学',
+    },
+    'Kozmik Enerji & Bilim': {
+      'tr': 'Kozmik Enerji & Bilim',
+      'en': 'Cosmic Energy & Science',
+      'ja': '宇宙エネルギー＆科学',
+    },
+    'Ezoterik Bilgelik': {
+      'tr': 'Ezoterik Bilgelik',
+      'en': 'Esoteric Wisdom',
+      'ja': '秘教の叡智',
+    },
+    'Astronomi & Bilim': {
+      'tr': 'Astronomi & Bilim',
+      'en': 'Astronomy & Science',
+      'ja': '天文学＆科学',
+    },
+    'Edebiyat & Tasavvuf': {
+      'tr': 'Edebiyat & Tasavvuf',
+      'en': 'Literature & Sufism',
+      'ja': '文学＆神秘主義',
+    },
+    'Zen & Farkındalık': {
+      'tr': 'Zen & Farkındalık',
+      'en': 'Zen & Mindfulness',
+      'ja': '禅＆マインドフルネス',
+    },
+    'Kozmik İlerleme': {
+      'tr': 'Kozmik İlerleme',
+      'en': 'Cosmic Progression',
+      'ja': '宇宙の進化',
+    },
+
+    // --- BAŞLANGIÇ TEMEL SÖZLÜK ---
     'GÖKYÜZÜ DOKTORU': {
       'tr': 'GÖKYÜZÜ DOKTORU',
       'en': 'SKY DOCTOR',
@@ -1588,11 +2416,6 @@ class AppTranslationService {
       'tr': 'Aktif Gökyüzü',
       'en': 'Active Sky',
       'ja': '現在の天空',
-    },
-    'Detay için dokun': {
-      'tr': 'Detay için dokun',
-      'en': 'Tap for details',
-      'ja': 'タップして詳細を表示',
     },
     'CANLI SAYAÇ': {
       'tr': 'CANLI SAYAÇ',

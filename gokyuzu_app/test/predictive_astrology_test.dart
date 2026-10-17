@@ -1,7 +1,5 @@
-import 'dart:math' as math;
 import 'package:flutter_test/flutter_test.dart';
 import 'package:gokyuzu_app/data/services/predictive_astrology_service.dart';
-import 'package:gokyuzu_app/data/services/sky_transits_service.dart';
 import 'package:gokyuzu_app/data/services/storage_service.dart';
 import 'package:gokyuzu_app/data/services/eclipses_service.dart';
 
@@ -139,13 +137,13 @@ void main() {
       },
     );
 
-    final impacts = EclipsesService.calculatePersonalEclipseImpact(testProfile);
+    final impacts = EclipsesService.analyzePersonalEclipses(profile: testProfile);
     expect(impacts, isNotEmpty);
     for (final impact in impacts) {
-      expect(impact.personalHouse, inInclusiveRange(1, 12));
-      expect(impact.axisTitle, isNotEmpty);
-      expect(impact.baseCounseling, isNotEmpty);
-      expect(impact.actionPlan, isNotEmpty);
+      expect(impact.activatedHouse, inInclusiveRange(1, 12));
+      expect(impact.houseAxisTitle, isNotEmpty);
+      expect(impact.personalHouseCounseling, isNotEmpty);
+      expect(impact.strategicActionPlan, isNotEmpty);
     }
   });
 }
