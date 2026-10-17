@@ -58,7 +58,7 @@ class CosmicNotificationReceiver : BroadcastReceiver() {
 
             try {
                 manager.notify(id, notification)
-            } catch (_: SecurityException) {
+            } catch (e: SecurityException) {
             }
         }
     }
