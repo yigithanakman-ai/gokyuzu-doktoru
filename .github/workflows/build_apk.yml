@@ -64,6 +64,7 @@ jobs:
           git add build_*.log 2>/dev/null || true
           git commit -m "chore: debug build logs" || true
           git push -f origin debug-build-log || true
+          git checkout main || true
 
       - name: Build Kontrol
         run: |
@@ -91,10 +92,10 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.3
-          name: "📱 Gökyüzü Doktoru - v1.0.3 (Sürüm Kodu 4 & Play Store AAB)"
+          tag_name: v1.0.4
+          name: "📱 Gökyüzü Doktoru - v1.0.4 (Sürüm Kodu 5 & Play Store AAB)"
           body: |
-            ### 🪐 Gökyüzü Doktoru Android Sürümleri
+            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.4 / Sürüm Kodu 5)
 
             - **`gokyuzu-doktoru.apk`**: Kendi Android telefonunuzda doğrudan test edip kullanmak için yükleme dosyası (İmzalı).
             - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı).
