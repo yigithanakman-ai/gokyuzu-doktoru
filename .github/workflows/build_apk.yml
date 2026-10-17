@@ -51,8 +51,19 @@ jobs:
       - name: Release APK ve Play Store App Bundle (AAB) Derle
         run: |
           cd gokyuzu_app
-          flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation
-          flutter build appbundle --release --no-tree-shake-icons --android-skip-build-dependency-validation
+          flutter build apk --release --verbose --no-tree-shake-icons --android-skip-build-dependency-validation 2>&1 | tee /tmp/build.log
+          flutter build appbundle --release --verbose --no-tree-shake-icons --android-skip-build-dependency-validation 2>&1 | tee -a /tmp/build.log
+
+      - name: Hata Logunu Git Dalına Gönder
+        if: failure()
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "github-actions[bot]@users.noreply.github.com"
+          git checkout -B ci-error-log
+          tail -n 300 /tmp/build.log > ERROR_LOG.txt 2>/dev/null || true
+          git add -f ERROR_LOG.txt
+          git commit -m "ci: capture build error" || true
+          git push -f origin ci-error-log || true
 
       - name: Dağıtım Dosyalarını Kopyala
         run: |
