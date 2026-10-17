@@ -4,6 +4,8 @@ import 'package:gokyuzu_app/data/services/planetary_hours_service.dart';
 import 'package:gokyuzu_app/data/services/cosmic_compass_service.dart';
 import 'package:gokyuzu_app/data/services/referral_service.dart';
 import 'package:gokyuzu_app/data/services/storage_service.dart';
+import 'package:gokyuzu_app/data/services/frequency_synth_service.dart';
+import 'package:gokyuzu_app/data/services/cosmic_theme_service.dart';
 import 'package:gokyuzu_app/presentation/widgets/birthday_solar_return_modal.dart';
 
 void main() {
@@ -177,4 +179,49 @@ void main() {
       }
     });
   });
+
+  group('5. FrequencySynthService Tests', () {
+    test('generateSineWavBytes generates valid WAV header and correct sample count', () {
+      final wavBytes = FrequencySynthService.generateSineWavBytes(
+        frequencyHz: 136.10, // Om / Dünya yılı frekansı
+        durationSeconds: 1.0,
+        sampleRate: 44100,
+      );
+
+      // Header should start with 'RIFF'
+      expect(String.fromCharCodes(wavBytes.sublist(0, 4)), 'RIFF');
+      // Format is 'WAVE'
+      expect(String.fromCharCodes(wavBytes.sublist(8, 12)), 'WAVE');
+      // Subchunk 1 is 'fmt '
+      expect(String.fromCharCodes(wavBytes.sublist(12, 16)), 'fmt ');
+      // Subchunk 2 is 'data'
+      expect(String.fromCharCodes(wavBytes.sublist(36, 40)), 'data');
+
+      // 44-byte header + (44100 samples * 2 bytes) = 88244 bytes
+      expect(wavBytes.length, 44 + (44100 * 2));
+    });
+  });
+
+  group('6. CosmicThemeService Tests', () {
+    test('Season switcher dynamically updates background gradient and scaffold color', () {
+      CosmicThemeService.setOverrideSeason(CosmicSeason.halloween);
+      expect(CosmicThemeService.currentSeason, CosmicSeason.halloween);
+      expect(CosmicThemeService.scaffoldBackgroundColor, isNotNull);
+      expect(CosmicThemeService.backgroundGradient.colors.length, 3);
+
+      CosmicThemeService.setOverrideSeason(CosmicSeason.newYear);
+      expect(CosmicThemeService.currentSeason, CosmicSeason.newYear);
+      expect(CosmicThemeService.scaffoldBackgroundColor, isNotNull);
+
+      CosmicThemeService.setOverrideSeason(CosmicSeason.valentines);
+      expect(CosmicThemeService.currentSeason, CosmicSeason.valentines);
+
+      CosmicThemeService.setOverrideSeason(CosmicSeason.springEquinox);
+      expect(CosmicThemeService.currentSeason, CosmicSeason.springEquinox);
+
+      CosmicThemeService.setOverrideSeason(null);
+    });
+  });
 }
+
+

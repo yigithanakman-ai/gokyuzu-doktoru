@@ -661,10 +661,15 @@ class _HomeScreenState extends State<HomeScreen> {
     return ValueListenableBuilder<String>(
       valueListenable: AppTranslationService.currentLangNotifier,
       builder: (context, currentLang, _) {
-        return Scaffold(
-          backgroundColor: AppColors.background,
-          body: SafeArea(
-            child: SingleChildScrollView(
+        return ValueListenableBuilder<CosmicSeason>(
+          valueListenable: CosmicThemeService.seasonNotifier,
+          builder: (context, season, _) {
+            return Scaffold(
+              backgroundColor: CosmicThemeService.scaffoldBackgroundColor,
+              body: Container(
+                decoration: BoxDecoration(gradient: CosmicThemeService.backgroundGradient),
+                child: SafeArea(
+                  child: SingleChildScrollView(
               padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
@@ -1982,9 +1987,12 @@ class _HomeScreenState extends State<HomeScreen> {
           ),
         ),
       ),
-    );
-      },
-    );
+    ),
+  );
+            },
+          );
+        },
+      );
   }
 
   // --- Social Media Sharing Modal ---

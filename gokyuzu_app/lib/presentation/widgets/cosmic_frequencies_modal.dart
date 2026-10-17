@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../data/services/frequency_synth_service.dart';
 
 class PlanetaryFrequencyItem {
   final String planetName;
@@ -199,7 +200,10 @@ class CosmicFrequenciesModal extends StatelessWidget {
                   ),
                   IconButton(
                     icon: const Icon(Icons.close_rounded, color: Colors.white70),
-                    onPressed: () => Navigator.of(context).pop(),
+                    onPressed: () {
+                      FrequencySynthService.stop();
+                      Navigator.of(context).pop();
+                    },
                   ),
                 ],
               ),
@@ -295,6 +299,38 @@ class CosmicFrequenciesModal extends StatelessWidget {
                                   ),
                                 ],
                               ),
+                            ),
+                            const SizedBox(width: 8),
+                            ValueListenableBuilder<double?>(
+                              valueListenable: FrequencySynthService.playingFrequencyNotifier,
+                              builder: (context, playingHz, _) {
+                                final isThisPlaying = playingHz == item.frequencyHz;
+                                return ElevatedButton.icon(
+                                  onPressed: () => FrequencySynthService.togglePlayFrequency(item.frequencyHz),
+                                  icon: Icon(
+                                    isThisPlaying ? Icons.stop_rounded : Icons.volume_up_rounded,
+                                    size: 15,
+                                    color: Colors.black,
+                                  ),
+                                  label: Text(
+                                    isThisPlaying ? 'Durdur' : 'Dinle',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.w900,
+                                      color: Colors.black,
+                                    ),
+                                  ),
+                                  style: ElevatedButton.styleFrom(
+                                    backgroundColor: isThisPlaying ? AppColors.pastelMint : item.themeColor,
+                                    foregroundColor: Colors.black,
+                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    minimumSize: Size.zero,
+                                    tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                    elevation: isThisPlaying ? 4 : 1,
+                                  ),
+                                );
+                              },
                             ),
                           ],
                         ),

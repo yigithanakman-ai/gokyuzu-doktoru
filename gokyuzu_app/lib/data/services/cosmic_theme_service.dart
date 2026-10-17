@@ -125,6 +125,77 @@ class CosmicThemeService {
     }
   }
 
+  /// Sezona Özel Arka Plan Ana Rengi
+  static Color get scaffoldBackgroundColor {
+    switch (currentSeason) {
+      case CosmicSeason.halloween:
+        return const Color(0xFF0D0614);
+      case CosmicSeason.newYear:
+        return const Color(0xFF040A14);
+      case CosmicSeason.valentines:
+        return const Color(0xFF14040C);
+      case CosmicSeason.springEquinox:
+        return const Color(0xFF04120B);
+      case CosmicSeason.standard:
+        return AppColors.background;
+    }
+  }
+
+  /// Sezona Özel Tüm Ekranı Kaplayan Büyüleyici Arka Plan Gradyanı
+  static LinearGradient get backgroundGradient {
+    switch (currentSeason) {
+      case CosmicSeason.halloween:
+        return const LinearGradient(
+          colors: [
+            Color(0xFF1E0B2B), // Gizemli koyu cadı moru
+            Color(0xFF12051C),
+            Color(0xFF220D06), // Altta hafif sıcak balkabağı aurası
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        );
+      case CosmicSeason.newYear:
+        return const LinearGradient(
+          colors: [
+            Color(0xFF07182E), // Buzlu gece laciverti
+            Color(0xFF030D1A),
+            Color(0xFF1A1604), // Altta hafif yeni yıl altın ışıltısı
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        );
+      case CosmicSeason.valentines:
+        return const LinearGradient(
+          colors: [
+            Color(0xFF250718), // Aşk kadifesi
+            Color(0xFF13030D),
+            Color(0xFF240615), // Altta hafif gül kırmızısı
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        );
+      case CosmicSeason.springEquinox:
+        return const LinearGradient(
+          colors: [
+            Color(0xFF082216), // Bahar uyanışı zümrüt
+            Color(0xFF04120B),
+            Color(0xFF1B1F06), // Altta taze güneş yeşili
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        );
+      case CosmicSeason.standard:
+        return const LinearGradient(
+          colors: [
+            Color(0xFF130E26),
+            Color(0xFF090414),
+          ],
+          begin: Alignment.topCenter,
+          end: Alignment.bottomCenter,
+        );
+    }
+  }
+
   /// Gezegenlere Özel Sezonluk Kostüm & İkon Rozetleri
   static String? getPlanetCostumeEmoji(String planetKey) {
     final key = planetKey.toLowerCase().trim();
