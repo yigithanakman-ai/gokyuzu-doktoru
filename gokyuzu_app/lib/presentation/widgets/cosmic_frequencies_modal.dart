@@ -308,26 +308,31 @@ class CosmicFrequenciesModal extends StatelessWidget {
                                 return ElevatedButton.icon(
                                   onPressed: () => FrequencySynthService.togglePlayFrequency(item.frequencyHz),
                                   icon: Icon(
-                                    isThisPlaying ? Icons.stop_rounded : Icons.volume_up_rounded,
-                                    size: 15,
+                                    isThisPlaying ? Icons.stop_circle_rounded : Icons.play_circle_fill_rounded,
+                                    size: 16,
                                     color: Colors.black,
                                   ),
                                   label: Text(
-                                    isThisPlaying ? 'Durdur' : 'Dinle',
+                                    isThisPlaying ? 'Durdur' : 'Başlat',
                                     style: const TextStyle(
-                                      fontSize: 11,
+                                      fontSize: 11.5,
                                       fontWeight: FontWeight.w900,
                                       color: Colors.black,
                                     ),
                                   ),
                                   style: ElevatedButton.styleFrom(
-                                    backgroundColor: isThisPlaying ? AppColors.pastelMint : item.themeColor,
+                                    backgroundColor: isThisPlaying ? const Color(0xFF00E676) : item.themeColor,
                                     foregroundColor: Colors.black,
-                                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
                                     minimumSize: Size.zero,
                                     tapTargetSize: MaterialTapTargetSize.shrinkWrap,
-                                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-                                    elevation: isThisPlaying ? 4 : 1,
+                                    shape: RoundedRectangleBorder(
+                                      borderRadius: BorderRadius.circular(10),
+                                      side: isThisPlaying
+                                          ? const BorderSide(color: Colors.white, width: 1.5)
+                                          : BorderSide.none,
+                                    ),
+                                    elevation: isThisPlaying ? 6 : 2,
                                   ),
                                 );
                               },

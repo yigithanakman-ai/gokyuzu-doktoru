@@ -18,9 +18,9 @@ class FrequencySynthService {
   /// Belirli bir frekansta (Hz) saf sinüs dalgası içeren Stereo WAV ses dosyası üretir
   static Uint8List generateSineWavBytes({
     required double frequencyHz,
-    double durationSeconds = 12.0,
+    double durationSeconds = 20.0,
     int sampleRate = 44100,
-    double volume = 0.85,
+    double volume = 0.88,
   }) {
     const numChannels = 2; // Stereo (Evrensel uyumluluk ve dolgun ses için)
     const bitsPerSample = 16;
@@ -65,7 +65,7 @@ class FrequencySynthService {
 
     // Yumuşak ses açılışı ve kapanışı (Fade-in / Fade-out) - Patlama / çıtlama olmaması için
     final attackSamples = (sampleRate * 0.20).toInt();
-    final releaseSamples = (sampleRate * 0.35).toInt();
+    final releaseSamples = (sampleRate * 0.40).toInt();
 
     int offset = 44;
     for (int i = 0; i < numSamples; i++) {
@@ -107,21 +107,36 @@ class FrequencySynthService {
       playingFrequencyNotifier.value = frequencyHz;
 
       final wavBytes = generateSineWavBytes(frequencyHz: frequencyHz);
-      final tempDir = await getTemporaryDirectory();
-      final tempFile = File('${tempDir.path}/cosmic_${frequencyHz.toStringAsFixed(2)}.wav');
-      await tempFile.writeAsBytes(wavBytes);
+      
+      String targetPath;
+      try {
+        final tempDir = await getTemporaryDirectory();
+        final file = File('${tempDir.path}/cosmic_${frequencyHz.toStringAsFixed(2)}.wav');
+        await file.writeAsBytes(wavBytes);
+        targetPath = file.path;
+      } catch (_) {
+        final file = File('/tmp/cosmic_${frequencyHz.toStringAsFixed(2)}.wav');
+        await file.writeAsBytes(wavBytes);
+        targetPath = file.path;
+      }
 
       // macOS üzerinde doğrudan CoreAudio afplay kullanarak sıfır gecikmeli kusursuz oynatma
       if (Platform.isMacOS) {
+        final macFile = File('/tmp/cosmic_${frequencyHz.toStringAsFixed(2)}.wav');
+        if (!macFile.existsSync()) {
+          await macFile.writeAsBytes(wavBytes);
+        }
         try {
-          _afplayProcess = await Process.start('/usr/bin/afplay', [tempFile.path]);
-          _afplayProcess?.exitCode.then((_) {
+          _afplayProcess = await Process.start('/usr/bin/afplay', [macFile.path]);
+          _afplayProcess?.exitCode.then((code) {
             if (playingFrequencyNotifier.value == frequencyHz) {
               playingFrequencyNotifier.value = null;
             }
           });
           return;
-        } catch (_) {}
+        } catch (e) {
+          debugPrint('macOS afplay fallback: $e');
+        }
       }
 
       // Mobil (Android, iOS) ve diğer platformlar için audioplayers motoru
@@ -131,7 +146,7 @@ class FrequencySynthService {
           playingFrequencyNotifier.value = null;
         }
       });
-      await _player.play(DeviceFileSource(tempFile.path, mimeType: 'audio/wav'));
+      await _player.play(DeviceFileSource(targetPath, mimeType: 'audio/wav'));
     } catch (e) {
       debugPrint('Kozmik frekans sentezleme hatası: $e');
       playingFrequencyNotifier.value = null;
