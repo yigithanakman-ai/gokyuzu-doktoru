@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/services/storage_service.dart';
+import '../../data/services/app_translation_service.dart';
 import 'auth_screen.dart';
 import 'home_screen.dart';
 
@@ -274,7 +275,7 @@ class _SplashScreenState extends State<SplashScreen>
     return InkWell(
       onTap: () async {
         setState(() => _selectedLang = code);
-        await StorageService.setLanguage(code);
+        await AppTranslationService.setLanguage(code);
       },
       borderRadius: BorderRadius.circular(16),
       child: Container(

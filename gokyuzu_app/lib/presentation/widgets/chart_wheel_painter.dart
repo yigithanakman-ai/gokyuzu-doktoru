@@ -373,60 +373,75 @@ class ChartWheelPainter extends CustomPainter {
   }
 
   void _drawInnerAspects(Canvas canvas, Offset center, double r, Map<String, Offset> planetPositions) {
-    // If planets are placed, connect key aspects (Sun, Moon, Mars, Venus, Jupiter) with harmonic lines
     final pKeys = planetPositions.keys.toList();
     if (pKeys.length >= 2) {
-      for (int i = 0; i < math.min(pKeys.length, 5); i++) {
-        for (int j = i + 1; j < math.min(pKeys.length, 6); j++) {
-          final p1 = planetPositions[pKeys[i]]!;
-          final p2 = planetPositions[pKeys[j]]!;
-          // Project points slightly inside innerAspectsR
+      final planetLongitudes = <String, double>{};
+      planets.forEach((name, p) {
+        String sign = '';
+        double deg = 0.0;
+        if (p is Map) {
+          sign = p['sign']?.toString() ?? '';
+          deg = (p['degree'] as num?)?.toDouble() ?? 0.0;
+        } else {
+          try {
+            sign = (p as dynamic).sign?.toString() ?? '';
+            deg = ((p as dynamic).degree as num?)?.toDouble() ?? 0.0;
+          } catch (_) {}
+        }
+        final signIdx = zodiacSigns.indexOf(sign);
+        if (signIdx >= 0) {
+          planetLongitudes[name] = (signIdx * 30.0) + deg;
+        }
+      });
+
+      for (int i = 0; i < pKeys.length; i++) {
+        for (int j = i + 1; j < pKeys.length; j++) {
+          final k1 = pKeys[i];
+          final k2 = pKeys[j];
+          final lon1 = planetLongitudes[k1];
+          final lon2 = planetLongitudes[k2];
+          if (lon1 == null || lon2 == null) continue;
+
+          double diff = (lon1 - lon2).abs() % 360.0;
+          if (diff > 180.0) diff = 360.0 - diff;
+
+          Color? aspectColor;
+          double strokeW = 0.9;
+          if ((diff - 180.0).abs() <= 8.0) {
+            aspectColor = AppColors.starlightGold.withValues(alpha: 0.55);
+            strokeW = 1.15;
+          } else if ((diff - 120.0).abs() <= 7.5) {
+            aspectColor = AppColors.pastelMint.withValues(alpha: 0.50);
+            strokeW = 1.05;
+          } else if ((diff - 90.0).abs() <= 7.5) {
+            aspectColor = AppColors.savageRed.withValues(alpha: 0.50);
+            strokeW = 1.05;
+          } else if ((diff - 60.0).abs() <= 6.0) {
+            aspectColor = AppColors.pastelBlue.withValues(alpha: 0.45);
+            strokeW = 0.85;
+          }
+
+          if (aspectColor == null) continue;
+
+          final p1 = planetPositions[k1]!;
+          final p2 = planetPositions[k2]!;
           final dir1 = (p1 - center);
           final dir2 = (p2 - center);
-          final innerP1 = center + (dir1 / dir1.distance) * (r * 0.9);
-          final innerP2 = center + (dir2 / dir2.distance) * (r * 0.9);
+          final innerP1 = center + (dir1 / dir1.distance) * (r * 0.92);
+          final innerP2 = center + (dir2 / dir2.distance) * (r * 0.92);
 
-          final isMajor = (i + j) % 2 == 0;
           canvas.drawLine(
             innerP1,
             innerP2,
             Paint()
-              ..color = isMajor
-                  ? AppColors.pastelMint.withValues(alpha: 0.28)
-                  : AppColors.starlightGold.withValues(alpha: 0.22)
-              ..strokeWidth = 0.8,
+              ..color = aspectColor
+              ..strokeWidth = strokeW,
           );
         }
-      }
-    } else {
-      // Default harmonic sacred geometry
-      final List<List<double>> sampleLines = [
-        [0.0, 120.0, 0], // Trine (Green)
-        [120.0, 240.0, 0],
-        [240.0, 0.0, 0],
-        [45.0, 135.0, 1], // Square (Red)
-        [135.0, 225.0, 1],
-        [225.0, 315.0, 1],
-        [315.0, 45.0, 1],
-        [0.0, 180.0, 2], // Opposition (Gold)
-      ];
-
-      for (final line in sampleLines) {
-        final pos1 = _getPointOnWheel(center, r * 0.9, line[0]);
-        final pos2 = _getPointOnWheel(center, r * 0.9, line[1]);
-        final type = line[2].toInt();
-
-        final Color c = type == 0
-            ? AppColors.pastelMint.withValues(alpha: 0.40)
-            : type == 1
-                ? AppColors.savageRed.withValues(alpha: 0.35)
-                : AppColors.starlightGold.withValues(alpha: 0.35);
-
-        canvas.drawLine(pos1, pos2, Paint()..color = c..strokeWidth = 0.9);
       }
     }
   }
 
   @override
-  bool shouldRepaint(covariant CustomPainter oldDelegate) => false;
+  bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
 }

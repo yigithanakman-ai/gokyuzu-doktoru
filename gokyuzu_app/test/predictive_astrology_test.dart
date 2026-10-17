@@ -3,6 +3,7 @@ import 'package:flutter_test/flutter_test.dart';
 import 'package:gokyuzu_app/data/services/predictive_astrology_service.dart';
 import 'package:gokyuzu_app/data/services/sky_transits_service.dart';
 import 'package:gokyuzu_app/data/services/storage_service.dart';
+import 'package:gokyuzu_app/data/services/eclipses_service.dart';
 
 void main() {
   test('PredictiveAstrologyService calculation test for Yigithan and another profile', () {
@@ -122,5 +123,29 @@ void main() {
     print('Night Profile Sect: ${placidusNight['sectName']}');
     expect(placidusNight['isDayChart'], isFalse);
     expect(placidusNight['sectName'], contains('Gece'));
+  });
+
+  test('EclipsesService calculates personal house based on exact Placidus cusps', () {
+    final testProfile = UserProfile(
+      name: 'Patron Test',
+      birthDate: '15.05.1990',
+      birthTime: '09:00',
+      birthCity: 'İstanbul',
+      sunSign: 'Boğa',
+      moonSign: 'Oğlak',
+      risingSign: 'İkizler',
+      rawChart: {
+        'rising': '20°00\' İkizler',
+      },
+    );
+
+    final impacts = EclipsesService.calculatePersonalEclipseImpact(testProfile);
+    expect(impacts, isNotEmpty);
+    for (final impact in impacts) {
+      expect(impact.personalHouse, inInclusiveRange(1, 12));
+      expect(impact.axisTitle, isNotEmpty);
+      expect(impact.baseCounseling, isNotEmpty);
+      expect(impact.actionPlan, isNotEmpty);
+    }
   });
 }

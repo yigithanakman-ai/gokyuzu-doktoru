@@ -1,5 +1,7 @@
 import 'dart:convert';
+import 'package:flutter/material.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'astrology_engine.dart';
 
 class UserProfile {
   final String name;
@@ -77,9 +79,67 @@ class StorageService {
     'GKYZ2453',
   ];
 
+  static String _cleanSign(String raw) {
+    final clean = raw.replaceAll(RegExp(r'\s*\(.*?\)'), '').trim();
+    const signs = [
+      'Koç', 'Boğa', 'İkizler', 'Yengeç', 'Aslan', 'Başak',
+      'Terazi', 'Akrep', 'Yay', 'Oğlak', 'Kova', 'Balık',
+    ];
+    for (final s in signs) {
+      if (clean.contains(s)) return s;
+    }
+    return clean.split(' ').first;
+  }
+
+  static UserProfile _syncProfileWithEngine(UserProfile profile) {
+    try {
+      DateTime date;
+      if (profile.birthDate.contains('-')) {
+        final p = profile.birthDate.split('-');
+        date = DateTime(int.parse(p[0]), int.parse(p[1]), int.parse(p[2]));
+      } else if (profile.birthDate.contains('.')) {
+        final p = profile.birthDate.split('.');
+        date = DateTime(int.parse(p[2]), int.parse(p[1]), int.parse(p[0]));
+      } else {
+        return profile;
+      }
+
+      final tp = profile.birthTime.split(':');
+      final hour = tp.isNotEmpty ? (int.tryParse(tp[0]) ?? 12) : 12;
+      final minute = tp.length > 1 ? (int.tryParse(tp[1]) ?? 0) : 0;
+
+      final chart = AstrologyEngine.calculateChart(
+        name: profile.name,
+        birthDate: date,
+        birthTime: TimeOfDay(hour: hour, minute: minute),
+        city: profile.birthCity.isEmpty ? 'İstanbul' : profile.birthCity,
+        country: profile.birthCountry.isEmpty ? 'Türkiye' : profile.birthCountry,
+      );
+
+      final syncedRaw = chart.rawChart;
+      return UserProfile(
+        name: profile.name,
+        birthDate: profile.birthDate,
+        birthTime: profile.birthTime,
+        birthCountry: profile.birthCountry,
+        birthCity: profile.birthCity,
+        sunSign: _cleanSign(chart.sunSign),
+        moonSign: _cleanSign(chart.moonSign),
+        risingSign: _cleanSign(chart.risingSign),
+        gender: profile.gender,
+        language: profile.language,
+        isVip: profile.isVip,
+        rawChart: syncedRaw,
+      );
+    } catch (_) {
+      return profile;
+    }
+  }
+
   static Future<void> saveProfile(UserProfile profile) async {
     final prefs = await SharedPreferences.getInstance();
-    await prefs.setString(_profileKey, jsonEncode(profile.toJson()));
+    final synced = _syncProfileWithEngine(profile);
+    await prefs.setString(_profileKey, jsonEncode(synced.toJson()));
   }
 
   static Future<void> clearProfile() async {
@@ -93,7 +153,16 @@ class StorageService {
     final data = prefs.getString(_profileKey);
     if (data == null) return null;
     try {
-      return UserProfile.fromJson(jsonDecode(data));
+      final loaded = UserProfile.fromJson(jsonDecode(data));
+      final synced = _syncProfileWithEngine(loaded);
+      if (loaded.sunSign != synced.sunSign ||
+          loaded.moonSign != synced.moonSign ||
+          loaded.risingSign != synced.risingSign ||
+          loaded.rawChart['mc'] != synced.rawChart['mc'] ||
+          loaded.rawChart['venus'] != synced.rawChart['venus']) {
+        await prefs.setString(_profileKey, jsonEncode(synced.toJson()));
+      }
+      return synced;
     } catch (_) {
       return null;
     }

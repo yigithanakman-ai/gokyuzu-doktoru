@@ -3,25 +3,26 @@ class PlanetPosition {
   final String sign;
   final String formatted;
   final bool isRetrograde;
+  final double? longitude;
 
   PlanetPosition({
     required this.name,
     required this.sign,
     required this.formatted,
     this.isRetrograde = false,
+    this.longitude,
   });
 
-  factory PlanetPosition.fromString(String name, String raw) {
-    final isRetro = raw.contains('(r)');
-    // Raw format: "15°15' Balık" or "04°29' Aslan (r)"
-    final clean = raw.replaceAll('(r)', '').trim();
-    final parts = clean.split(' ');
-    final sign = parts.isNotEmpty ? parts.last : '';
+  factory PlanetPosition.fromString(String name, String raw, [double? lon]) {
+    final lower = raw.toLowerCase();
+    final isRetro = lower.contains('(r)') || lower.contains('(retro)');
+    final sign = BirthChartModel.normalizeSign(raw);
     return PlanetPosition(
       name: name,
       sign: sign,
       formatted: raw,
       isRetrograde: isRetro,
+      longitude: lon,
     );
   }
 }
@@ -52,6 +53,8 @@ class BirthChartModel {
     required this.modalities,
     required this.rawChart,
   });
+
+  String get ascendant => risingSign;
 
   static String _extractSign(String formatted) {
     final clean = formatted.replaceAll('(r)', '').trim();
@@ -140,6 +143,28 @@ class BirthChartModel {
     'Gemini': 'Değişken', 'Virgo': 'Değişken', 'Sagittarius': 'Değişken', 'Pisces': 'Değişken',
   };
 
+  /// Her türlü formatlanmış metinden burç adını hatasız ve büyük/küçük harf duyarsız ayrıştırır
+  static String normalizeSign(String raw) {
+    if (raw.trim().isEmpty) return 'Koç';
+    final cleaned = raw
+        .replaceAll('(r)', '')
+        .replaceAll('(R)', '')
+        .replaceAll('(retro)', '')
+        .replaceAll('(Retro)', '')
+        .replaceAll(RegExp(r'[^a-zA-ZçğıöşüÇĞİÖŞÜ\s]'), ' ')
+        .trim();
+
+    final tokens = cleaned.split(RegExp(r'\s+')).where((t) => t.isNotEmpty).toList();
+    for (final token in tokens.reversed) {
+      for (final entry in signElements.keys) {
+        if (token.toLowerCase() == entry.toLowerCase()) {
+          return entry;
+        }
+      }
+    }
+    return 'Koç';
+  }
+
   /// Element Dengesi Puanlaması:
   /// ASC: 3, Güneş: 3, Ay: 3 | Merkür: 1, Venüs: 1, Mars: 1, Jüpiter: 1, Satürn: 1, MC: 1
   /// Toplam: 15 Puan. Geri kalan hiçbir gösterge hesaba katılmaz!
@@ -148,7 +173,7 @@ class BirthChartModel {
 
     void addPoint(String? sign, int points) {
       if (sign == null || sign.isEmpty) return;
-      final clean = sign.replaceAll('(r)', '').trim().split(' ').last;
+      final clean = normalizeSign(sign);
       final elem = signElements[clean];
       if (elem != null) {
         scores[elem] = (scores[elem] ?? 0) + points;
@@ -177,7 +202,7 @@ class BirthChartModel {
 
     void addPoint(String? sign, int points) {
       if (sign == null || sign.isEmpty) return;
-      final clean = sign.replaceAll('(r)', '').trim().split(' ').last;
+      final clean = normalizeSign(sign);
       final mod = signModalities[clean];
       if (mod != null) {
         scores[mod] = (scores[mod] ?? 0) + points;

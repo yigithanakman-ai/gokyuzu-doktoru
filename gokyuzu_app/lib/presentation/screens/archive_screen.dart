@@ -1,11 +1,13 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/models/saved_profile_model.dart';
+import '../../data/services/astrology_engine.dart';
 import '../../data/services/profile_archive_service.dart';
 import '../../data/services/storage_service.dart';
 import '../../data/services/world_cities_service.dart';
 import 'chart_detail_screen.dart';
 import 'cosmic_notes_screen.dart';
+import '../../data/services/app_translation_service.dart';
 
 class ArchiveScreen extends StatefulWidget {
   const ArchiveScreen({super.key});
@@ -45,7 +47,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
     if (!res.success) {
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(res.message ?? 'Hata oluştu'),
+          content: Text(AppTranslationService.tr(res.message ?? 'Hata oluştu')),
           backgroundColor: AppColors.savageRed,
           behavior: SnackBarBehavior.floating,
         ),
@@ -54,7 +56,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
       _loadData();
       ScaffoldMessenger.of(context).showSnackBar(
         SnackBar(
-          content: Text(res.message ?? 'Güncellendi'),
+          content: Text(AppTranslationService.tr(res.message ?? 'Güncellendi')),
           backgroundColor: AppColors.pastelMint,
           behavior: SnackBarBehavior.floating,
         ),
@@ -67,20 +69,20 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: const Color(0xFF1E1B2E),
-        title: const Text('Profili Sil', style: TextStyle(color: Colors.white, fontSize: 16)),
+        title: Text(AppTranslationService.tr('Profili Sil'), style: const TextStyle(color: Colors.white, fontSize: 16)),
         content: Text(
-          '${profile.fullName} isimli harita kaydı arşivinizden silinecektir. Emin misiniz?',
+          '${profile.fullName} ${AppTranslationService.tr('isimli harita kaydı arşivinizden silinecektir. Emin misiniz?')}',
           style: const TextStyle(color: Colors.white70, fontSize: 13),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.of(ctx).pop(false),
-            child: const Text('Vazgeç', style: TextStyle(color: Colors.white60)),
+            child: Text(AppTranslationService.tr('Vazgeç'), style: const TextStyle(color: Colors.white60)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(backgroundColor: AppColors.savageRed),
             onPressed: () => Navigator.of(ctx).pop(true),
-            child: const Text('Sil', style: TextStyle(color: Colors.white)),
+            child: Text(AppTranslationService.tr('Sil'), style: const TextStyle(color: Colors.white)),
           ),
         ],
       ),
@@ -96,17 +98,30 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
     final d = profile.birthDate;
     final birthDateStr =
         '${d.year}-${d.month.toString().padLeft(2, '0')}-${d.day.toString().padLeft(2, '0')}';
+    final tp = profile.birthTime.split(':');
+    final hour = tp.isNotEmpty ? (int.tryParse(tp[0]) ?? 12) : 12;
+    final minute = tp.length > 1 ? (int.tryParse(tp[1]) ?? 0) : 0;
+
+    final chart = AstrologyEngine.calculateChart(
+      name: profile.fullName,
+      birthDate: d,
+      birthTime: TimeOfDay(hour: hour, minute: minute),
+      city: profile.birthCity,
+      country: profile.birthCountry,
+    );
+
     final userProf = UserProfile(
       name: profile.fullName,
       birthDate: birthDateStr,
       birthTime: profile.birthTime,
       birthCity: profile.birthCity,
       birthCountry: profile.birthCountry,
-      sunSign: 'Koç',
-      moonSign: 'Koç',
-      risingSign: 'Koç',
+      sunSign: chart.sunSign.split(' ').first,
+      moonSign: chart.moonSign.split(' ').first,
+      risingSign: chart.risingSign.split(' ').first,
       gender: profile.gender,
       isVip: _isVip,
+      rawChart: chart.rawChart,
     );
 
     Navigator.of(context).push(
@@ -165,10 +180,10 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                     const Icon(Icons.person_add_alt_1_rounded,
                         color: AppColors.starlightGold, size: 22),
                     const SizedBox(width: 10),
-                    const Expanded(
+                    Expanded(
                       child: Text(
-                        'Arşive Yeni Harita Ekle',
-                        style: TextStyle(
+                        AppTranslationService.tr('Arşive Yeni Harita Ekle'),
+                        style: const TextStyle(
                           fontSize: 16,
                           fontWeight: FontWeight.bold,
                           color: Colors.white,
@@ -337,11 +352,11 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                     ),
                     if (filteredArchiveCities.isNotEmpty) ...[
                       const SizedBox(height: 6),
-                      Container(
-                        decoration: BoxDecoration(
-                          color: const Color(0xFF1E1A2B),
+                      Material(
+                        color: const Color(0xFF1E1A2B),
+                        shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(12),
-                          border: Border.all(color: AppColors.starlightGold.withValues(alpha: 0.3)),
+                          side: BorderSide(color: AppColors.starlightGold.withValues(alpha: 0.3)),
                         ),
                         child: Column(
                           children: filteredArchiveCities.map((loc) {
@@ -514,15 +529,15 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const Text(
-          'Kozmik Harita Arşivi',
-          style: TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
+        title: Text(
+          AppTranslationService.tr('Kozmik Harita Arşivi'),
+          style: const TextStyle(fontSize: 17, fontWeight: FontWeight.bold, color: Colors.white),
         ),
         actions: [
           // Kozmik Günlük & Hatırlatıcı İkonu
           IconButton(
             icon: const Icon(Icons.menu_book_rounded, color: AppColors.pastelMint),
-            tooltip: 'Kozmik Günlük & Hatırlatıcı',
+            tooltip: AppTranslationService.tr('Kozmik Günlük & Hatırlatıcı'),
             onPressed: () {
               Navigator.of(context).push(
                 MaterialPageRoute(builder: (_) => const CosmicNotesScreen()),
@@ -531,7 +546,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
           ),
           IconButton(
             icon: const Icon(Icons.person_add_rounded, color: AppColors.starlightGold),
-            tooltip: 'Yeni Harita Ekle',
+            tooltip: AppTranslationService.tr('Yeni Harita Ekle'),
             onPressed: _showAddProfileModal,
           ),
         ],
@@ -569,8 +584,8 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                           children: [
                             Text(
                               _isVip
-                                  ? 'VIP Sınırsız Arşiv Aktif'
-                                  : '${_profiles.length} / ${ProfileArchiveService.maxFreeProfiles} Ücretsiz Profil Kullanıldı',
+                                  ? AppTranslationService.tr('VIP Sınırsız Arşiv Aktif')
+                                  : '${_profiles.length} / ${ProfileArchiveService.maxFreeProfiles} ${AppTranslationService.tr('Ücretsiz Profil Kullanıldı')}',
                               style: TextStyle(
                                 fontSize: 13,
                                 fontWeight: FontWeight.bold,
@@ -580,8 +595,8 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                             const SizedBox(height: 2),
                             Text(
                               _isVip
-                                  ? 'Tüm kayıtlar güvenli şifrelenmiş kasada saklanıyor.'
-                                  : '3 profile kadar ücretsiz kaydedebilir, haritaları inceleyebilirsiniz.',
+                                  ? AppTranslationService.tr('Tüm kayıtlar güvenli şifrelenmiş kasada saklanıyor.')
+                                  : AppTranslationService.tr('3 profile kadar ücretsiz kaydedebilir, haritaları inceleyebilirsiniz.'),
                               style: const TextStyle(fontSize: 11, color: Colors.white60),
                             ),
                           ],
@@ -597,7 +612,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
                           onPressed: _showVipRequiredSheet,
-                          child: const Text('VIP Yükselt', style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
+                          child: Text(AppTranslationService.tr('VIP Yükselt'), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                         ),
                     ],
                   ),
@@ -611,7 +626,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                       const Icon(Icons.push_pin_rounded, size: 16, color: AppColors.starlightGold),
                       const SizedBox(width: 6),
                       Text(
-                        'Sabitlenen Haritalar (${pinnedProfiles.length}/3)',
+                        '${AppTranslationService.tr('Sabitlenen Haritalar')} (${pinnedProfiles.length}/3)',
                         style: const TextStyle(
                           fontSize: 13,
                           fontWeight: FontWeight.bold,
@@ -630,9 +645,9 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    const Text(
-                      'Tüm Harita Kayıtları',
-                      style: TextStyle(
+                    Text(
+                      AppTranslationService.tr('Tüm Harita Kayıtları'),
+                      style: const TextStyle(
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                         color: Colors.white,
@@ -640,7 +655,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                       ),
                     ),
                     Text(
-                      '${_profiles.length} Kişi',
+                      '${_profiles.length} ${AppTranslationService.tr('Kişi')}',
                       style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
                     ),
                   ],
@@ -659,15 +674,15 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                       children: [
                         const Icon(Icons.group_add_rounded, size: 48, color: Colors.white24),
                         const SizedBox(height: 12),
-                        const Text(
-                          'Henüz Kayıtlı Harita Yok',
-                          style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white70),
+                        Text(
+                          AppTranslationService.tr('Henüz Kayıtlı Harita Yok'),
+                          style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold, color: Colors.white70),
                         ),
                         const SizedBox(height: 6),
-                        const Text(
-                          'Sevdiklerinizin, eşinizin veya danışanlarınızın haritalarını kaydetmek için yukarıdaki (+) butonuna dokunun.',
+                        Text(
+                          AppTranslationService.tr('Sevdiklerinizin, eşinizin veya danışanlarınızın haritalarını kaydetmek için yukarıdaki (+) butonuna dokunun.'),
                           textAlign: TextAlign.center,
-                          style: TextStyle(fontSize: 12, color: Colors.white38),
+                          style: const TextStyle(fontSize: 12, color: Colors.white38),
                         ),
                         const SizedBox(height: 16),
                         ElevatedButton.icon(
@@ -678,7 +693,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                           ),
                           onPressed: _showAddProfileModal,
                           icon: const Icon(Icons.add, size: 16),
-                          label: const Text('İlk Haritayı Ekle', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
+                          label: Text(AppTranslationService.tr('İlk Haritayı Ekle'), style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13)),
                         ),
                       ],
                     ),
@@ -825,14 +840,14 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                       ],
                     ),
                   ),
-                  const Row(
+                  Row(
                     children: [
                       Text(
-                        'Haritayı Aç',
-                        style: TextStyle(fontSize: 11.5, color: AppColors.starlightGold, fontWeight: FontWeight.bold),
+                        AppTranslationService.tr('Haritayı Aç'),
+                        style: const TextStyle(fontSize: 11.5, color: AppColors.starlightGold, fontWeight: FontWeight.bold),
                       ),
-                      SizedBox(width: 2),
-                      Icon(Icons.arrow_forward_ios_rounded, size: 10, color: AppColors.starlightGold),
+                      const SizedBox(width: 2),
+                      const Icon(Icons.arrow_forward_ios_rounded, size: 10, color: AppColors.starlightGold),
                     ],
                   ),
                 ],

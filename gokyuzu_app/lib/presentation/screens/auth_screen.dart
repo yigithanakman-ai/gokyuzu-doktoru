@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/services/storage_service.dart';
+import '../../data/services/app_translation_service.dart';
 import '../dialogs/kvkk_dialog.dart';
 import 'onboarding_input_screen.dart';
 import 'home_screen.dart';
@@ -55,16 +56,19 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
   bool _checkConsent() {
     if (!_kvkkApproved) {
       setState(() {
-        _errorMessage =
-            '⚠️ Yasal Onay Zorunludur: İçeriye giriş yapabilmek için lütfen KVKK Aydınlatma Metni ve Kullanıcı Sözleşmesi\'ni okuyup onay kutucuğunu (tik) işaretleyiniz.';
+        _errorMessage = AppTranslationService.tr(
+          '⚠️ Yasal Onay Zorunludur: İçeriye giriş yapabilmek için lütfen KVKK Aydınlatma Metni ve Kullanıcı Sözleşmesi\'ni okuyup onay kutucuğunu (tik) işaretleyiniz.',
+        );
       });
       ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
+        SnackBar(
           content: Text(
-            'Lütfen devam etmeden önce Kullanım Sözleşmesi ve KVKK onay kutucuğunu işaretleyin.',
+            AppTranslationService.tr(
+              'Lütfen devam etmeden önce Kullanım Sözleşmesi ve KVKK onay kutucuğunu işaretleyin.',
+            ),
           ),
           backgroundColor: Colors.amber,
-          duration: Duration(seconds: 4),
+          duration: const Duration(seconds: 4),
         ),
       );
       return false;
@@ -101,12 +105,13 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     final password = _registerPasswordController.text;
 
     if (name.isEmpty || surname.isEmpty || email.isEmpty || password.isEmpty) {
-      setState(() => _errorMessage = 'Lütfen tüm alanları eksiksiz doldurunuz.');
+      setState(() => _errorMessage = AppTranslationService.tr('Lütfen tüm alanları eksiksiz doldurunuz.'));
       return;
     }
 
     if (!_isValidEmail(email)) {
-      setState(() => _errorMessage = 'Lütfen geçerli bir e-posta adresi giriniz (örnek: ad@soyad.com). @ işareti ve geçerli alan adı zorunludur.');
+      setState(() => _errorMessage = AppTranslationService.tr(
+          'Lütfen geçerli bir e-posta adresi giriniz (örnek: ad@soyad.com). @ işareti ve geçerli alan adı zorunludur.'));
       return;
     }
 
@@ -135,12 +140,13 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     final password = _loginPasswordController.text;
 
     if (email.isEmpty || password.isEmpty) {
-      setState(() => _errorMessage = 'Lütfen e-posta ve şifrenizi giriniz.');
+      setState(() => _errorMessage = AppTranslationService.tr('Lütfen e-posta ve şifrenizi giriniz.'));
       return;
     }
 
     if (!_isValidEmail(email)) {
-      setState(() => _errorMessage = 'Lütfen geçerli bir e-posta adresi giriniz (örnek: ad@soyad.com). @ işareti zorunludur.');
+      setState(() => _errorMessage = AppTranslationService.tr(
+          'Lütfen geçerli bir e-posta adresi giriniz (örnek: ad@soyad.com). @ işareti ve geçerli alan adı zorunludur.'));
       return;
     }
 
@@ -158,187 +164,252 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: const Color(0xFF0C0A14),
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.center,
-            children: [
-              const SizedBox(height: 12),
-              // App Emblem
-              Container(
-                width: 60,
-                height: 60,
-                decoration: BoxDecoration(
-                  shape: BoxShape.circle,
-                  gradient: const RadialGradient(
-                    colors: [AppColors.starlightGold, Color(0xFF3B2F04)],
-                  ),
-                  boxShadow: [
-                    BoxShadow(
-                      color: AppColors.starlightGold.withValues(alpha: 0.35),
-                      blurRadius: 20,
-                      spreadRadius: 2,
-                    ),
-                  ],
-                ),
-                child: const Center(
-                  child: Text('⚕️', style: TextStyle(fontSize: 28)),
-                ),
-              ),
-              const SizedBox(height: 12),
-              const Text(
-                'GÖKYÜZÜ DOKTORU',
-                style: TextStyle(
-                  fontSize: 20,
-                  fontWeight: FontWeight.w900,
-                  letterSpacing: 2,
-                  color: AppColors.starlightGold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Kozmik Doğum Haritası ve Gökyüzü Portalı',
-                style: TextStyle(fontSize: 12, color: AppColors.textSecondary),
-              ),
-              const SizedBox(height: 20),
-
-              // ZORUNLU YASAL ONAY KUTUSU (ÜSTTE & TÜM AKSİYONLAR İÇİN ZORUNLU)
-              _buildConsentBox(),
-              const SizedBox(height: 18),
-
-              if (_errorMessage != null) ...[
-                Container(
-                  padding: const EdgeInsets.all(12),
-                  decoration: BoxDecoration(
-                    color: AppColors.savageRed.withValues(alpha: 0.15),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.savageRed.withValues(alpha: 0.5)),
-                  ),
-                  child: Row(
+    return ValueListenableBuilder<String>(
+      valueListenable: AppTranslationService.currentLangNotifier,
+      builder: (context, currentLang, _) {
+        return Scaffold(
+          backgroundColor: const Color(0xFF0C0A14),
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.center,
+                children: [
+                  // Top Language Switcher Bar
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.end,
                     children: [
-                      const Icon(Icons.error_outline_rounded,
-                          color: AppColors.savageRed, size: 18),
-                      const SizedBox(width: 8),
-                      Expanded(
-                        child: Text(
-                          _errorMessage!,
-                          style: const TextStyle(
-                            fontSize: 12,
-                            color: Colors.white,
-                            fontWeight: FontWeight.w600,
-                          ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 3),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(20),
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            _buildLangChip('tr', '🇹🇷 TR'),
+                            const SizedBox(width: 4),
+                            _buildLangChip('en', '🇬🇧 EN'),
+                            const SizedBox(width: 4),
+                            _buildLangChip('ja', '🇯🇵 JA'),
+                          ],
                         ),
                       ),
                     ],
                   ),
-                ),
-                const SizedBox(height: 14),
-              ],
+                  const SizedBox(height: 8),
 
-              // Tab Bar (Yeni Üye Ol / Giriş Yap)
-              Container(
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white12),
-                ),
-                child: TabBar(
-                  controller: _tabController,
-                  indicator: BoxDecoration(
-                    color: AppColors.starlightGold.withValues(alpha: 0.25),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: AppColors.starlightGold.withValues(alpha: 0.6)),
+                  // App Emblem
+                  Container(
+                    width: 60,
+                    height: 60,
+                    decoration: BoxDecoration(
+                      shape: BoxShape.circle,
+                      gradient: const RadialGradient(
+                        colors: [AppColors.starlightGold, Color(0xFF3B2F04)],
+                      ),
+                      boxShadow: [
+                        BoxShadow(
+                          color: AppColors.starlightGold.withValues(alpha: 0.35),
+                          blurRadius: 20,
+                          spreadRadius: 2,
+                        ),
+                      ],
+                    ),
+                    child: const Center(
+                      child: Text('⚕️', style: TextStyle(fontSize: 28)),
+                    ),
                   ),
-                  indicatorSize: TabBarIndicatorSize.tab,
-                  labelColor: AppColors.starlightGold,
-                  unselectedLabelColor: AppColors.textMuted,
-                  labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-                  tabs: const [
-                    Tab(text: 'Giriş Yap'),
-                    Tab(text: 'Yeni Üye Ol'),
+                  const SizedBox(height: 12),
+                  Text(
+                    AppTranslationService.tr('GÖKYÜZÜ DOKTORU'),
+                    style: const TextStyle(
+                      fontSize: 20,
+                      fontWeight: FontWeight.w900,
+                      letterSpacing: 2,
+                      color: AppColors.starlightGold,
+                    ),
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    AppTranslationService.tr('Kozmik Doğum Haritası ve Gökyüzü Portalı'),
+                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                  ),
+                  const SizedBox(height: 20),
+
+                  if (_errorMessage != null) ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: AppColors.savageRed.withValues(alpha: 0.15),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.savageRed.withValues(alpha: 0.5)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.error_outline_rounded,
+                              color: AppColors.savageRed, size: 18),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              _errorMessage!,
+                              style: const TextStyle(
+                                fontSize: 12,
+                                color: Colors.white,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                    const SizedBox(height: 14),
                   ],
-                ),
-              ),
-              const SizedBox(height: 18),
 
-              // Tab Bar Views (Nested in Column)
-              AnimatedBuilder(
-                animation: _tabController,
-                builder: (context, _) {
-                  if (_tabController.index == 0) {
-                    return _buildLoginForm();
-                  } else {
-                    return _buildRegisterForm();
-                  }
-                },
-              ),
-
-              const SizedBox(height: 16),
-              // Guest Bypass with mandatory consent check
-              TextButton(
-                onPressed: () {
-                  if (!_checkConsent()) return;
-                  _proceedToApp();
-                },
-                child: const Text(
-                  'Misafir Olarak Haritaya Devam Et →',
-                  style: TextStyle(
-                    fontSize: 12.5,
-                    color: AppColors.textSecondary,
-                    decoration: TextDecoration.underline,
+                  // Tab Bar (Yeni Üye Ol / Giriş Yap)
+                  Container(
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.05),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(color: Colors.white12),
+                    ),
+                    child: TabBar(
+                      controller: _tabController,
+                      indicator: BoxDecoration(
+                        color: AppColors.starlightGold.withValues(alpha: 0.25),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: AppColors.starlightGold.withValues(alpha: 0.6)),
+                      ),
+                      indicatorSize: TabBarIndicatorSize.tab,
+                      labelColor: AppColors.starlightGold,
+                      unselectedLabelColor: AppColors.textMuted,
+                      labelStyle: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+                      tabs: [
+                        Tab(text: AppTranslationService.tr('Giriş Yap')),
+                        Tab(text: AppTranslationService.tr('Yeni Üye Ol')),
+                      ],
+                    ),
                   ),
-                ),
-              ),
+                  const SizedBox(height: 18),
 
-              const SizedBox(height: 16),
-              const Divider(color: Colors.white10),
-              const SizedBox(height: 8),
+                  // Tab Bar Views (Nested in Column)
+                  AnimatedBuilder(
+                    animation: _tabController,
+                    builder: (context, _) {
+                      if (_tabController.index == 0) {
+                        return _buildLoginForm();
+                      } else {
+                        return _buildRegisterForm();
+                      }
+                    },
+                  ),
 
-              // Yasal Linkler Barı (haritan.app standartlarında)
-              Wrap(
-                alignment: WrapAlignment.center,
-                spacing: 8,
-                runSpacing: 4,
-                children: [
-                  _buildLegalLink('Tüm Yasal Metinler', () => KvkkDialog.showAllLegalMenu(context), isHighlight: true),
-                  _buildDotSeparator(),
-                  _buildLegalLink('Gizlilik', () => KvkkDialog.showPrivacyPolicy(context)),
-                  _buildDotSeparator(),
-                  _buildLegalLink('KVKK', () => KvkkDialog.show(context)),
-                  _buildDotSeparator(),
-                  _buildLegalLink('Kullanım Koşulları', () => KvkkDialog.showTerms(context)),
-                  _buildDotSeparator(),
-                  _buildLegalLink('Mesafeli Satış & İade', () => KvkkDialog.showSalesAndRefund(context)),
-                  _buildDotSeparator(),
-                  _buildLegalLink('Sorumluluk Reddi', () => KvkkDialog.showDisclaimer(context)),
+                  const SizedBox(height: 16),
+                  // Guest Bypass with mandatory consent check
+                  TextButton(
+                    onPressed: () {
+                      if (!_checkConsent()) return;
+                      _proceedToApp();
+                    },
+                    child: Text(
+                      AppTranslationService.tr('Misafir Olarak Haritaya Devam Et →'),
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        color: AppColors.textSecondary,
+                        decoration: TextDecoration.underline,
+                      ),
+                    ),
+                  ),
+
+                  const SizedBox(height: 16),
+                  const Divider(color: Colors.white10),
+                  const SizedBox(height: 8),
+
+                  // Yasal Linkler Barı
+                  Wrap(
+                    alignment: WrapAlignment.center,
+                    spacing: 8,
+                    runSpacing: 4,
+                    children: [
+                      _buildLegalLink(AppTranslationService.tr('Tüm Yasal Metinler'),
+                          () => KvkkDialog.showAllLegalMenu(context),
+                          isHighlight: true),
+                      _buildDotSeparator(),
+                      _buildLegalLink(AppTranslationService.tr('Gizlilik'),
+                          () => KvkkDialog.showPrivacyPolicy(context)),
+                      _buildDotSeparator(),
+                      _buildLegalLink(AppTranslationService.tr('KVKK'), () => KvkkDialog.show(context)),
+                      _buildDotSeparator(),
+                      _buildLegalLink(AppTranslationService.tr('Kullanım Koşulları'),
+                          () => KvkkDialog.showTerms(context)),
+                      _buildDotSeparator(),
+                      _buildLegalLink(AppTranslationService.tr('Mesafeli Satış & İade'),
+                          () => KvkkDialog.showSalesAndRefund(context)),
+                      _buildDotSeparator(),
+                      _buildLegalLink(AppTranslationService.tr('Sorumluluk Reddi'),
+                          () => KvkkDialog.showDisclaimer(context)),
+                    ],
+                  ),
+
+                  const SizedBox(height: 14),
+
+                  // Yasal Sorumluluk Reddi Bilgilendirme Kutusu
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+                    decoration: BoxDecoration(
+                      color: Colors.white.withValues(alpha: 0.03),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: Colors.white10),
+                    ),
+                    child: Text(
+                      AppTranslationService.tr(
+                        'Astrolojik içerikler öz farkındalık ve eğlence amaçlıdır; tıbbi, psikolojik, finansal veya hukuki danışmanlık yerine geçmez.',
+                      ),
+                      textAlign: TextAlign.center,
+                      style: const TextStyle(
+                        fontSize: 10.5,
+                        color: Colors.white38,
+                        height: 1.35,
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 12),
                 ],
               ),
+            ),
+          ),
+        );
+      },
+    );
+  }
 
-              const SizedBox(height: 14),
-
-              // Yasal Sorumluluk Reddi Bilgilendirme Kutusu
-              Container(
-                padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.03),
-                  borderRadius: BorderRadius.circular(10),
-                  border: Border.all(color: Colors.white10),
-                ),
-                child: const Text(
-                  'Astrolojik içerikler öz farkındalık ve eğlence amaçlıdır; tıbbi, psikolojik, finansal veya hukuki danışmanlık yerine geçmez.',
-                  textAlign: TextAlign.center,
-                  style: TextStyle(
-                    fontSize: 10.5,
-                    color: Colors.white38,
-                    height: 1.35,
-                  ),
-                ),
-              ),
-              const SizedBox(height: 12),
-            ],
+  Widget _buildLangChip(String code, String label) {
+    final isSelected = AppTranslationService.currentLang == code;
+    return InkWell(
+      onTap: () async {
+        await AppTranslationService.setLanguage(code);
+      },
+      borderRadius: BorderRadius.circular(14),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.starlightGold.withValues(alpha: 0.25)
+              : Colors.transparent,
+          borderRadius: BorderRadius.circular(14),
+          border: Border.all(
+            color: isSelected ? AppColors.starlightGold : Colors.transparent,
+            width: 1.0,
+          ),
+        ),
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            color: isSelected ? AppColors.starlightGold : Colors.white60,
           ),
         ),
       ),
@@ -389,15 +460,16 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                   Wrap(
                     crossAxisAlignment: WrapCrossAlignment.center,
                     children: [
-                      const Text(
-                        '6698 sayılı ',
-                        style: TextStyle(fontSize: 11.5, color: Colors.white70),
-                      ),
+                      if (AppTranslationService.currentLang == 'tr')
+                        Text(
+                          AppTranslationService.tr('6698 sayılı '),
+                          style: const TextStyle(fontSize: 11.5, color: Colors.white70),
+                        ),
                       GestureDetector(
                         onTap: () => KvkkDialog.show(context),
-                        child: const Text(
-                          'KVKK Aydınlatma Metni',
-                          style: TextStyle(
+                        child: Text(
+                          AppTranslationService.tr('KVKK Aydınlatma Metni'),
+                          style: const TextStyle(
                             fontSize: 11.5,
                             color: AppColors.starlightGold,
                             fontWeight: FontWeight.bold,
@@ -405,27 +477,38 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                           ),
                         ),
                       ),
-                      const Text(
-                        ' ve ',
-                        style: TextStyle(fontSize: 11.5, color: Colors.white70),
+                      Text(
+                        AppTranslationService.tr(' ve '),
+                        style: const TextStyle(fontSize: 11.5, color: Colors.white70),
                       ),
                       GestureDetector(
                         onTap: () => KvkkDialog.showTerms(context),
-                        child: const Text(
-                          'Kullanıcı Sözleşmesi',
-                          style: TextStyle(
+                        child: Text(
+                          AppTranslationService.tr('Kullanıcı Sözleşmesi'),
+                          style: const TextStyle(
                             fontSize: 11.5,
-                            color: AppColors.pastelMint,
+                            color: AppColors.starlightGold,
                             fontWeight: FontWeight.bold,
                             decoration: TextDecoration.underline,
                           ),
                         ),
                       ),
-                      const Text(
-                        '\'ni okudum, kişisel doğum verilerimin işlenmesini ve yasal şartları onaylıyorum.',
-                        style: TextStyle(fontSize: 11.5, color: Colors.white70),
+                      Text(
+                        AppTranslationService.tr('\'ni okudum, anladım ve kabul ediyorum. *'),
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          color: Colors.white70,
+                          fontWeight: FontWeight.w600,
+                        ),
                       ),
                     ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    AppTranslationService.tr(
+                      'Kişisel verileriniz ve astrolojik profil bilgileriniz cihazınızda güvenle işlenir.',
+                    ),
+                    style: const TextStyle(fontSize: 10, color: Colors.white38),
                   ),
                 ],
               ),
@@ -445,7 +528,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             Expanded(
               child: _buildTextField(
                 controller: _registerNameController,
-                label: 'Ad *',
+                label: AppTranslationService.tr('Ad *'),
                 hint: 'Yiğithan',
                 icon: Icons.person_rounded,
               ),
@@ -454,7 +537,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             Expanded(
               child: _buildTextField(
                 controller: _registerSurnameController,
-                label: 'Soyad *',
+                label: AppTranslationService.tr('Soyad *'),
                 hint: 'Akman',
                 icon: Icons.badge_rounded,
               ),
@@ -464,7 +547,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         const SizedBox(height: 14),
         _buildTextField(
           controller: _registerEmailController,
-          label: 'E-posta Adresi *',
+          label: AppTranslationService.tr('E-posta Adresi *'),
           hint: 'ornek@email.com',
           icon: Icons.email_rounded,
           keyboardType: TextInputType.emailAddress,
@@ -472,7 +555,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         const SizedBox(height: 14),
         _buildTextField(
           controller: _registerPasswordController,
-          label: 'Şifre Belirleyin *',
+          label: AppTranslationService.tr('Şifre Belirleyin *'),
           hint: '••••••••',
           icon: Icons.lock_rounded,
           obscureText: _obscureRegisterPassword,
@@ -489,9 +572,9 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         const SizedBox(height: 14),
 
         // Cinsiyet Seçimi
-        const Text(
-          'Cinsiyet *',
-          style: TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.bold),
+        Text(
+          AppTranslationService.tr('Cinsiyet *'),
+          style: const TextStyle(fontSize: 12, color: AppColors.textSecondary, fontWeight: FontWeight.bold),
         ),
         const SizedBox(height: 6),
         Row(
@@ -500,7 +583,10 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             return Padding(
               padding: const EdgeInsets.only(right: 8),
               child: ChoiceChip(
-                label: Text(g, style: TextStyle(fontSize: 12, color: isSelected ? Colors.black : Colors.white70)),
+                label: Text(
+                  AppTranslationService.tr(g),
+                  style: TextStyle(fontSize: 12, color: isSelected ? Colors.black : Colors.white70),
+                ),
                 selected: isSelected,
                 selectedColor: AppColors.starlightGold,
                 backgroundColor: Colors.white.withValues(alpha: 0.05),
@@ -511,6 +597,11 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
             );
           }).toList(),
         ),
+
+        const SizedBox(height: 16),
+
+        // YASAL ONAY KUTUSU (FORMUN VE EKRANIN ALTINDA, BUTONUN HEMEN ÜSTÜNDE)
+        _buildConsentBox(),
 
         const SizedBox(height: 18),
 
@@ -531,9 +622,9 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                     height: 22,
                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
                   )
-                : const Text(
-                    'Hesap Oluştur & Haritaya Başla',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                : Text(
+                    AppTranslationService.tr('Hesap Oluştur & Haritaya Başla'),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
           ),
         ),
@@ -547,7 +638,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
       children: [
         _buildTextField(
           controller: _loginEmailController,
-          label: 'E-posta Adresi *',
+          label: AppTranslationService.tr('E-posta Adresi *'),
           hint: 'ornek@email.com',
           icon: Icons.email_rounded,
           keyboardType: TextInputType.emailAddress,
@@ -555,7 +646,7 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
         const SizedBox(height: 14),
         _buildTextField(
           controller: _loginPasswordController,
-          label: 'Şifre *',
+          label: AppTranslationService.tr('Şifre *'),
           hint: '••••••••',
           icon: Icons.lock_rounded,
           obscureText: _obscureLoginPassword,
@@ -569,7 +660,14 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                 setState(() => _obscureLoginPassword = !_obscureLoginPassword),
           ),
         ),
-        const SizedBox(height: 20),
+        const SizedBox(height: 16),
+
+        // YASAL ONAY KUTUSU (FORMUN VE EKRANIN ALTINDA, BUTONUN HEMEN ÜSTÜNDE)
+        _buildConsentBox(),
+
+        const SizedBox(height: 18),
+
+        // Giriş Yap Butonu
         SizedBox(
           width: double.infinity,
           height: 48,
@@ -586,9 +684,9 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                     height: 22,
                     child: CircularProgressIndicator(strokeWidth: 2, color: Colors.black),
                   )
-                : const Text(
-                    'Giriş Yap',
-                    style: TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
+                : Text(
+                    AppTranslationService.tr('Giriş Yap'),
+                    style: const TextStyle(fontSize: 14, fontWeight: FontWeight.bold),
                   ),
           ),
         ),

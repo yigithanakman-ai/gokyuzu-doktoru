@@ -546,7 +546,7 @@ class FixedStarsService {
       color: AppColors.savageRed,
     ),
     const FixedStar(
-      name: 'Spica (Başak Başakı)',
+      name: 'Spica',
       sign: 'Terazi',
       degree: 23,
       minute: 50,

@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/services/storage_service.dart';
+import '../../data/services/app_translation_service.dart';
 import 'legal_document_screen.dart';
 import 'auth_screen.dart';
 
@@ -473,20 +474,23 @@ class _ProfileScreenState extends State<ProfileScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      appBar: AppBar(
-        title: const Text(
-          'Profil & Üyelik İşlemleri',
-          style: TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
-        ),
-        backgroundColor: Colors.transparent,
-        elevation: 0,
-        leading: IconButton(
-          icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
-          onPressed: () => Navigator.pop(context, true),
-        ),
-      ),
+    return ValueListenableBuilder<String>(
+      valueListenable: AppTranslationService.currentLangNotifier,
+      builder: (context, activeLang, _) {
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          appBar: AppBar(
+            title: Text(
+              AppTranslationService.tr('Profil & Üyelik İşlemleri'),
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 18),
+            ),
+            backgroundColor: Colors.transparent,
+            elevation: 0,
+            leading: IconButton(
+              icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
+              onPressed: () => Navigator.pop(context, true),
+            ),
+          ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
         child: Column(
@@ -494,6 +498,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             // 1. PROFİL ÖZET KARTI (Gizli 5 dokunuş ile Yönetici VIP Konsolu açılır)
             _buildProfileSummaryCard(),
+            const SizedBox(height: 16),
+
+            // DİL SEÇİMİ (Language Selector)
+            _buildLanguageCard(),
             const SizedBox(height: 16),
 
             // 2. ÜYELİK VE HESAP BİLGİSİ KARTI
@@ -514,6 +522,8 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ],
         ),
       ),
+    );
+      },
     );
   }
 
@@ -588,7 +598,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                               ),
                               const SizedBox(width: 4),
                               Text(
-                                _isVip ? 'VIP ÜYE' : 'STANDART',
+                                _isVip ? AppTranslationService.tr('VIP ÜYE') : AppTranslationService.tr('STANDART'),
                                 style: TextStyle(
                                   fontSize: 10,
                                   fontWeight: FontWeight.bold,
@@ -630,9 +640,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
           Row(
             mainAxisAlignment: MainAxisAlignment.spaceAround,
             children: [
-              _buildSignMiniBadge('Güneş', widget.profile.sunSign, Icons.wb_sunny_rounded, Colors.amber),
-              _buildSignMiniBadge('Ay', widget.profile.moonSign, Icons.nightlight_round, Colors.lightBlueAccent),
-              _buildSignMiniBadge('Yükselen', widget.profile.risingSign, Icons.arrow_upward_rounded, const Color(0xFFE056FD)),
+              _buildSignMiniBadge(AppTranslationService.tr('Güneş'), AppTranslationService.signName(widget.profile.sunSign), Icons.wb_sunny_rounded, Colors.amber),
+              _buildSignMiniBadge(AppTranslationService.tr('Ay'), AppTranslationService.signName(widget.profile.moonSign), Icons.nightlight_round, Colors.lightBlueAccent),
+              _buildSignMiniBadge(AppTranslationService.tr('Yükselen'), AppTranslationService.signName(widget.profile.risingSign), Icons.arrow_upward_rounded, const Color(0xFFE056FD)),
             ],
           ),
         ],
@@ -667,6 +677,96 @@ class _ProfileScreenState extends State<ProfileScreen> {
     );
   }
 
+  // DİL SEÇİMİ KARTI
+  Widget _buildLanguageCard() {
+    return ValueListenableBuilder<String>(
+      valueListenable: AppTranslationService.currentLangNotifier,
+      builder: (context, activeLang, _) {
+        return Container(
+          padding: const EdgeInsets.all(16),
+          decoration: BoxDecoration(
+            color: AppColors.cardBackground.withAlpha(210),
+            borderRadius: BorderRadius.circular(18),
+            border: Border.all(color: AppColors.cardBorder),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                children: [
+                  const Icon(Icons.language_rounded, color: AppColors.starlightGold, size: 20),
+                  const SizedBox(width: 8),
+                  Text(
+                    AppTranslationService.tr('language'),
+                    style: const TextStyle(
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 6),
+              Text(
+                AppTranslationService.tr('lang_prompt'),
+                style: const TextStyle(fontSize: 11.5, color: AppColors.textSecondary),
+              ),
+              const SizedBox(height: 12),
+              Row(
+                children: [
+                  Expanded(
+                    child: _buildLangChipInProfile('tr', '🇹🇷 Türkçe', activeLang == 'tr'),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildLangChipInProfile('en', '🇬🇧 English', activeLang == 'en'),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: _buildLangChipInProfile('ja', '🇯🇵 日本語', activeLang == 'ja'),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        );
+      },
+    );
+  }
+
+  Widget _buildLangChipInProfile(String code, String label, bool isSelected) {
+    return InkWell(
+      onTap: () async {
+        await AppTranslationService.setLanguage(code);
+        if (mounted) setState(() {});
+      },
+      borderRadius: BorderRadius.circular(12),
+      child: AnimatedContainer(
+        duration: const Duration(milliseconds: 200),
+        padding: const EdgeInsets.symmetric(vertical: 10),
+        decoration: BoxDecoration(
+          color: isSelected
+              ? AppColors.starlightGold.withValues(alpha: 0.22)
+              : Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(12),
+          border: Border.all(
+            color: isSelected ? AppColors.starlightGold : Colors.white12,
+            width: isSelected ? 1.5 : 1.0,
+          ),
+        ),
+        alignment: Alignment.center,
+        child: Text(
+          label,
+          style: TextStyle(
+            fontSize: 11.5,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+            color: isSelected ? AppColors.starlightGold : Colors.white70,
+          ),
+        ),
+      ),
+    );
+  }
+
   // 2. HESAP VE ÜYELİK DETAY KARTI
   Widget _buildAccountDetailsCard() {
     final registeredEmail = _savedAccount?['email'] ?? 'Kayıtlı e-posta adresi';
@@ -685,12 +785,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Icon(Icons.badge_rounded, color: Color(0xFF6C5CE7), size: 20),
-              SizedBox(width: 8),
+            children: [
+              const Icon(Icons.badge_rounded, color: Color(0xFF6C5CE7), size: 20),
+              const SizedBox(width: 8),
               Text(
-                'Hesap & Üyelik Bilgileri',
-                style: TextStyle(
+                AppTranslationService.tr('Hesap & Üyelik Bilgileri'),
+                style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -701,19 +801,19 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 12),
           _buildInfoRow(
             icon: Icons.person_outline_rounded,
-            title: 'Kullanıcı:',
+            title: AppTranslationService.tr('Kullanıcı:'),
             value: fullName.isNotEmpty ? fullName : widget.profile.name,
           ),
           const SizedBox(height: 8),
           _buildInfoRow(
             icon: Icons.email_outlined,
-            title: 'E-Posta:',
+            title: AppTranslationService.tr('E-Posta:'),
             value: registeredEmail,
           ),
           const SizedBox(height: 8),
           _buildInfoRow(
             icon: Icons.location_city_rounded,
-            title: 'Doğum Yeri & Tarihi:',
+            title: AppTranslationService.tr('Doğum Yeri & Tarihi:'),
             value: '${widget.profile.birthCity} • ${widget.profile.birthDate}',
           ),
           const SizedBox(height: 10),
@@ -731,7 +831,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                   ),
                   const SizedBox(width: 6),
                   Text(
-                    _isVip ? 'VIP Ayrıcalıklı Statü Aktif' : 'Standart Kullanıcı',
+                    _isVip ? AppTranslationService.tr('VIP Ayrıcalıklı Statü Aktif') : AppTranslationService.tr('Standart Kullanıcı'),
                     style: TextStyle(
                       fontSize: 12.5,
                       fontWeight: FontWeight.bold,
@@ -755,9 +855,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                     }
                   },
                   icon: const Icon(Icons.lock_reset_rounded, size: 14, color: Colors.white60),
-                  label: const Text(
-                    'Standart Mod (Test)',
-                    style: TextStyle(color: Colors.white70, fontSize: 11),
+                  label: Text(
+                    AppTranslationService.tr('Standart Mod (Test)'),
+                    style: const TextStyle(color: Colors.white70, fontSize: 11),
                   ),
                   style: TextButton.styleFrom(
                     padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
@@ -806,12 +906,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Icon(Icons.rate_review_rounded, color: Color(0xFFFFD700), size: 20),
-              SizedBox(width: 8),
+            children: [
+              const Icon(Icons.rate_review_rounded, color: Color(0xFFFFD700), size: 20),
+              const SizedBox(width: 8),
               Text(
-                'İstek & Öneri Bildirimi',
-                style: TextStyle(
+                AppTranslationService.tr('İstek & Öneri Bildirimi'),
+                style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -867,9 +967,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
               ),
               icon: const Icon(Icons.edit_note_rounded, size: 20),
-              label: const Text(
-                'İstek veya Öneri Bildir',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
+              label: Text(
+                AppTranslationService.tr('İstek veya Öneri Bildir'),
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
               ),
             ),
           ),
@@ -962,12 +1062,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Icon(Icons.gavel_rounded, color: Color(0xFF6C5CE7), size: 20),
-              SizedBox(width: 8),
+            children: [
+              const Icon(Icons.gavel_rounded, color: Color(0xFF6C5CE7), size: 20),
+              const SizedBox(width: 8),
               Text(
-                'Yasal Prosedürler & Aydınlatma',
-                style: TextStyle(
+                AppTranslationService.tr('Yasal Prosedürler & Aydınlatma'),
+                style: const TextStyle(
                   fontSize: 15,
                   fontWeight: FontWeight.bold,
                   color: Colors.white,
@@ -983,37 +1083,37 @@ class _ProfileScreenState extends State<ProfileScreen> {
           const SizedBox(height: 12),
 
           _buildLegalTile(
-            title: 'KVKK Aydınlatma Metni',
+            title: AppTranslationService.tr('KVKK Aydınlatma Metni'),
             subtitle: '6698 sayılı kanun kapsamında veri işleme ve haklarınız',
             icon: Icons.shield_outlined,
             onTap: () => _openLegalDoc(LegalDocType.kvkk),
           ),
           _buildLegalTile(
-            title: 'Gizlilik Politikası',
+            title: AppTranslationService.tr('Gizlilik Politikası'),
             subtitle: 'Kişisel verilerinizin korunması ve güvenliği',
             icon: Icons.lock_outline,
             onTap: () => _openLegalDoc(LegalDocType.privacy),
           ),
           _buildLegalTile(
-            title: 'Kullanım Koşulları & Sözleşme',
+            title: AppTranslationService.tr('Kullanım Koşulları & Sözleşme'),
             subtitle: 'Uygulama şartları, fikri mülkiyet ve sorumluluk reddi',
             icon: Icons.description_outlined,
             onTap: () => _openLegalDoc(LegalDocType.terms),
           ),
           _buildLegalTile(
-            title: 'Reklam & Çerez Politikası',
+            title: AppTranslationService.tr('Reklam & Çerez Politikası'),
             subtitle: 'Ödüllü sponsorlu reklamlar ve veri tercihleri',
             icon: Icons.campaign_outlined,
             onTap: () => _openLegalDoc(LegalDocType.advertising),
           ),
           _buildLegalTile(
-            title: 'Mesafeli Satış & İptal İade',
+            title: AppTranslationService.tr('Mesafeli Satış & İptal İade'),
             subtitle: '6502 sayılı kanun kapsamında cayma hakkı ve abonelik şartları',
             icon: Icons.receipt_long_outlined,
             onTap: () => _openLegalDoc(LegalDocType.salesAndRefund),
           ),
           _buildLegalTile(
-            title: 'Yasal Sorumluluk Reddi (Disclaimer)',
+            title: AppTranslationService.tr('Yasal Sorumluluk Reddi (Disclaimer)'),
             subtitle: 'Öz farkındalık ve eğlence bildirimi, tıbbi/hukuki feragatname',
             icon: Icons.warning_amber_rounded,
             onTap: () => _openLegalDoc(LegalDocType.disclaimer),
@@ -1087,12 +1187,12 @@ class _ProfileScreenState extends State<ProfileScreen> {
         crossAxisAlignment: CrossAxisAlignment.start,
         children: [
           Row(
-            children: const [
-              Icon(Icons.delete_forever_rounded, color: Color(0xFFE74C3C), size: 20),
-              SizedBox(width: 8),
+            children: [
+              const Icon(Icons.delete_forever_rounded, color: Color(0xFFE74C3C), size: 20),
+              const SizedBox(width: 8),
               Text(
-                'Hesabı & Tüm Verileri Kalıcı Olarak Sil',
-                style: TextStyle(
+                AppTranslationService.tr('Hesabı & Tüm Verileri Kalıcı Olarak Sil'),
+                style: const TextStyle(
                   fontSize: 14.5,
                   fontWeight: FontWeight.bold,
                   color: Color(0xFFFFB3C1),
@@ -1117,9 +1217,9 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
               ),
               icon: const Icon(Icons.delete_outline_rounded, size: 18),
-              label: const Text(
-                'Hesabımı ve Verilerimi Kalıcı Olarak Sil',
-                style: TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
+              label: Text(
+                AppTranslationService.tr('Hesabımı ve Verilerimi Kalıcı Olarak Sil'),
+                style: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
               ),
             ),
           ),
@@ -1138,13 +1238,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
           side: const BorderSide(color: Color(0xFFE74C3C), width: 1.2),
         ),
         title: Row(
-          children: const [
-            Icon(Icons.warning_amber_rounded, color: Color(0xFFE74C3C), size: 24),
-            SizedBox(width: 8),
+          children: [
+            const Icon(Icons.warning_amber_rounded, color: Color(0xFFE74C3C), size: 24),
+            const SizedBox(width: 8),
             Expanded(
               child: Text(
-                'Hesabı Kalıcı Olarak Sil?',
-                style: TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                AppTranslationService.tr('Hesabı Kalıcı Olarak Sil?'),
+                style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
               ),
             ),
           ],
@@ -1165,7 +1265,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx),
-            child: const Text('Vazgeç', style: TextStyle(color: Colors.white60)),
+            child: Text(AppTranslationService.tr('Vazgeç'), style: const TextStyle(color: Colors.white60)),
           ),
           ElevatedButton(
             style: ElevatedButton.styleFrom(
@@ -1190,7 +1290,7 @@ class _ProfileScreenState extends State<ProfileScreen> {
                 );
               }
             },
-            child: const Text('Evet, Kalıcı Olarak Sil', style: TextStyle(fontWeight: FontWeight.bold)),
+            child: Text(AppTranslationService.tr('Evet, Kalıcı Olarak Sil'), style: const TextStyle(fontWeight: FontWeight.bold)),
           ),
         ],
       ),

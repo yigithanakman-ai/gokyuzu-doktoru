@@ -16,9 +16,16 @@ class AdService {
   static bool _isInterstitialAdLoading = false;
   static int _tabSwitchCounter = 0;
   static DateTime? _lastAdShownTime;
+  static DateTime? get lastAdShownTime => _lastAdShownTime;
+
+  static bool get _isMobile =>
+      !kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS);
 
   /// Geçiş reklamını arka planda önceden yükle (Hazır tut)
   static void preloadInterstitial({String? adUnitId}) {
+    if (!_isMobile) return;
     if (_interstitialAd != null || _isInterstitialAdLoading) return;
     _isInterstitialAdLoading = true;
     final unitId = adUnitId ?? testInterstitialAdId;
@@ -57,6 +64,7 @@ class AdService {
 
   /// Müşteriyi boğmadan, her 4 sekme geçişinde 1 kez reklam gösterme kuralı
   static Future<bool> shouldShowTabInterstitial() async {
+    if (!_isMobile) return false;
     final isVip = await StorageService.isVipUnlocked();
     if (isVip) return false; // VIP kullanıcılara %100 Reklamsız!
 
@@ -73,6 +81,10 @@ class AdService {
 
   /// Hazır reklam varsa göster, bittiğinde devam et
   static Future<void> showInterstitialIfReady({VoidCallback? onDone}) async {
+    if (!_isMobile) {
+      onDone?.call();
+      return;
+    }
     final isVip = await StorageService.isVipUnlocked();
     if (isVip) {
       onDone?.call();

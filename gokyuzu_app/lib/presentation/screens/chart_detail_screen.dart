@@ -16,6 +16,8 @@ import '../widgets/glass_card.dart';
 import '../widgets/chart_wheel_painter.dart';
 import '../../data/services/ad_service.dart';
 import 'aspects_screen.dart';
+import '../widgets/eclipses_academy_view.dart';
+import '../../data/services/app_translation_service.dart';
 
 class ChartDetailScreen extends StatefulWidget {
   final UserProfile profile;
@@ -54,6 +56,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
         birthDate: widget.profile.birthDate,
         birthTime: widget.profile.birthTime,
         city: widget.profile.birthCity,
+        country: widget.profile.birthCountry,
       );
       if (mounted) {
         setState(() {
@@ -79,7 +82,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
         backgroundColor: Colors.transparent,
         elevation: 0,
         title: Text(
-          'DOĞUM HARİTASI',
+          AppTranslationService.tr('DOĞUM HARİTASI'),
           style: Theme.of(context).textTheme.displayMedium?.copyWith(
                 fontSize: 18,
                 letterSpacing: 1.2,
@@ -116,7 +119,9 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                                           ? _buildChakraView()
                                           : _selectedTabIndex == 5
                                               ? _buildCrystalsView()
-                                              : (_isVip ? _buildKabbalahTreeView() : _buildVipLockedKabbalahView()),
+                                              : _selectedTabIndex == 6
+                                                  ? (_isVip ? _buildKabbalahTreeView() : _buildVipLockedKabbalahView())
+                                                  : const EclipsesAcademyView(),
                     ),
                   ],
                 ),
@@ -134,17 +139,17 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
             mainAxisAlignment: MainAxisAlignment.spaceBetween,
                         children: [
                           Text(
-                            'ELEMENT DENGESİ',
+                            AppTranslationService.tr('ELEMENT DENGESİ'),
                             style: Theme.of(context).textTheme.labelSmall,
                           ),
-                          const Row(
+                          Row(
                             children: [
-                              Icon(Icons.touch_app_rounded,
+                              const Icon(Icons.touch_app_rounded,
                                   size: 14, color: AppColors.starlightGold),
-                              SizedBox(width: 4),
+                              const SizedBox(width: 4),
                               Text(
-                                'Dengeleme için dokun',
-                                style: TextStyle(
+                                AppTranslationService.tr('Dengeleme için dokun'),
+                                style: const TextStyle(
                                   fontSize: 11,
                                   color: AppColors.starlightGold,
                                   fontWeight: FontWeight.w600,
@@ -158,28 +163,28 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                       Row(
                         children: [
                           _buildElementCard(
-                            'Ateş',
+                            AppTranslationService.elementName('Ateş'),
                             _chart!.elements['Ateş'] ?? 0,
                             AppColors.savageRed,
                             Icons.local_fire_department,
                           ),
                           const SizedBox(width: 8),
                           _buildElementCard(
-                            'Toprak',
+                            AppTranslationService.elementName('Toprak'),
                             _chart!.elements['Toprak'] ?? 0,
                             AppColors.pastelMint,
                             Icons.grass,
                           ),
                           const SizedBox(width: 8),
                           _buildElementCard(
-                            'Hava',
+                            AppTranslationService.elementName('Hava'),
                             _chart!.elements['Hava'] ?? 0,
                             AppColors.pastelBlue,
                             Icons.air,
                           ),
                           const SizedBox(width: 8),
                           _buildElementCard(
-                            'Su',
+                            AppTranslationService.elementName('Su'),
                             _chart!.elements['Su'] ?? 0,
                             AppColors.pastelLavender,
                             Icons.water_drop,
@@ -193,7 +198,10 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                         onTap: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => const AspectsScreen(),
+                              builder: (_) => AspectsScreen(
+                                chart: _chart,
+                                profile: widget.profile,
+                              ),
                             ),
                           );
                         },
@@ -231,7 +239,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                                       ),
                                     ),
                                     const SizedBox(width: 14),
-                                    const Expanded(
+                                    Expanded(
                                       child: Column(
                                         crossAxisAlignment: CrossAxisAlignment.start,
                                         children: [
@@ -239,20 +247,20 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                                             children: [
                                               Flexible(
                                                 child: Text(
-                                                  'Açılar Matrisi & Gezegen Açıları',
+                                                  AppTranslationService.tr('Açılar Matrisi & Gezegen Açıları'),
                                                   maxLines: 1,
                                                   overflow: TextOverflow.ellipsis,
-                                                  style: TextStyle(
+                                                  style: const TextStyle(
                                                     fontSize: 14,
                                                     fontWeight: FontWeight.bold,
                                                     color: Colors.white,
                                                   ),
                                                 ),
                                               ),
-                                              SizedBox(width: 6),
+                                              const SizedBox(width: 6),
                                               Text(
-                                                'YENİ',
-                                                style: TextStyle(
+                                                AppTranslationService.tr('YENİ'),
+                                                style: const TextStyle(
                                                   fontSize: 9,
                                                   fontWeight: FontWeight.bold,
                                                   color: AppColors.pastelMint,
@@ -260,12 +268,108 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                                               ),
                                             ],
                                           ),
-                                          SizedBox(height: 2),
+                                          const SizedBox(height: 2),
                                           Text(
-                                            'Klasik Üçgen Izgara, Majör/Minör Açılar & Transitler',
+                                            AppTranslationService.tr('Klasik Üçgen Izgara, Majör/Minör Açılar & Transitler'),
                                             maxLines: 1,
                                             overflow: TextOverflow.ellipsis,
-                                            style: TextStyle(
+                                            style: const TextStyle(
+                                              fontSize: 11,
+                                              color: AppColors.textSecondary,
+                                            ),
+                                          ),
+                                        ],
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              const Icon(
+                                Icons.arrow_forward_ios_rounded,
+                                size: 14,
+                                color: AppColors.starlightGold,
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(height: 14),
+
+                      // Tutulmalar & Saros Akademisi Kartı
+                      InkWell(
+                        onTap: () {
+                          _onTabSelected(7);
+                        },
+                        borderRadius: BorderRadius.circular(18),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+                          decoration: BoxDecoration(
+                            gradient: LinearGradient(
+                              colors: [
+                                const Color(0xFF2E193C).withValues(alpha: 0.5),
+                                AppColors.starlightGold.withValues(alpha: 0.12),
+                              ],
+                            ),
+                            borderRadius: BorderRadius.circular(18),
+                            border: Border.all(
+                              color: AppColors.starlightGold.withValues(alpha: 0.45),
+                            ),
+                          ),
+                          child: Row(
+                            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                            children: [
+                              Expanded(
+                                child: Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.all(10),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.starlightGold.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: const Icon(
+                                        Icons.brightness_medium_rounded,
+                                        color: AppColors.starlightGold,
+                                        size: 22,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 14),
+                                    Expanded(
+                                      child: Column(
+                                        crossAxisAlignment: CrossAxisAlignment.start,
+                                        children: [
+                                          Row(
+                                            children: [
+                                              Flexible(
+                                                child: Text(
+                                                  AppTranslationService.tr('Tutulmalar & Saros Akademisi'),
+                                                  maxLines: 1,
+                                                  overflow: TextOverflow.ellipsis,
+                                                  style: const TextStyle(
+                                                    fontSize: 14,
+                                                    fontWeight: FontWeight.bold,
+                                                    color: Colors.white,
+                                                  ),
+                                                ),
+                                              ),
+                                              const SizedBox(width: 6),
+                                              Text(
+                                                AppTranslationService.tr('CANLI SAYAÇ'),
+                                                style: const TextStyle(
+                                                  fontSize: 9,
+                                                  fontWeight: FontWeight.bold,
+                                                  color: AppColors.starlightGold,
+                                                ),
+                                              ),
+                                            ],
+                                          ),
+                                          const SizedBox(height: 2),
+                                          Text(
+                                            AppTranslationService.tr('2026-2030 Kataloğu, Saros Döngüleri & Astronomi Dersi'),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
+                                            style: const TextStyle(
                                               fontSize: 11,
                                               color: AppColors.textSecondary,
                                             ),
@@ -440,13 +544,14 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
         physics: const BouncingScrollPhysics(),
         child: Row(
           children: [
-            _buildTabItem(0, 'Evler & Liste', Icons.format_list_bulleted_rounded),
-            _buildTabItem(1, '360° Çark', Icons.pie_chart_rounded),
-            _buildTabItem(2, 'Sabit Yıldız 👑', Icons.star_rounded),
-            _buildTabItem(3, 'Dekan & Melek 👑', Icons.auto_awesome_rounded),
-            _buildTabItem(4, 'Çakra & Beden ✨', Icons.spa_rounded),
-            _buildTabItem(5, 'Doğal Taşlar 💎', Icons.diamond_rounded),
-            _buildTabItem(6, 'Kabala Ağacı 👑', Icons.account_tree_rounded),
+            _buildTabItem(0, AppTranslationService.tr('Evler & Liste'), Icons.format_list_bulleted_rounded),
+            _buildTabItem(1, AppTranslationService.tr('360° Çark'), Icons.pie_chart_rounded),
+            _buildTabItem(2, AppTranslationService.tr('Sabit Yıldız 👑'), Icons.star_rounded),
+            _buildTabItem(3, AppTranslationService.tr('Dekan & Melek 👑'), Icons.auto_awesome_rounded),
+            _buildTabItem(4, AppTranslationService.tr('Çakra & Beden ✨'), Icons.spa_rounded),
+            _buildTabItem(5, AppTranslationService.tr('Doğal Taşlar 💎'), Icons.diamond_rounded),
+            _buildTabItem(6, AppTranslationService.tr('Kabala Ağacı 👑'), Icons.account_tree_rounded),
+            _buildTabItem(7, AppTranslationService.tr('Tutulmalar & Saros 🌑'), Icons.brightness_medium_rounded),
           ],
         ),
       ),
@@ -519,157 +624,6 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
       }
     }
     setState(() => _selectedTabIndex = index);
-  }
-
-  // Interstitial Ad Simulation
-  void _showInterstitialAdModal({required VoidCallback onAdClosed}) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        return Dialog(
-          backgroundColor: const Color(0xFF13111C),
-          shape: RoundedRectangleBorder(
-            borderRadius: BorderRadius.circular(24),
-            side: BorderSide(
-              color: AppColors.starlightGold.withValues(alpha: 0.4),
-            ),
-          ),
-          child: Padding(
-            padding: const EdgeInsets.all(24),
-            child: Column(
-              mainAxisSize: MainAxisSize.min,
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
-                      decoration: BoxDecoration(
-                        color: Colors.white12,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Text(
-                        'SPONSORLU REKLAM',
-                        style: TextStyle(
-                          fontSize: 10,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white70,
-                          letterSpacing: 0.8,
-                        ),
-                      ),
-                    ),
-                    IconButton(
-                      icon: const Icon(Icons.close_rounded,
-                          color: AppColors.textMuted, size: 20),
-                      onPressed: () {
-                        Navigator.of(ctx).pop();
-                        onAdClosed();
-                      },
-                    ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                Container(
-                  width: double.infinity,
-                  padding: const EdgeInsets.all(20),
-                  decoration: BoxDecoration(
-                    gradient: LinearGradient(
-                      colors: [
-                        const Color(0xFF2C1E4A),
-                        const Color(0xFF1E1A2B),
-                      ],
-                    ),
-                    borderRadius: BorderRadius.circular(16),
-                    border: Border.all(
-                        color: AppColors.starlightGold
-                            .withValues(alpha: 0.3)),
-                  ),
-                  child: const Column(
-                    children: [
-                      Icon(Icons.workspace_premium_rounded,
-                          size: 42, color: AppColors.starlightGold),
-                      SizedBox(height: 10),
-                      Text(
-                        'VIP KOZMİK ÜYELİKLE TANIŞIN',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 15,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.starlightGold,
-                          letterSpacing: 0.6,
-                        ),
-                      ),
-                      SizedBox(height: 6),
-                      Text(
-                        'Reklamsız kesintisiz deneyim, 10 sayfalık PDF harita kitapçığı, Sinastri ve tüm ileri öngörü modelleri sizi bekliyor.',
-                        textAlign: TextAlign.center,
-                        style: TextStyle(
-                          fontSize: 12,
-                          height: 1.4,
-                          color: Colors.white70,
-                        ),
-                      ),
-                    ],
-                  ),
-                ),
-                const SizedBox(height: 16),
-                Row(
-                  children: [
-                    Expanded(
-                      child: OutlinedButton(
-                        style: OutlinedButton.styleFrom(
-                          side: const BorderSide(color: Colors.white24),
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        onPressed: () {
-                          Navigator.of(ctx).pop();
-                          onAdClosed();
-                        },
-                        child: const Text('Reklamı Kapat ✕',
-                            style: TextStyle(
-                                fontSize: 12, color: Colors.white70)),
-                      ),
-                    ),
-                    const SizedBox(width: 10),
-                    Expanded(
-                      child: ElevatedButton(
-                        style: ElevatedButton.styleFrom(
-                          backgroundColor: AppColors.starlightGold,
-                          foregroundColor: Colors.black87,
-                          shape: RoundedRectangleBorder(
-                              borderRadius: BorderRadius.circular(12)),
-                          padding: const EdgeInsets.symmetric(vertical: 12),
-                        ),
-                        onPressed: () {
-                          Navigator.of(ctx).pop();
-                          onAdClosed();
-                          ScaffoldMessenger.of(context).showSnackBar(
-                            const SnackBar(
-                              content: Text(
-                                  'Ana sayfadaki VIP butonundan üyeliğinizi başlatabilirsiniz! 👑'),
-                              backgroundColor: Color(0xFF2C1E4A),
-                            ),
-                          );
-                        },
-                        child: const Text(
-                          'VIP\'e Geç 👑',
-                          style: TextStyle(
-                              fontSize: 12, fontWeight: FontWeight.bold),
-                        ),
-                      ),
-                    ),
-                  ],
-                ),
-              ],
-            ),
-          ),
-        );
-      },
-    );
   }
 
   double _parseDegreeFromFormatted(String formatted) {

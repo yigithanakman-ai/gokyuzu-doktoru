@@ -22,10 +22,13 @@ import '../widgets/solar_return_modal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import '../../data/services/pdf_report_service.dart';
 import '../../data/services/predictive_astrology_service.dart';
-import '../../data/services/ad_service.dart';
+import '../../data/services/notification_service.dart';
+import '../../data/services/app_translation_service.dart';
 import 'numerology_screen.dart';
 import '../widgets/lunar_return_modal.dart';
 import '../widgets/rectification_modal.dart';
+import '../widgets/astro_bulletin_section.dart';
+import '../widgets/personal_eclipses_counseling_sheet.dart';
 
 class HomeScreen extends StatefulWidget {
   final UserProfile profile;
@@ -42,6 +45,7 @@ class _HomeScreenState extends State<HomeScreen> {
   String? _error;
   bool _isVipUnlocked = false;
   bool _isMoonPhaseUnlocked = false;
+  bool _notificationsEnabled = false;
 
   String _capitalize(String raw) {
     if (raw.trim().isEmpty) return '';
@@ -94,6 +98,178 @@ class _HomeScreenState extends State<HomeScreen> {
     super.initState();
     _checkVipStatus();
     _fetchDailyHoroscope();
+    _initNotifications();
+  }
+
+  Future<void> _initNotifications() async {
+    final enabled = await NotificationService.isEnabled();
+    final prompted = await NotificationService.hasPromptedUser();
+    if (mounted) {
+      setState(() {
+        _notificationsEnabled = enabled;
+      });
+    }
+    if (enabled) {
+      await NotificationService.syncDailyNotificationsIfEnabled(widget.profile);
+    } else if (!prompted) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (mounted) {
+          _showNotificationPermissionModal(context, isInitialPrompt: true);
+        }
+      });
+    }
+  }
+
+  void _showNotificationPermissionModal(
+    BuildContext context, {
+    bool isInitialPrompt = false,
+  }) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF191528),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(22),
+          side: const BorderSide(color: AppColors.starlightGold, width: 1.2),
+        ),
+        title: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(8),
+              decoration: BoxDecoration(
+                color: AppColors.starlightGold.withValues(alpha: 0.18),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.notifications_active_rounded,
+                color: AppColors.starlightGold,
+                size: 22,
+              ),
+            ),
+            const SizedBox(width: 10),
+            const Expanded(
+              child: Text(
+                'Günlük Kozmik Bildirimler',
+                style: TextStyle(
+                  color: Colors.white,
+                  fontSize: 16,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              isInitialPrompt
+                  ? 'Gün boyu gerçekleşen gökyüzü transitlerini, Ay fazı değişimlerini, Ay Boşlukta uyarılarını ve doğum haritanıza özel enerjileri cep telefonunuza bildirim olarak göndermemize izin verir misiniz?'
+                  : (_notificationsEnabled
+                      ? 'Günlük kozmik bildirimleriniz şu anda AKTİF. Her gün sabah 09:30, öğle 14:30 ve akşam 20:30 saatlerinde telefonunuza haritanıza özel gökyüzü bildirimleri iletilmektedir.'
+                      : 'Bildirimlere izin vererek sabah 09:30, öğle 14:30 ve akşam 20:30 saatlerinde telefonunuza günlük transit ve Ay boşlukta bildirimleri gelmesini sağlayabilirsiniz.'),
+              style: const TextStyle(
+                color: Colors.white70,
+                fontSize: 12.5,
+                height: 1.45,
+              ),
+            ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: Colors.black26,
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: const Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text('☀️ 09:30 • Sabah Günün Transit & Yükselen Enerjisi',
+                      style: TextStyle(fontSize: 11, color: AppColors.starlightGold)),
+                  SizedBox(height: 4),
+                  Text('🌙 14:30 • Gün Ortası Ay Fazı & Ay Boşlukta Uyarısı',
+                      style: TextStyle(fontSize: 11, color: AppColors.pastelMint)),
+                  SizedBox(height: 4),
+                  Text('✨ 20:30 • Akşam Gece Gökyüzü & Yıldız Rehberi',
+                      style: TextStyle(fontSize: 11, color: AppColors.pastelLavender)),
+                ],
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          if (_notificationsEnabled && !isInitialPrompt)
+            TextButton(
+              onPressed: () async {
+                final messenger = ScaffoldMessenger.of(context);
+                Navigator.of(ctx).pop();
+                await NotificationService.disableNotifications();
+                if (mounted) {
+                  setState(() => _notificationsEnabled = false);
+                  messenger.showSnackBar(
+                    const SnackBar(
+                      content: Text('Günlük bildirimler kapatıldı.'),
+                      backgroundColor: Color(0xFF2C1E4A),
+                    ),
+                  );
+                }
+              },
+              child: const Text('Bildirimleri Kapat',
+                  style: TextStyle(color: AppColors.savageRed, fontSize: 12)),
+            )
+          else
+            TextButton(
+              onPressed: () async {
+                await NotificationService.markPrompted();
+                if (ctx.mounted) Navigator.of(ctx).pop();
+              },
+              child: const Text('Daha Sonra',
+                  style: TextStyle(color: Colors.white54, fontSize: 12)),
+            ),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.starlightGold,
+              foregroundColor: Colors.black87,
+              shape: RoundedRectangleBorder(
+                borderRadius: BorderRadius.circular(12),
+              ),
+            ),
+            icon: const Icon(Icons.notifications_active_rounded,
+                size: 16, color: Colors.black87),
+            label: Text(
+              _notificationsEnabled && !isInitialPrompt
+                  ? 'Şimdi Bildirim Gönder 🔔'
+                  : 'Bildirimlere İzin Ver 🔔',
+              style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
+            ),
+            onPressed: () async {
+              final messenger = ScaffoldMessenger.of(context);
+              Navigator.of(ctx).pop();
+              final granted = await NotificationService.requestPermissionAndEnable(
+                widget.profile,
+                sendImmediateConfirmation: true,
+              );
+              if (mounted) {
+                setState(() => _notificationsEnabled = granted);
+                messenger.showSnackBar(
+                  SnackBar(
+                    content: Text(
+                      granted
+                          ? '🔔 Kozmik bildirimler aktif edildi! Telefonunuza anlık bildirim gönderildi.'
+                          : '⚠️ Bildirim izni kapalı. Telefon ayarlarından Gökyüzü Doktoru bildirimlerine izin verebilirsiniz.',
+                    ),
+                    backgroundColor:
+                        granted ? const Color(0xFF1D5A3A) : AppColors.savageRed,
+                  ),
+                );
+              }
+            },
+          ),
+        ],
+      ),
+    );
   }
 
   Future<void> _checkVipStatus() async {
@@ -108,15 +284,20 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fetchDailyHoroscope() async {
     try {
+      final liveChart = AstrologyEngine.calculateChart(
+        name: widget.profile.name,
+        dateStr: widget.profile.birthDate,
+        timeStr: widget.profile.birthTime,
+        city: widget.profile.birthCity,
+        country: widget.profile.birthCountry,
+      );
       final horoscope = await ApiService.getDailyHoroscope(
         name: widget.profile.name,
-        chart: widget.profile.rawChart.isNotEmpty
-            ? widget.profile.rawChart
-            : {
-                'sun': widget.profile.sunSign,
-                'moon': widget.profile.moonSign,
-                'ascendant': widget.profile.risingSign,
-              },
+        chart: {
+          'sun': liveChart.sunSign,
+          'moon': liveChart.moonSign,
+          'ascendant': liveChart.ascendant,
+        },
       );
       if (mounted) {
         setState(() {
@@ -139,24 +320,26 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       builder: (ctx) => AlertDialog(
         backgroundColor: AppColors.surface,
-        title: const Text('Profili Sıfırla',
-            style: TextStyle(color: AppColors.textPrimary)),
-        content: const Text(
-          'Farklı bir doğum haritası girmek için mevcut profilini silmek istiyor musun?',
-          style: TextStyle(color: AppColors.textSecondary),
+        title: Text(AppTranslationService.tr('Profili Sıfırla?'),
+            style: const TextStyle(color: AppColors.textPrimary)),
+        content: Text(
+          AppTranslationService.tr(
+            'Mevcut doğum haritanız ve kaydedilen profil bilgileriniz silinecektir. Devam etmek istiyor musunuz?',
+          ),
+          style: const TextStyle(color: AppColors.textSecondary),
         ),
         actions: [
           TextButton(
             onPressed: () => Navigator.pop(ctx, false),
-            child: const Text('İptal',
-                style: TextStyle(color: AppColors.textMuted)),
+            child: Text(AppTranslationService.tr('İptal'),
+                style: const TextStyle(color: AppColors.textMuted)),
           ),
           ElevatedButton(
             onPressed: () => Navigator.pop(ctx, true),
             style: ElevatedButton.styleFrom(
               backgroundColor: AppColors.savageRed,
             ),
-            child: const Text('Sıfırla'),
+            child: Text(AppTranslationService.tr('Sıfırla')),
           ),
         ],
       ),
@@ -173,104 +356,161 @@ class _HomeScreenState extends State<HomeScreen> {
 
   @override
   Widget build(BuildContext context) {
-    return Scaffold(
-      backgroundColor: AppColors.background,
-      body: SafeArea(
-        child: SingleChildScrollView(
-          padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
-          child: Column(
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              // Top Bar
-              Row(
-                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+    return ValueListenableBuilder<String>(
+      valueListenable: AppTranslationService.currentLangNotifier,
+      builder: (context, currentLang, _) {
+        return Scaffold(
+          backgroundColor: AppColors.background,
+          body: SafeArea(
+            child: SingleChildScrollView(
+              padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  Expanded(
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          'KOZMİK DOKTOR',
-                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                color: AppColors.pastelLavender,
-                                letterSpacing: 1.5,
-                              ),
-                        ),
-                        const SizedBox(height: 2),
-                        Text(
-                          'Merhaba, ${_capitalize(widget.profile.name)}',
-                          maxLines: 1,
-                          overflow: TextOverflow.ellipsis,
-                          style: Theme.of(context)
-                              .textTheme
-                              .displayMedium
-                              ?.copyWith(fontSize: 22),
-                        ),
-                        const SizedBox(height: 6),
-                        InkWell(
-                          onTap: () async {
-                            await Navigator.of(context).push(
-                              MaterialPageRoute(
-                                builder: (_) => ProfileScreen(profile: widget.profile),
-                              ),
-                            );
-                            _checkVipStatus();
-                          },
-                          borderRadius: BorderRadius.circular(20),
-                          child: Container(
-                            padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                            decoration: BoxDecoration(
-                              color: _isVipUnlocked
-                                  ? const Color(0xFFFFD700).withAlpha(35)
-                                  : Colors.white.withAlpha(16),
-                              borderRadius: BorderRadius.circular(20),
-                              border: Border.all(
-                                color: _isVipUnlocked
-                                    ? const Color(0xFFFFD700).withAlpha(140)
-                                    : Colors.white24,
-                                width: 1,
-                              ),
+                  // Top Bar
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Text(
+                              AppTranslationService.tr('KOZMİK DOKTOR'),
+                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                    color: AppColors.pastelLavender,
+                                    letterSpacing: 1.5,
+                                  ),
                             ),
-                            child: Row(
-                              mainAxisSize: MainAxisSize.min,
-                              children: [
-                                Icon(
-                                  _isVipUnlocked
-                                      ? Icons.stars_rounded
-                                      : Icons.account_circle_outlined,
-                                  size: 14,
+                            const SizedBox(height: 2),
+                            Text(
+                              '${AppTranslationService.tr('Merhaba')}, ${_capitalize(widget.profile.name)}',
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: Theme.of(context)
+                                  .textTheme
+                                  .displayMedium
+                                  ?.copyWith(fontSize: 22),
+                            ),
+                            const SizedBox(height: 6),
+                            InkWell(
+                              onTap: () async {
+                                await Navigator.of(context).push(
+                                  MaterialPageRoute(
+                                    builder: (_) => ProfileScreen(profile: widget.profile),
+                                  ),
+                                );
+                                _checkVipStatus();
+                              },
+                              borderRadius: BorderRadius.circular(20),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                decoration: BoxDecoration(
                                   color: _isVipUnlocked
-                                      ? const Color(0xFFFFD700)
-                                      : AppColors.pastelLavender,
-                                ),
-                                const SizedBox(width: 5),
-                                Text(
-                                  _isVipUnlocked
-                                      ? 'VIP Profil & Üyelik'
-                                      : 'Profil & Giriş / Kayıt',
-                                  style: TextStyle(
-                                    fontSize: 11.5,
-                                    fontWeight: FontWeight.bold,
+                                      ? const Color(0xFFFFD700).withAlpha(35)
+                                      : Colors.white.withAlpha(16),
+                                  borderRadius: BorderRadius.circular(20),
+                                  border: Border.all(
                                     color: _isVipUnlocked
-                                        ? const Color(0xFFFFD700)
-                                        : Colors.white,
+                                        ? const Color(0xFFFFD700).withAlpha(140)
+                                        : Colors.white24,
+                                    width: 1,
                                   ),
                                 ),
-                                const SizedBox(width: 4),
-                                const Icon(
-                                  Icons.arrow_forward_ios_rounded,
-                                  size: 10,
-                                  color: Colors.white54,
+                                child: Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(
+                                      _isVipUnlocked
+                                          ? Icons.stars_rounded
+                                          : Icons.account_circle_outlined,
+                                      size: 14,
+                                      color: _isVipUnlocked
+                                          ? const Color(0xFFFFD700)
+                                          : AppColors.pastelLavender,
+                                    ),
+                                    const SizedBox(width: 5),
+                                    Text(
+                                      _isVipUnlocked
+                                          ? AppTranslationService.tr('VIP Profil & Üyelik')
+                                          : AppTranslationService.tr('Profil & Giriş / Kayıt'),
+                                      style: TextStyle(
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.bold,
+                                        color: _isVipUnlocked
+                                            ? const Color(0xFFFFD700)
+                                            : Colors.white,
+                                      ),
+                                    ),
+                                    const SizedBox(width: 4),
+                                    const Icon(
+                                      Icons.arrow_forward_ios_rounded,
+                                      size: 10,
+                                      color: Colors.white54,
+                                    ),
+                                  ],
                                 ),
-                              ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                  const SizedBox(width: 4),
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () => _showLanguageSelectionSheet(context),
+                    icon: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+                      decoration: BoxDecoration(
+                        borderRadius: BorderRadius.circular(12),
+                        color: Colors.white.withAlpha(20),
+                        border: Border.all(color: Colors.white24),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          const Icon(Icons.language_rounded, size: 15, color: AppColors.starlightGold),
+                          const SizedBox(width: 3),
+                          Text(
+                            AppTranslationService.currentLang.toUpperCase(),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.starlightGold,
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
                     ),
+                    tooltip: AppTranslationService.tr('change_language'),
                   ),
-                  const SizedBox(width: 8),
+                  const SizedBox(width: 4),
                   IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () => _showNotificationPermissionModal(context),
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: const Color(0xFF00E5FF).withAlpha(25),
+                        border: Border.all(
+                          color: const Color(0xFF00E5FF).withAlpha(110),
+                        ),
+                      ),
+                      child: const Icon(
+                        Icons.notifications_active_rounded,
+                        size: 19,
+                        color: Color(0xFF00E5FF),
+                      ),
+                    ),
+                    tooltip: AppTranslationService.tr('Gökyüzü Bildirimleri'),
+                  ),
+                  const SizedBox(width: 6),
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
                     onPressed: () async {
                       await Navigator.of(context).push(
                         MaterialPageRoute(
@@ -300,42 +540,113 @@ class _HomeScreenState extends State<HomeScreen> {
                             : AppColors.pastelLavender,
                       ),
                     ),
-                    tooltip: 'Profil & Üyelik İşlemleri',
+                    tooltip: AppTranslationService.tr('Profil & Üyelik İşlemleri'),
                   ),
                 ],
               ),
               const SizedBox(height: 20),
 
-              // Big 3 Summary Badges
-              Row(
-                children: [
-                  Expanded(
-                    child: BigThreeBadge(
-                      label: 'Güneş',
-                      sign: widget.profile.sunSign,
-                      accentColor: AppColors.starlightGold,
-                      icon: Icons.wb_sunny_rounded,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: BigThreeBadge(
-                      label: 'Ay',
-                      sign: widget.profile.moonSign,
-                      accentColor: AppColors.pastelLavender,
-                      icon: Icons.nightlight_round,
-                    ),
-                  ),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: BigThreeBadge(
-                      label: 'Yükselen',
-                      sign: widget.profile.risingSign,
-                      accentColor: AppColors.pastelPink,
-                      icon: Icons.north_east_rounded,
-                    ),
-                  ),
-                ],
+              // Big 3 Summary Badges (Canlı Astronomik Motor ile Senkronize)
+              Builder(
+                builder: (context) {
+                  final liveChart = AstrologyEngine.calculateChart(
+                    name: widget.profile.name,
+                    dateStr: widget.profile.birthDate,
+                    timeStr: widget.profile.birthTime,
+                    city: widget.profile.birthCity,
+                    country: widget.profile.birthCountry,
+                  );
+                  final elemScores = liveChart.elements;
+                  final fireScore = elemScores['Ateş'] ?? 0;
+                  final earthScore = elemScores['Toprak'] ?? 0;
+                  final airScore = elemScores['Hava'] ?? 0;
+                  final waterScore = elemScores['Su'] ?? 0;
+
+                  return Column(
+                    children: [
+                      Row(
+                        children: [
+                          Expanded(
+                            child: BigThreeBadge(
+                              label: AppTranslationService.tr('sun'),
+                              sign: AppTranslationService.signName(liveChart.sunSign),
+                              accentColor: AppColors.starlightGold,
+                              icon: Icons.wb_sunny_rounded,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: BigThreeBadge(
+                              label: AppTranslationService.tr('moon'),
+                              sign: AppTranslationService.signName(liveChart.moonSign),
+                              accentColor: AppColors.pastelLavender,
+                              icon: Icons.nightlight_round,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Expanded(
+                            child: BigThreeBadge(
+                              label: AppTranslationService.tr('rising'),
+                              sign: AppTranslationService.signName(liveChart.ascendant),
+                              accentColor: AppColors.pastelPink,
+                              icon: Icons.north_east_rounded,
+                            ),
+                          ),
+                        ],
+                      ),
+                      Container(
+                        margin: const EdgeInsets.only(top: 10),
+                        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.05),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: Row(
+                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                          children: [
+                            Text(
+                              '${AppTranslationService.tr('elements_distribution')}:',
+                              style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white70,
+                              ),
+                            ),
+                            Flexible(
+                              child: Wrap(
+                                spacing: 8,
+                                runSpacing: 4,
+                                children: [
+                                  Text('🔥 ${AppTranslationService.elementName('Ateş')} $fireScore',
+                                      style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.pastelPeach)),
+                                  Text('🌿 ${AppTranslationService.elementName('Toprak')} $earthScore',
+                                      style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.pastelMint)),
+                                  Text('💨 ${AppTranslationService.elementName('Hava')} $airScore',
+                                      style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.starlightGold)),
+                                  Text('💧 ${AppTranslationService.elementName('Su')} $waterScore',
+                                      style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.pastelBlue)),
+                                ],
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ],
+                  );
+                },
               ),
               // Sect (Gündüz / Gece Haritası) & Placidus Ev Sistemi Bilgi Satırı
               Builder(
@@ -369,7 +680,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         const SizedBox(width: 6),
                         Expanded(
                           child: Text(
-                            '$sectName • Placidus Ev Sistemi',
+                            '${AppTranslationService.tr(sectName)} • ${AppTranslationService.tr('Placidus Ev Sistemi')}',
                             style: TextStyle(
                               fontSize: 11.5,
                               fontWeight: FontWeight.bold,
@@ -424,11 +735,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             const Icon(Icons.folder_shared_rounded,
                                 size: 20, color: AppColors.starlightGold),
                             const SizedBox(height: 6),
-                            const Text(
-                              'Harita Arşivi',
+                            Text(
+                              AppTranslationService.tr('Harita Arşivi'),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -436,7 +747,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Kayıtlılar',
+                              AppTranslationService.tr('Kayıtlılar'),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -471,11 +782,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             const Icon(Icons.cake_rounded,
                                 size: 20, color: AppColors.pastelMint),
                             const SizedBox(height: 6),
-                            const Text(
-                              'Doğum Günü',
+                            Text(
+                              AppTranslationService.tr('Doğum Günü'),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -483,7 +794,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Hatırlatıcı',
+                              AppTranslationService.tr('Hatırlatıcı'),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -516,11 +827,11 @@ class _HomeScreenState extends State<HomeScreen> {
                             const Icon(Icons.refresh_rounded,
                                 size: 20, color: AppColors.pastelLavender),
                             const SizedBox(height: 6),
-                            const Text(
-                              'Profili Sıfırla',
+                            Text(
+                              AppTranslationService.tr('Profili Sıfırla'),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
-                              style: TextStyle(
+                              style: const TextStyle(
                                 fontSize: 11,
                                 fontWeight: FontWeight.bold,
                                 color: Colors.white,
@@ -528,7 +839,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              'Yeni Harita',
+                              AppTranslationService.tr('Yeni Harita'),
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: TextStyle(
@@ -547,7 +858,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
               // Daily Transit Section
               Text(
-                'GÜNÜN KOZMİK YORUMU',
+                AppTranslationService.tr('GÜNÜN KOZMİK YORUMU'),
                 style: Theme.of(context).textTheme.labelSmall,
               ),
               const SizedBox(height: 10),
@@ -582,7 +893,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                     MainAxisAlignment.spaceBetween,
                                 children: [
                                   Text(
-                                    'Günün Enerjisi',
+                                    AppTranslationService.tr('Günün Enerjisi'),
                                     style: Theme.of(context)
                                         .textTheme
                                         .titleLarge
@@ -599,7 +910,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                       borderRadius: BorderRadius.circular(12),
                                     ),
                                     child: Text(
-                                      _dailyHoroscope?.date ?? 'Bugün',
+                                      _dailyHoroscope?.date ?? (currentLang == 'ja' ? '本日' : (currentLang == 'en' ? 'Today' : 'Bugün')),
                                       style: const TextStyle(
                                         fontSize: 11,
                                         fontWeight: FontWeight.bold,
@@ -633,9 +944,13 @@ class _HomeScreenState extends State<HomeScreen> {
               _buildLiveSkyTransitsSection(),
               const SizedBox(height: 24),
 
+              // Astro Bülten Section (12 Burç Yorumları, Aylık Takvim & Haftalık Özet)
+              AstroBulletinSection(profile: widget.profile),
+              const SizedBox(height: 24),
+
               // Quick Actions
               Text(
-                'DERİN İNCELEME & ANALİZ',
+                AppTranslationService.tr('DERİN İNCELEME & ANALİZ'),
                 style: Theme.of(context).textTheme.labelSmall,
               ),
               const SizedBox(height: 10),
@@ -672,26 +987,26 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                             const SizedBox(width: 14),
-                            const Expanded(
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    'Tam Doğum Haritası',
+                                    AppTranslationService.tr('Tam Doğum Haritası'),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 15,
                                       fontWeight: FontWeight.bold,
                                       color: AppColors.textPrimary,
                                     ),
                                   ),
-                                  SizedBox(height: 2),
+                                  const SizedBox(height: 2),
                                   Text(
-                                    '12 Ev, Gezegen Dereceleri, Elementler',
+                                    AppTranslationService.tr('12 Ev, Gezegen Dereceleri, Elementler'),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 11.5,
                                       color: AppColors.textMuted,
                                     ),
@@ -746,9 +1061,9 @@ class _HomeScreenState extends State<HomeScreen> {
                                     spacing: 6,
                                     runSpacing: 2,
                                     children: [
-                                      const Text(
-                                        'VIP Kozmik Danışmanlık',
-                                        style: TextStyle(
+                                      Text(
+                                        AppTranslationService.tr('VIP Kozmik Danışmanlık'),
+                                        style: const TextStyle(
                                           fontSize: 14.5,
                                           fontWeight: FontWeight.bold,
                                           color: AppColors.starlightGold,
@@ -764,7 +1079,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                           ),
                                         ),
                                         child: Text(
-                                          _isVipUnlocked ? 'AÇIK 👑' : 'VIP ÖZEL 🔒',
+                                          _isVipUnlocked ? AppTranslationService.tr('AÇIK 👑') : AppTranslationService.tr('VIP ÖZEL 🔒'),
                                           style: TextStyle(
                                             fontSize: 9.5,
                                             fontWeight: FontWeight.bold,
@@ -775,11 +1090,11 @@ class _HomeScreenState extends State<HomeScreen> {
                                     ],
                                   ),
                                   const SizedBox(height: 3),
-                                  const Text(
-                                    'Sinastri, Solar Return ve Özel Raporlar',
+                                  Text(
+                                    AppTranslationService.tr('Sinastri, Solar Return ve Özel Raporlar'),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 11.5,
                                       color: AppColors.textMuted,
                                     ),
@@ -832,7 +1147,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               ),
                             ),
                             const SizedBox(width: 14),
-                            const Expanded(
+                            Expanded(
                               child: Column(
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
@@ -842,16 +1157,16 @@ class _HomeScreenState extends State<HomeScreen> {
                                     runSpacing: 2,
                                     children: [
                                       Text(
-                                        'Kozmik Numeroloji Matrisi',
-                                        style: TextStyle(
+                                        AppTranslationService.tr('Kozmik Numeroloji Matrisi'),
+                                        style: const TextStyle(
                                           fontSize: 14.5,
                                           fontWeight: FontWeight.bold,
                                           color: Colors.white,
                                         ),
                                       ),
                                       Text(
-                                        'HERKESE AÇIK ✨',
-                                        style: TextStyle(
+                                        AppTranslationService.tr('HERKESE AÇIK ✨'),
+                                        style: const TextStyle(
                                           fontSize: 9.5,
                                           fontWeight: FontWeight.bold,
                                           color: AppColors.starlightGold,
@@ -859,12 +1174,12 @@ class _HomeScreenState extends State<HomeScreen> {
                                       ),
                                     ],
                                   ),
-                                  SizedBox(height: 3),
+                                  const SizedBox(height: 3),
                                   Text(
-                                    'Yaşam Yolu, Kader Sayısı ve 2026 Döngüsü',
+                                    AppTranslationService.tr('Yaşam Yolu, Kader Sayısı ve 2026 Döngüsü'),
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
-                                    style: TextStyle(
+                                    style: const TextStyle(
                                       fontSize: 11.5,
                                       color: AppColors.textMuted,
                                     ),
@@ -894,18 +1209,18 @@ class _HomeScreenState extends State<HomeScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Expanded(
+                        Expanded(
                           child: Row(
                             children: [
-                              Icon(Icons.verified_rounded,
+                              const Icon(Icons.verified_rounded,
                                   size: 18, color: AppColors.starlightGold),
-                              SizedBox(width: 8),
+                              const SizedBox(width: 8),
                               Expanded(
                                 child: Text(
-                                  'YİĞİTHAN AKMAN İLE İLETİŞİM',
+                                  AppTranslationService.tr('YİĞİTHAN AKMAN İLE İLETİŞİM'),
                                   maxLines: 1,
                                   overflow: TextOverflow.ellipsis,
-                                  style: TextStyle(
+                                  style: const TextStyle(
                                     fontSize: 11.5,
                                     fontWeight: FontWeight.bold,
                                     letterSpacing: 0.2,
@@ -928,14 +1243,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                   .withValues(alpha: 0.2),
                               borderRadius: BorderRadius.circular(8),
                             ),
-                            child: const Row(
+                            child: Row(
                               children: [
-                                Icon(Icons.share_rounded,
+                                const Icon(Icons.share_rounded,
                                     size: 13, color: AppColors.pastelLavender),
-                                SizedBox(width: 4),
+                                const SizedBox(width: 4),
                                 Text(
-                                  'Paylaş 📤',
-                                  style: TextStyle(
+                                  AppTranslationService.tr('Paylaş 📤'),
+                                  style: const TextStyle(
                                     fontSize: 10.5,
                                     fontWeight: FontWeight.bold,
                                     color: AppColors.pastelLavender,
@@ -1084,12 +1399,16 @@ class _HomeScreenState extends State<HomeScreen> {
         ),
       ),
     );
+      },
+    );
   }
 
   // --- Social Media Sharing Modal ---
   void _showSocialShareModal(BuildContext context) {
+    const storeUrl =
+        'https://play.google.com/store/apps/details?id=com.gokyuzudoktoru.gokyuzu_app';
     const shareText =
-        'Gökyüzü Doktoru ile Geocentric Placidus doğum haritamı ve gezegen yerleşimlerimi çıkardım! 🌌 Sen de kendi haritanı ve astrolojik analizlerini incelemek için tıkla: https://instagram.com/yigithan.akman';
+        'Gökyüzü Doktoru ile Geocentric Placidus doğum haritamı ve gezegen yerleşimlerimi çıkardım! 🌌 Sen de kendi haritanı ve astrolojik analizlerini incelemek için uygulamayı indir: $storeUrl';
 
     showModalBottomSheet(
       context: context,
@@ -1123,19 +1442,21 @@ class _HomeScreenState extends State<HomeScreen> {
                 Icon(Icons.share_rounded,
                     color: AppColors.starlightGold, size: 22),
                 SizedBox(width: 10),
-                Text(
-                  'Haritanı & Uygulamayı Paylaş',
-                  style: TextStyle(
-                    fontSize: 16,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
+                Expanded(
+                  child: Text(
+                    'Haritanı & Uygulamayı Paylaş',
+                    style: TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
                   ),
                 ),
               ],
             ),
             const SizedBox(height: 8),
             const Text(
-              'Astrolojik analizlerinizi ve Gökyüzü Doktoru uygulamasını sosyal medyada arkadaşlarınızla paylaşın:',
+              'Astrolojik analizlerinizi ve Gökyüzü Doktoru uygulama bağlantısını arkadaşlarınızla paylaşın:',
               style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
             ),
             const SizedBox(height: 20),
@@ -1151,11 +1472,11 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.of(ctx).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Paylaşım metni panoya kopyalandı! Instagram açılıyor... 📸'),
+                        content: Text('Uygulama paylaşım linki panoya kopyalandı! 📸'),
                         backgroundColor: Color(0xFF2C1E4A),
                       ),
                     );
-                    _launchExternalUrl('https://instagram.com/yigithan.akman');
+                    _launchExternalUrl(storeUrl);
                   },
                 ),
                 _buildShareAppButton(
@@ -1173,7 +1494,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   color: AppColors.pastelBlue,
                   onTap: () {
                     final encodedText = Uri.encodeComponent(shareText);
-                    final encodedUrl = Uri.encodeComponent('https://instagram.com/yigithan.akman');
+                    final encodedUrl = Uri.encodeComponent(storeUrl);
                     _launchExternalUrl('https://t.me/share/url?url=$encodedUrl&text=$encodedText');
                   },
                 ),
@@ -1195,7 +1516,7 @@ class _HomeScreenState extends State<HomeScreen> {
                     Navigator.of(ctx).pop();
                     ScaffoldMessenger.of(context).showSnackBar(
                       const SnackBar(
-                        content: Text('Paylaşım metni panoya kopyalandı! 🌟'),
+                        content: Text('Uygulama mağaza bağlantısı panoya kopyalandı! 🌟'),
                         backgroundColor: Color(0xFF2C1E4A),
                       ),
                     );
@@ -1289,12 +1610,12 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   ),
                   const SizedBox(width: 14),
-                  const Expanded(
+                  Expanded(
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
-                        Text(
-                          'VIP KOZMİK ÜYELİK SATIN AL',
+                        const Text(
+                          'VIP KOZMİK ABONELİK PAKETLERİ',
                           style: TextStyle(
                             fontSize: 16,
                             fontWeight: FontWeight.bold,
@@ -1303,8 +1624,10 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ),
                         Text(
-                          'Güvenli Ödeme ve Anında VIP Aktivasyonu',
-                          style: TextStyle(
+                          Platform.isIOS
+                              ? 'Apple App Store Güvencesiyle Resmi Abonelik'
+                              : 'Google Play Store Güvencesiyle Resmi Abonelik',
+                          style: const TextStyle(
                               fontSize: 11.5, color: AppColors.textMuted),
                         ),
                       ],
@@ -1434,14 +1757,19 @@ class _HomeScreenState extends State<HomeScreen> {
   }
 
   void _showPaymentOptions(BuildContext context, String packageName, VipTier tier) {
+    final storeName = Platform.isIOS ? 'Apple App Store' : 'Google Play Store';
     showModalBottomSheet(
       context: context,
+      isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
         padding: const EdgeInsets.all(24),
         decoration: const BoxDecoration(
           color: Color(0xFF1E1A2B),
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+          border: Border(
+            top: BorderSide(color: Color(0x33FFD166), width: 1),
+          ),
         ),
         child: Column(
           mainAxisSize: MainAxisSize.min,
@@ -1458,87 +1786,281 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
             ),
             const SizedBox(height: 16),
-            Text(
-              'Ödeme Yöntemi Seçin ($packageName)',
-              style: const TextStyle(
-                fontSize: 16,
-                fontWeight: FontWeight.bold,
-                color: Colors.white,
-              ),
-            ),
-            const SizedBox(height: 16),
-            // Mobile In-App Purchase
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.pastelLavender.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
+            Row(
+              children: [
+                Icon(
+                  Platform.isIOS ? Icons.apple_rounded : Icons.shop_two_rounded,
+                  color: AppColors.starlightGold,
+                  size: 24,
                 ),
-                child: const Icon(Icons.phone_iphone_rounded,
-                    color: AppColors.pastelLavender),
-              ),
-              title: const Text('Mobil Ödeme (In-App Purchase)',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.white)),
-              subtitle: const Text(
-                  'Apple Pay / Google Play Store ile tek tıkla güvenli ödeme',
-                  style: TextStyle(fontSize: 11.5, color: AppColors.textMuted)),
-              trailing: const Icon(Icons.chevron_right, color: AppColors.textMuted),
-              onTap: () {
-                Navigator.of(ctx).pop();
-                _simulatePaymentSuccess(context, packageName, tier);
-              },
-            ),
-            const Divider(color: Colors.white10),
-            // Credit Card
-            ListTile(
-              contentPadding: EdgeInsets.zero,
-              leading: Container(
-                padding: const EdgeInsets.all(10),
-                decoration: BoxDecoration(
-                  color: AppColors.starlightGold.withValues(alpha: 0.15),
-                  borderRadius: BorderRadius.circular(12),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    '$storeName Abonelik Onayı',
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
                 ),
-                child: const Icon(Icons.credit_card_rounded,
-                    color: AppColors.starlightGold),
-              ),
-              title: const Text('Kredi / Banka Kartı (İyzico & Stripe)',
-                  style: TextStyle(
-                      fontWeight: FontWeight.bold, color: Colors.white)),
-              subtitle: const Text(
-                  '3D Secure güvenlikli, 12 aya varan taksit seçenekleriyle',
-                  style: TextStyle(fontSize: 11.5, color: AppColors.textMuted)),
-              trailing: const Icon(Icons.chevron_right, color: AppColors.textMuted),
-              onTap: () {
-                Navigator.of(ctx).pop();
-                _simulatePaymentSuccess(context, packageName, tier);
-              },
+              ],
             ),
+            const SizedBox(height: 12),
+            Container(
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: Colors.white.withValues(alpha: 0.05),
+                borderRadius: BorderRadius.circular(14),
+                border: Border.all(color: Colors.white12),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    'Seçilen Paket: $packageName',
+                    style: const TextStyle(
+                      fontSize: 13.5,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.starlightGold,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    '• Ödemeniz doğrudan $storeName hesabınıza tanımlı ödeme yöntemiyle (Kredi/Banka Kartı, Mobil Ödeme veya Mağaza Bakiyesi) güvenle gerçekleştirilir.\n'
+                    '• Üçüncü taraf ödeme aracıları kullanılmaz; kart bilgileriniz yalnızca $storeName güvencesindedir.\n'
+                    '• Aboneliğinizi dilediğiniz zaman $storeName > Abonelikler menüsünden iptal edebilirsiniz.',
+                    style: const TextStyle(
+                      fontSize: 11.5,
+                      height: 1.45,
+                      color: AppColors.textSecondary,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const SizedBox(height: 18),
+            SizedBox(
+              width: double.infinity,
+              child: ElevatedButton.icon(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  _initiateStorePurchase(context, packageName, tier);
+                },
+                icon: const Icon(Icons.verified_user_rounded,
+                    size: 18, color: Colors.black87),
+                label: Text(
+                  '$storeName ile Abone Ol',
+                  style: const TextStyle(
+                    fontSize: 13.5,
+                    fontWeight: FontWeight.bold,
+                    color: Colors.black87,
+                  ),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.starlightGold,
+                  padding: const EdgeInsets.symmetric(vertical: 14),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 10),
+            SizedBox(
+              width: double.infinity,
+              child: OutlinedButton.icon(
+                onPressed: () {
+                  Navigator.of(ctx).pop();
+                  _showPromoCodeDialog(context, packageName, tier);
+                },
+                icon: const Icon(Icons.vpn_key_rounded,
+                    size: 16, color: AppColors.pastelLavender),
+                label: const Text(
+                  'VIP Davet / Promosyon Kodu Kullan',
+                  style: TextStyle(
+                    fontSize: 12.5,
+                    fontWeight: FontWeight.w600,
+                    color: AppColors.pastelLavender,
+                  ),
+                ),
+                style: OutlinedButton.styleFrom(
+                  side: BorderSide(
+                      color: AppColors.pastelLavender.withValues(alpha: 0.4)),
+                  padding: const EdgeInsets.symmetric(vertical: 12),
+                  shape: RoundedRectangleBorder(
+                    borderRadius: BorderRadius.circular(14),
+                  ),
+                ),
+              ),
+            ),
+            const SizedBox(height: 8),
           ],
         ),
       ),
     );
   }
 
-  void _simulatePaymentSuccess(BuildContext context, String packageName, VipTier tier) async {
-    await StorageService.setVipTier(tier);
-    if (mounted) {
-      setState(() {
-        _isVipUnlocked = true;
-        _isMoonPhaseUnlocked = true;
-      });
-    }
-    if (context.mounted) {
-      ScaffoldMessenger.of(context).showSnackBar(
-        SnackBar(
-          content: Text('🎉 Tebrikler! $packageName başarıyla aktif edildi.'),
-          backgroundColor: const Color(0xFF1D5A3A),
-          duration: const Duration(seconds: 3),
+  void _initiateStorePurchase(BuildContext context, String packageName, VipTier tier) {
+    final storeName = Platform.isIOS ? 'App Store' : 'Google Play Store';
+    final storeSubUrl = Platform.isIOS
+        ? 'https://apps.apple.com/account/subscriptions'
+        : 'https://play.google.com/store/apps/details?id=com.gokyuzudoktoru.gokyuzu_app';
+
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1B2E),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: AppColors.starlightGold, width: 1.2),
         ),
-      );
-    }
+        title: Row(
+          children: [
+            const Icon(Icons.shopping_bag_rounded,
+                color: AppColors.starlightGold, size: 22),
+            const SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                '$storeName Ödeme Bağlantısı',
+                style: const TextStyle(
+                    color: Colors.white,
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: Text(
+          '$packageName aboneliğiniz için $storeName uygulama içi satın alma (In-App Billing) oturumu başlatılıyor.\n\n'
+          'Mağaza üzerinden aboneliğinizi tamamladığınızda VIP paketiniz hesabınıza otomatik tanımlanacaktır. Eğer özel davet/promosyon kodunuz varsa "Kod Gir" seçeneğini kullanabilirsiniz.',
+          style: const TextStyle(
+              color: Colors.white70, fontSize: 12.5, height: 1.45),
+        ),
+        actions: [
+          TextButton(
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              _showPromoCodeDialog(context, packageName, tier);
+            },
+            child: const Text('Promosyon Kodu Gir',
+                style: TextStyle(color: AppColors.pastelLavender)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.starlightGold,
+              foregroundColor: Colors.black87,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () {
+              Navigator.of(ctx).pop();
+              _launchExternalUrl(storeSubUrl);
+            },
+            child: Text('$storeName\'u Aç',
+                style: const TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  void _showPromoCodeDialog(BuildContext context, String packageName, VipTier tier) {
+    final codeCtrl = TextEditingController();
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF1E1B2E),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: AppColors.starlightGold, width: 1.2),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.vpn_key_rounded, color: AppColors.starlightGold, size: 22),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'VIP Promosyon / Davet Kodu',
+                style: TextStyle(
+                    color: Colors.white,
+                    fontSize: 15.5,
+                    fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            Text(
+              '$packageName aktivasyonu için davet kodunuzu girin:',
+              style: const TextStyle(color: Colors.white70, fontSize: 12.5),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: codeCtrl,
+              style: const TextStyle(color: Colors.white),
+              decoration: InputDecoration(
+                hintText: 'Promosyon Kodu',
+                hintStyle: const TextStyle(color: Colors.white38),
+                filled: true,
+                fillColor: Colors.black26,
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.white24),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('İptal', style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.starlightGold,
+              foregroundColor: Colors.black87,
+              shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () async {
+              if (codeCtrl.text.trim().toLowerCase() == 'gkyz2453') {
+                Navigator.of(ctx).pop();
+                await StorageService.setVipTier(tier);
+                if (mounted) {
+                  setState(() {
+                    _isVipUnlocked = true;
+                    _isMoonPhaseUnlocked = true;
+                  });
+                }
+                if (context.mounted) {
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    SnackBar(
+                      content: Text('🎉 Tebrikler! $packageName başarıyla aktif edildi.'),
+                      backgroundColor: const Color(0xFF1D5A3A),
+                      duration: const Duration(seconds: 3),
+                    ),
+                  );
+                }
+              } else {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Geçersiz promosyon kodu.'),
+                    backgroundColor: AppColors.savageRed,
+                  ),
+                );
+              }
+            },
+            child: const Text('Aktif Et',
+                style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
   }
 
   Widget _buildPackageOption({
@@ -1805,12 +2327,15 @@ class _HomeScreenState extends State<HomeScreen> {
                                   Icon(Icons.verified_rounded,
                                       color: AppColors.pastelMint, size: 18),
                                   SizedBox(width: 8),
-                                  Text(
-                                    'VIP ERİŞİMİNİZ AKTİF • TÜM MODÜLLER AÇIK 👑',
-                                    style: TextStyle(
-                                      fontSize: 12,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.pastelMint,
+                                  Flexible(
+                                    child: Text(
+                                      'VIP ERİŞİMİNİZ AKTİF • TÜM MODÜLLER AÇIK 👑',
+                                      overflow: TextOverflow.ellipsis,
+                                      style: TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.pastelMint,
+                                      ),
                                     ),
                                   ),
                                 ],
@@ -1820,10 +2345,10 @@ class _HomeScreenState extends State<HomeScreen> {
                               width: double.infinity,
                               child: ElevatedButton.icon(
                                 onPressed: () => _showPurchaseModal(context),
-                                icon: const Icon(Icons.shopping_bag_outlined,
-                                    size: 16, color: Colors.black87),
+                                icon: const Icon(Icons.workspace_premium_rounded,
+                                    size: 17, color: Colors.black87),
                                 label: const Text(
-                                  'VIP Satın Al 💳 (Mobil Ödeme & Kredi Kartı)',
+                                  'VIP Abonelik Paketlerini İncele 👑',
                                   style: TextStyle(
                                       fontSize: 13,
                                       fontWeight: FontWeight.bold,
@@ -1852,6 +2377,21 @@ class _HomeScreenState extends State<HomeScreen> {
                   padding:
                       const EdgeInsets.symmetric(horizontal: 20, vertical: 8),
                   children: [
+                    _buildVipModuleCard(
+                      icon: Icons.brightness_medium_rounded,
+                      color: AppColors.starlightGold,
+                      title: 'Kadersel Tutulmalar & Harita Danışmanlığı',
+                      badge: 'TÜM VIP KATMANLARI 🌑',
+                      description:
+                          'Bu yılın ve gelecek yılın Güneş & Ay tutulmalarının doğum haritanızdaki kadersel ev aksları, tetiklenen gezegenler ve 18 yıllık Saros döngü analizi.',
+                      onTap: () => _handleVipModuleTap(
+                        context: context,
+                        moduleName: 'Kadersel Tutulmalar & Harita Danışmanlığı',
+                        requiredTier: VipTier.silver,
+                        onAccessGranted: () => _showPersonalEclipsesCounselingDemo(context),
+                      ),
+                    ),
+                    const SizedBox(height: 12),
                     _buildVipModuleCard(
                       icon: Icons.favorite_rounded,
                       color: AppColors.pastelPink,
@@ -2229,10 +2769,21 @@ class _HomeScreenState extends State<HomeScreen> {
 
   // --- VIP Interactive Demo Sheets ---
 
+  void _showPersonalEclipsesCounselingDemo(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      constraints: const BoxConstraints(maxWidth: 600),
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => PersonalEclipsesCounselingSheet(profile: widget.profile),
+    );
+  }
+
   void _showSynastryDemo(BuildContext context) {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      constraints: const BoxConstraints(maxWidth: 600),
       backgroundColor: Colors.transparent,
       builder: (ctx) => SynastryModalContent(profile: widget.profile),
     );
@@ -2242,6 +2793,7 @@ class _HomeScreenState extends State<HomeScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      constraints: const BoxConstraints(maxWidth: 600),
       backgroundColor: Colors.transparent,
       builder: (ctx) => SolarReturnModalContent(profile: widget.profile),
     );
@@ -2251,6 +2803,7 @@ class _HomeScreenState extends State<HomeScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
+      constraints: const BoxConstraints(maxWidth: 600),
       backgroundColor: Colors.transparent,
       builder: (ctx) => RectificationModalContent(
         profile: widget.profile,
@@ -3197,11 +3750,15 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                       ),
                     ),
-                    Text(
-                      'Sonraki: ${voc.nextSign} (${voc.nextIngressTime})',
-                      style: const TextStyle(
-                        fontSize: 9.5,
-                        color: AppColors.textMuted,
+                    const SizedBox(width: 6),
+                    Flexible(
+                      child: Text(
+                        'Sonraki: ${voc.nextSign} (${voc.nextIngressTime})',
+                        textAlign: TextAlign.end,
+                        style: const TextStyle(
+                          fontSize: 9.5,
+                          color: AppColors.textMuted,
+                        ),
                       ),
                     ),
                   ],
@@ -3234,23 +3791,27 @@ class _HomeScreenState extends State<HomeScreen> {
                         Row(
                           mainAxisAlignment: MainAxisAlignment.spaceBetween,
                           children: [
-                            Row(
-                              children: [
-                                const Icon(
-                                  Icons.local_fire_department_rounded,
-                                  size: 18,
-                                  color: AppColors.savageRed,
-                                ),
-                                const SizedBox(width: 6),
-                                Text(
-                                  viaCombusta.title,
-                                  style: const TextStyle(
-                                    fontSize: 12,
-                                    fontWeight: FontWeight.bold,
+                            Expanded(
+                              child: Row(
+                                children: [
+                                  const Icon(
+                                    Icons.local_fire_department_rounded,
+                                    size: 18,
                                     color: AppColors.savageRed,
                                   ),
-                                ),
-                              ],
+                                  const SizedBox(width: 6),
+                                  Expanded(
+                                    child: Text(
+                                      viaCombusta.title,
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.savageRed,
+                                      ),
+                                    ),
+                                  ),
+                                ],
+                              ),
                             ),
                             Container(
                               padding: const EdgeInsets.symmetric(
@@ -3735,20 +4296,24 @@ class _HomeScreenState extends State<HomeScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        Row(
-                          children: [
-                            const Icon(Icons.local_fire_department_rounded,
-                                color: AppColors.savageRed, size: 20),
-                            const SizedBox(width: 8),
-                            Text(
-                              vc.title,
-                              style: const TextStyle(
-                                fontSize: 13.5,
-                                fontWeight: FontWeight.bold,
-                                color: AppColors.savageRed,
+                        Expanded(
+                          child: Row(
+                            children: [
+                              const Icon(Icons.local_fire_department_rounded,
+                                  color: AppColors.savageRed, size: 20),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  vc.title,
+                                  style: const TextStyle(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.savageRed,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
                         Container(
                           padding: const EdgeInsets.symmetric(
@@ -3817,40 +4382,46 @@ class _HomeScreenState extends State<HomeScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Text(t.symbol,
-                              style: const TextStyle(
-                                  fontSize: 18,
-                                  color: AppColors.starlightGold)),
-                          const SizedBox(width: 8),
-                          Text(
-                            t.name,
-                            style: const TextStyle(
-                              fontSize: 14.5,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
-                            ),
-                          ),
-                          if (t.isRetrograde) ...[
-                            const SizedBox(width: 6),
-                            Container(
-                              padding: const EdgeInsets.symmetric(
-                                  horizontal: 5, vertical: 1),
-                              decoration: BoxDecoration(
-                                color: AppColors.savageRed
-                                    .withValues(alpha: 0.2),
-                                borderRadius: BorderRadius.circular(4),
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Text(t.symbol,
+                                style: const TextStyle(
+                                    fontSize: 18,
+                                    color: AppColors.starlightGold)),
+                            const SizedBox(width: 8),
+                            Flexible(
+                              child: Text(
+                                t.name,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 14.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
                               ),
-                              child: const Text('Rx',
-                                  style: TextStyle(
-                                      fontSize: 9,
-                                      fontWeight: FontWeight.bold,
-                                      color: AppColors.savageRed)),
                             ),
+                            if (t.isRetrograde) ...[
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 5, vertical: 1),
+                                decoration: BoxDecoration(
+                                  color: AppColors.savageRed
+                                      .withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(4),
+                                ),
+                                child: const Text('Rx',
+                                    style: TextStyle(
+                                        fontSize: 9,
+                                        fontWeight: FontWeight.bold,
+                                        color: AppColors.savageRed)),
+                              ),
+                            ],
                           ],
-                        ],
+                        ),
                       ),
+                      const SizedBox(width: 8),
                       Text(
                         t.degreeStr,
                         style: const TextStyle(
@@ -3966,37 +4537,42 @@ class _HomeScreenState extends State<HomeScreen> {
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          Container(
-                            padding: const EdgeInsets.symmetric(
-                                horizontal: 8, vertical: 3),
-                            decoration: BoxDecoration(
-                              color: isCurrent
-                                  ? AppColors.starlightGold
-                                  : Colors.white.withValues(alpha: 0.08),
-                              borderRadius: BorderRadius.circular(6),
-                            ),
-                            child: Text(
-                              '${m.number}. Menzil',
-                              style: TextStyle(
-                                fontSize: 11,
-                                fontWeight: FontWeight.bold,
-                                color:
-                                    isCurrent ? Colors.black : Colors.white70,
+                      Expanded(
+                        child: Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 8, vertical: 3),
+                              decoration: BoxDecoration(
+                                color: isCurrent
+                                    ? AppColors.starlightGold
+                                    : Colors.white.withValues(alpha: 0.08),
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: Text(
+                                '${m.number}. Menzil',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.bold,
+                                  color:
+                                      isCurrent ? Colors.black : Colors.white70,
+                                ),
                               ),
                             ),
-                          ),
-                          const SizedBox(width: 8),
-                          Text(
-                            m.name,
-                            style: const TextStyle(
-                              fontSize: 13.5,
-                              fontWeight: FontWeight.bold,
-                              color: Colors.white,
+                            const SizedBox(width: 8),
+                            Expanded(
+                              child: Text(
+                                m.name,
+                                overflow: TextOverflow.ellipsis,
+                                style: const TextStyle(
+                                  fontSize: 13.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: Colors.white,
+                                ),
+                              ),
                             ),
-                          ),
-                        ],
+                          ],
+                        ),
                       ),
                       if (isCurrent)
                         Container(
@@ -4305,14 +4881,17 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      'Solar Arc İlerlemesi ($arcFormatted / ${age.toStringAsFixed(1)} Yaş)',
-                      style: const TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.pastelPeach,
+                    Expanded(
+                      child: Text(
+                        'Solar Arc İlerlemesi ($arcFormatted / ${age.toStringAsFixed(1)} Yaş)',
+                        style: const TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.pastelPeach,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 8),
                     Text(
                       '${DateTime.now().year}',
                       style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white70),
@@ -4788,12 +5367,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           const Icon(Icons.circle, size: 8, color: AppColors.starlightGold),
                           const SizedBox(width: 6),
-                          Text(
-                            'Aktif Seviye 2 (L2) Alt Dönemi: $l2Sign ($l2Months Ay)',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.starlightGold,
+                          Expanded(
+                            child: Text(
+                              'Aktif Seviye 2 (L2) Alt Dönemi: $l2Sign ($l2Months Ay)',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.starlightGold,
+                              ),
                             ),
                           ),
                         ],
@@ -4808,12 +5389,14 @@ class _HomeScreenState extends State<HomeScreen> {
                         children: [
                           const Icon(Icons.circle, size: 8, color: AppColors.pastelMint),
                           const SizedBox(width: 6),
-                          Text(
-                            'Aktif Seviye 3 (L3) Mikro Dönemi: $l3Sign ($l3Days Gün)',
-                            style: const TextStyle(
-                              fontSize: 12,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.pastelMint,
+                          Expanded(
+                            child: Text(
+                              'Aktif Seviye 3 (L3) Mikro Dönemi: $l3Sign ($l3Days Gün)',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: AppColors.pastelMint,
+                              ),
                             ),
                           ),
                         ],
@@ -4856,20 +5439,26 @@ class _HomeScreenState extends State<HomeScreen> {
                     Row(
                       mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Row(
-                          children: [
-                            Icon(Icons.timeline_rounded, color: AppColors.starlightGold, size: 18),
-                            SizedBox(width: 8),
-                            Text(
-                              'ZR Yaşam Döngüleri (L1 ➔ L2 ➔ L3)',
-                              style: TextStyle(
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                                color: Colors.white,
+                        const Expanded(
+                          child: Row(
+                            children: [
+                              Icon(Icons.timeline_rounded, color: AppColors.starlightGold, size: 18),
+                              SizedBox(width: 8),
+                              Expanded(
+                                child: Text(
+                                  'ZR Yaşam Döngüleri (L1 ➔ L2 ➔ L3)',
+                                  overflow: TextOverflow.ellipsis,
+                                  style: TextStyle(
+                                    fontSize: 13,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white,
+                                  ),
+                                ),
                               ),
-                            ),
-                          ],
+                            ],
+                          ),
                         ),
+                        const SizedBox(width: 6),
                         Container(
                           padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
                           decoration: BoxDecoration(
@@ -4948,12 +5537,14 @@ class _HomeScreenState extends State<HomeScreen> {
                                       const Icon(Icons.subdirectory_arrow_right_rounded,
                                           size: 14, color: AppColors.starlightGold),
                                       const SizedBox(width: 6),
-                                      Text(
-                                        '${item['sign']} Seviye 2 (L2 Alt Aylar - ${l2List.length} Dönem):',
-                                        style: const TextStyle(
-                                          fontSize: 11,
-                                          fontWeight: FontWeight.bold,
-                                          color: AppColors.starlightGold,
+                                      Expanded(
+                                        child: Text(
+                                          '${item['sign']} Seviye 2 (L2 Alt Aylar - ${l2List.length} Dönem):',
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            color: AppColors.starlightGold,
+                                          ),
                                         ),
                                       ),
                                     ],
@@ -5006,7 +5597,10 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     crossAxisAlignment:
                                                         CrossAxisAlignment.start,
                                                     children: [
-                                                      Row(
+                                                      Wrap(
+                                                        spacing: 6,
+                                                        runSpacing: 2,
+                                                        crossAxisAlignment: WrapCrossAlignment.center,
                                                         children: [
                                                           Text(
                                                             'L2 ${l2['sign']} ${l2['symbol']}${l2['isLoosing'] == true ? " (L)" : ""} (${l2['months']} Ay)',
@@ -5018,8 +5612,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                   : Colors.white,
                                                             ),
                                                           ),
-                                                          if (isL2Active) ...[
-                                                            const SizedBox(width: 6),
+                                                          if (isL2Active)
                                                             Container(
                                                               padding: const EdgeInsets
                                                                   .symmetric(
@@ -5038,9 +5631,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                     color: Colors.black),
                                                               ),
                                                             ),
-                                                          ],
-                                                          if (l2['isPeak'] == true) ...[
-                                                            const SizedBox(width: 6),
+                                                          if (l2['isPeak'] == true)
                                                             Text(
                                                               l2['peakTag'],
                                                               style: const TextStyle(
@@ -5049,7 +5640,6 @@ class _HomeScreenState extends State<HomeScreen> {
                                                                 fontWeight: FontWeight.w600,
                                                               ),
                                                             ),
-                                                          ],
                                                         ],
                                                       ),
                                                       Text(
@@ -5062,6 +5652,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                                     ],
                                                   ),
                                                 ),
+                                                const SizedBox(width: 6),
                                                 Row(
                                                   mainAxisSize: MainAxisSize.min,
                                                   children: [
@@ -5125,32 +5716,38 @@ class _HomeScreenState extends State<HomeScreen> {
                                                           MainAxisAlignment
                                                               .spaceBetween,
                                                       children: [
-                                                        Row(
-                                                          children: [
-                                                            Icon(
-                                                              isL3Active
-                                                                  ? Icons.radio_button_checked
-                                                                  : Icons.circle_outlined,
-                                                              size: 10,
-                                                              color: isL3Active
-                                                                  ? AppColors.pastelMint
-                                                                  : Colors.white38,
-                                                            ),
-                                                            const SizedBox(width: 6),
-                                                            Text(
-                                                              'L3 ${l3['sign']} ${l3['symbol']}${l3['isLoosing'] == true ? " (L)" : ""} (${l3['days']} Gün)',
-                                                              style: TextStyle(
-                                                                fontSize: 10.5,
-                                                                fontWeight: isL3Active
-                                                                    ? FontWeight.bold
-                                                                    : FontWeight.normal,
+                                                        Expanded(
+                                                          child: Row(
+                                                            children: [
+                                                              Icon(
+                                                                isL3Active
+                                                                    ? Icons.radio_button_checked
+                                                                    : Icons.circle_outlined,
+                                                                size: 10,
                                                                 color: isL3Active
                                                                     ? AppColors.pastelMint
-                                                                    : Colors.white70,
+                                                                    : Colors.white38,
                                                               ),
-                                                            ),
-                                                          ],
+                                                              const SizedBox(width: 6),
+                                                              Expanded(
+                                                                child: Text(
+                                                                  'L3 ${l3['sign']} ${l3['symbol']}${l3['isLoosing'] == true ? " (L)" : ""} (${l3['days']} Gün)',
+                                                                  overflow: TextOverflow.ellipsis,
+                                                                  style: TextStyle(
+                                                                    fontSize: 10.5,
+                                                                    fontWeight: isL3Active
+                                                                        ? FontWeight.bold
+                                                                        : FontWeight.normal,
+                                                                    color: isL3Active
+                                                                        ? AppColors.pastelMint
+                                                                        : Colors.white70,
+                                                                  ),
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
                                                         ),
+                                                        const SizedBox(width: 6),
                                                         Text(
                                                           '${l3['startDateFormatted']} – ${l3['endDateFormatted']}',
                                                           style: TextStyle(
@@ -5239,14 +5836,18 @@ class _HomeScreenState extends State<HomeScreen> {
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
-                    Text(
-                      title,
-                      style: TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.bold,
-                        color: isActive ? AppColors.warningOrange : Colors.white,
+                    Flexible(
+                      child: Text(
+                        title,
+                        overflow: TextOverflow.ellipsis,
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                          color: isActive ? AppColors.warningOrange : Colors.white,
+                        ),
                       ),
                     ),
+                    const SizedBox(width: 6),
                     Text(
                       dates,
                       style: TextStyle(
@@ -5349,6 +5950,106 @@ class _HomeScreenState extends State<HomeScreen> {
             color: AppColors.pastelMint,
           ),
         ],
+      ),
+    );
+  }
+
+  void _showLanguageSelectionSheet(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => ValueListenableBuilder<String>(
+        valueListenable: AppTranslationService.currentLangNotifier,
+        builder: (context, activeLang, _) {
+          return Container(
+            padding: const EdgeInsets.symmetric(horizontal: 24, vertical: 20),
+            decoration: const BoxDecoration(
+              color: Color(0xFF130E26),
+              borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+            ),
+            child: SafeArea(
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Container(
+                    width: 40,
+                    height: 4,
+                    decoration: BoxDecoration(
+                      color: Colors.white24,
+                      borderRadius: BorderRadius.circular(2),
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+                  Text(
+                    AppTranslationService.tr('change_language'),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                  const SizedBox(height: 6),
+                  Text(
+                    AppTranslationService.tr('lang_prompt'),
+                    style: const TextStyle(fontSize: 12, color: AppColors.textSecondary),
+                    textAlign: TextAlign.center,
+                  ),
+                  const SizedBox(height: 20),
+                  _buildLangOption(ctx, code: 'tr', flag: '🇹🇷', label: 'Türkçe', isSelected: activeLang == 'tr'),
+                  const SizedBox(height: 10),
+                  _buildLangOption(ctx, code: 'en', flag: '🇬🇧', label: 'English', isSelected: activeLang == 'en'),
+                  const SizedBox(height: 10),
+                  _buildLangOption(ctx, code: 'ja', flag: '🇯🇵', label: '日本語', isSelected: activeLang == 'ja'),
+                  const SizedBox(height: 12),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  Widget _buildLangOption(BuildContext ctx, {required String code, required String flag, required String label, required bool isSelected}) {
+    return InkWell(
+      onTap: () async {
+        await AppTranslationService.setLanguage(code);
+        if (ctx.mounted) {
+          Navigator.pop(ctx);
+        }
+        if (mounted) {
+          setState(() {});
+        }
+      },
+      borderRadius: BorderRadius.circular(16),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 14),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.starlightGold.withValues(alpha: 0.18) : Colors.white.withValues(alpha: 0.05),
+          borderRadius: BorderRadius.circular(16),
+          border: Border.all(
+            color: isSelected ? AppColors.starlightGold : Colors.white12,
+            width: isSelected ? 1.5 : 1.0,
+          ),
+        ),
+        child: Row(
+          children: [
+            Text(flag, style: const TextStyle(fontSize: 20)),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Text(
+                label,
+                style: TextStyle(
+                  fontSize: 14,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+                  color: isSelected ? AppColors.starlightGold : Colors.white,
+                ),
+              ),
+            ),
+            if (isSelected)
+              const Icon(Icons.check_circle_rounded, color: AppColors.starlightGold, size: 20),
+          ],
+        ),
       ),
     );
   }

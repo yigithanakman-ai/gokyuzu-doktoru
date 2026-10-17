@@ -1,18 +1,27 @@
 import 'package:flutter/material.dart';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
 import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'core/theme/app_theme.dart';
+import 'data/services/app_translation_service.dart';
 import 'presentation/screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
-  try {
-    await MobileAds.instance.initialize();
-  } catch (_) {}
+  await AppTranslationService.init();
+  if (!kIsWeb &&
+      (defaultTargetPlatform == TargetPlatform.android ||
+          defaultTargetPlatform == TargetPlatform.iOS)) {
+    try {
+      await MobileAds.instance.initialize();
+    } catch (_) {}
+  }
   try {
     await initializeDateFormatting('tr_TR', null);
+    await initializeDateFormatting('en_US', null);
+    await initializeDateFormatting('ja_JP', null);
   } catch (_) {}
   SystemChrome.setSystemUIOverlayStyle(
     const SystemUiOverlayStyle(
@@ -30,21 +39,44 @@ class GokyuzuDoktoruApp extends StatelessWidget {
 
   @override
   Widget build(BuildContext context) {
-    return MaterialApp(
-      title: 'Gökyüzü Doktoru',
-      debugShowCheckedModeBanner: false,
-      theme: AppTheme.darkTheme,
-      locale: const Locale('tr', 'TR'),
-      supportedLocales: const [
-        Locale('tr', 'TR'),
-        Locale('en', 'US'),
-      ],
-      localizationsDelegates: const [
-        GlobalMaterialLocalizations.delegate,
-        GlobalWidgetsLocalizations.delegate,
-        GlobalCupertinoLocalizations.delegate,
-      ],
-      home: const SplashScreen(),
+    return ValueListenableBuilder<String>(
+      valueListenable: AppTranslationService.currentLangNotifier,
+      builder: (context, currentLang, _) {
+        final locale = currentLang == 'en'
+            ? const Locale('en', 'US')
+            : (currentLang == 'ja'
+                ? const Locale('ja', 'JP')
+                : const Locale('tr', 'TR'));
+
+        return MaterialApp(
+          key: ValueKey(currentLang),
+          title: AppTranslationService.tr('app_title'),
+          debugShowCheckedModeBanner: false,
+          theme: AppTheme.darkTheme,
+          locale: locale,
+          supportedLocales: const [
+            Locale('tr', 'TR'),
+            Locale('en', 'US'),
+            Locale('ja', 'JP'),
+          ],
+          localizationsDelegates: const [
+            GlobalMaterialLocalizations.delegate,
+            GlobalWidgetsLocalizations.delegate,
+            GlobalCupertinoLocalizations.delegate,
+          ],
+          home: const SplashScreen(),
+          builder: (context, child) {
+            return Container(
+              color: const Color(0xFF0D0A14),
+              alignment: Alignment.center,
+              child: ConstrainedBox(
+                constraints: const BoxConstraints(maxWidth: 600),
+                child: child ?? const SizedBox.shrink(),
+              ),
+            );
+          },
+        );
+      },
     );
   }
 }

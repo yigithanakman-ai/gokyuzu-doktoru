@@ -1,5 +1,3 @@
-import 'dart:convert';
-
 /// Kadim Pisagor ve Keldani Ekolü Kozmik Numeroloji Servisi
 class NumerologyResult {
   final int lifePathNumber; // Yaşam Yolu (Doğum Tarihi)

@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../data/services/app_translation_service.dart';
 
 class BigThreeBadge extends StatelessWidget {
   final String label;
@@ -36,7 +37,7 @@ class BigThreeBadge extends StatelessWidget {
               Icon(icon, size: 14, color: accentColor),
               const SizedBox(width: 4),
               Text(
-                label.toUpperCase(),
+                AppTranslationService.tr(label).toUpperCase(),
                 style: TextStyle(
                   fontSize: 10,
                   fontWeight: FontWeight.w700,
@@ -48,7 +49,7 @@ class BigThreeBadge extends StatelessWidget {
           ),
           const SizedBox(height: 4),
           Text(
-            sign,
+            AppTranslationService.signName(sign),
             style: const TextStyle(
               fontSize: 15,
               fontWeight: FontWeight.bold,

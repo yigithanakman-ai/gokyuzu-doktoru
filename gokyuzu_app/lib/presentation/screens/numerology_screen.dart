@@ -16,6 +16,7 @@ class NumerologyScreen extends StatefulWidget {
 class _NumerologyScreenState extends State<NumerologyScreen> {
   late NumerologyResult _result;
   bool _isVip = false;
+  bool get isVip => _isVip;
 
   @override
   void initState() {

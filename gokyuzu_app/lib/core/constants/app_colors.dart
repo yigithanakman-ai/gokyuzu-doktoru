@@ -6,6 +6,8 @@ class AppColors {
   static const Color surface = Color(0xFF191630);
   static const Color surfaceLight = Color(0xFF242042);
   static const Color primaryViolet = Color(0xFF6C5CE7);
+  static const Color electricViolet = Color(0xFF8A70FF);
+  static const Color cosmicPlum = Color(0xFF381A4E);
   static const Color cardBg = Color(0x24FFFFFF);
   static const Color cardBackground = Color(0xFF191630);
   static const Color cardBorder = Color(0x38FFFFFF);

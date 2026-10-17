@@ -12,6 +12,8 @@ client_secret*.json
 *.zip
 *.dmg
 *.pkg
+*.apk
+*.aab
 
 # Python
 __pycache__/
@@ -19,8 +21,10 @@ __pycache__/
 *$py.class
 venv/
 .venv/
+*venv*/
 env/
 .env/
+*.log
 
 # Flutter & Dart
 .dart_tool/

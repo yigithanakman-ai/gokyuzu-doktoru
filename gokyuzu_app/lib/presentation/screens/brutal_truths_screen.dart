@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/models/birth_chart_model.dart';
 import '../../data/models/brutal_truth_model.dart';
+import '../../data/services/app_translation_service.dart';
 import '../../data/services/storage_service.dart';
 import '../widgets/big_three_badge.dart';
 import '../widgets/glass_card.dart';
@@ -61,7 +62,7 @@ class _BrutalTruthsScreenState extends State<BrutalTruthsScreen> {
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
                       Text(
-                        'Sevgili ${_capitalize(widget.profile.name)}',
+                        '${AppTranslationService.tr('Sevgili')} ${_capitalize(widget.profile.name)}',
                         style: Theme.of(context).textTheme.titleSmall?.copyWith(
                               color: AppColors.pastelPink,
                               fontWeight: FontWeight.bold,
@@ -76,9 +77,9 @@ class _BrutalTruthsScreenState extends State<BrutalTruthsScreen> {
                           border: Border.all(
                               color: AppColors.starlightGold.withValues(alpha: 0.4)),
                         ),
-                        child: const Text(
-                          'HARİTA ÇÖZÜMLEMESİ',
-                          style: TextStyle(
+                        child: Text(
+                          AppTranslationService.tr('HARİTA ÇÖZÜMLEMESİ'),
+                          style: const TextStyle(
                             fontSize: 10,
                             fontWeight: FontWeight.bold,
                             color: AppColors.starlightGold,
@@ -128,7 +129,7 @@ class _BrutalTruthsScreenState extends State<BrutalTruthsScreen> {
             Padding(
               padding: const EdgeInsets.symmetric(horizontal: 24),
               child: Text(
-                'Kişisel Farkındalık &\nTemel Harita Dinamikleri',
+                AppTranslationService.tr('Kişisel Farkındalık &\nTemel Harita Dinamikleri'),
                 textAlign: TextAlign.center,
                 style: Theme.of(context).textTheme.displayMedium?.copyWith(
                       height: 1.2,
@@ -137,7 +138,7 @@ class _BrutalTruthsScreenState extends State<BrutalTruthsScreen> {
             ),
             const SizedBox(height: 8),
             Text(
-              'Doğum haritanızdaki akslar ve yerleşimlerin ortaya koyduğu 3 kilit psikolojik gerçeklik.',
+              AppTranslationService.tr('Doğum haritanızdaki akslar ve yerleşimlerin ortaya koyduğu 3 kilit psikolojik gerçeklik.'),
               textAlign: TextAlign.center,
               style: Theme.of(context).textTheme.bodyMedium?.copyWith(
                     color: AppColors.textMuted,
@@ -185,7 +186,7 @@ class _BrutalTruthsScreenState extends State<BrutalTruthsScreen> {
                                           color: cardColor.withValues(alpha: 0.3)),
                                     ),
                                     child: Text(
-                                      truth.title.toUpperCase(),
+                                      AppTranslationService.tr(truth.title).toUpperCase(),
                                       maxLines: 1,
                                       overflow: TextOverflow.ellipsis,
                                       style: TextStyle(
@@ -213,7 +214,7 @@ class _BrutalTruthsScreenState extends State<BrutalTruthsScreen> {
                           Expanded(
                             child: SingleChildScrollView(
                               child: Text(
-                                truth.text,
+                                AppTranslationService.tr(truth.text),
                                 style: Theme.of(context)
                                     .textTheme
                                     .bodyLarge
@@ -241,7 +242,7 @@ class _BrutalTruthsScreenState extends State<BrutalTruthsScreen> {
                 children: [
                   // Left (Geri / Sol) Button
                   IconButton.filledTonal(
-                    tooltip: 'Önceki Kart',
+                    tooltip: AppTranslationService.tr('Önceki Kart'),
                     onPressed: _currentPage > 0
                         ? () {
                             _pageController.previousPage(
@@ -284,7 +285,7 @@ class _BrutalTruthsScreenState extends State<BrutalTruthsScreen> {
 
                   // Right (İleri / Sağ) Button
                   IconButton.filledTonal(
-                    tooltip: 'Sonraki Kart',
+                    tooltip: AppTranslationService.tr('Sonraki Kart'),
                     onPressed: _currentPage < widget.truths.length - 1
                         ? () {
                             _pageController.nextPage(
@@ -332,8 +333,8 @@ class _BrutalTruthsScreenState extends State<BrutalTruthsScreen> {
                   },
                   child: Text(
                     _currentPage < widget.truths.length - 1
-                        ? 'Sonraki Gerçeğe Geç ➔'
-                        : 'Kozmik Panele Geç ✨',
+                        ? AppTranslationService.tr('Sonraki Gerçeğe Geç ➔')
+                        : AppTranslationService.tr('Kozmik Panele Geç ✨'),
                   ),
                 ),
               ),

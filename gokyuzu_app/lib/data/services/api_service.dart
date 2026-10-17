@@ -1,19 +1,12 @@
-import 'dart:convert';
 import 'package:flutter/material.dart';
-import 'package:http/http.dart' as http;
-import '../../core/constants/api_constants.dart';
 import 'astrology_engine.dart';
 import '../models/birth_chart_model.dart';
 import '../models/brutal_truth_model.dart';
 import '../models/daily_horoscope_model.dart';
 
 class ApiService {
-  static final Map<String, String> _headers = {
-    'Content-Type': 'application/json',
-    ApiConstants.appSecretHeader: ApiConstants.appSecret,
-  };
-
   /// Calculates birth chart using Geocentric, Placidus House System, Tropical Western astrology
+
   /// Connects to the Swiss Ephemeris engine on backend, with seamless local fallback
   static Future<BirthChartModel> calculateChart({
     required String name,
@@ -22,42 +15,24 @@ class ApiService {
     required String city,
     String? country,
   }) async {
-    try {
-      final response = await http
-          .post(
-            Uri.parse(ApiConstants.chartEndpoint),
-            headers: _headers,
-            body: jsonEncode({
-              'name': name,
-              'birth_date': birthDate,
-              'birth_time': birthTime,
-              'city': city,
-              'country': country,
-            }),
-          )
-          .timeout(const Duration(seconds: 4));
-
-      if (response.statusCode == 200) {
-        final data = jsonDecode(utf8.decode(response.bodyBytes));
-        return BirthChartModel.fromJson(data);
-      }
-    } catch (_) {
-      // Fallback to local offline calculation if network is unavailable
-    }
-
-    // Parse Date & Time for local fallback
+    // Parse Date & Time safely
     DateTime date;
     if (birthDate.contains('-')) {
       final p = birthDate.split('-');
       date = DateTime(int.parse(p[0]), int.parse(p[1]), int.parse(p[2]));
-    } else {
+    } else if (birthDate.contains('.')) {
       final p = birthDate.split('.');
       date = DateTime(int.parse(p[2]), int.parse(p[1]), int.parse(p[0]));
+    } else {
+      date = DateTime(1990, 1, 1);
     }
 
     final tp = birthTime.split(':');
-    final time = TimeOfDay(hour: int.parse(tp[0]), minute: int.parse(tp[1]));
+    final hour = tp.isNotEmpty ? (int.tryParse(tp[0]) ?? 12) : 12;
+    final minute = tp.length > 1 ? (int.tryParse(tp[1]) ?? 0) : 0;
+    final time = TimeOfDay(hour: hour, minute: minute);
 
+    // Unified deterministic calculation (Keplerian ephemeris + Historical Timezone + Placidus ASC/MC)
     return AstrologyEngine.calculateChart(
       name: name,
       birthDate: date,
@@ -90,7 +65,7 @@ class ApiService {
     );
   }
 
-  /// Returns conversational daily transit horoscope
+  /// Returns real-time daily transit horoscope
   static Future<DailyHoroscopeModel> getDailyHoroscope({
     required String name,
     required Map<String, dynamic> chart,
@@ -99,11 +74,13 @@ class ApiService {
     final targetSign = chart['ascendant']?.toString() ??
         chart['sun']?.toString() ??
         'Koç';
-    final cleanSign = targetSign.split(' ').last;
 
     return AstrologyEngine.getDailyHoroscope(
       name: name,
-      targetSign: cleanSign,
+      targetSign: targetSign,
+      sunSign: chart['sun']?.toString(),
+      moonSign: chart['moon']?.toString(),
     );
   }
 }
+

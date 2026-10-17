@@ -1,10 +1,21 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../data/models/birth_chart_model.dart';
 import '../../data/services/aspects_service.dart';
+import '../../data/services/astrology_engine.dart';
+import '../../data/services/storage_service.dart';
 import '../widgets/glass_card.dart';
+import '../../data/services/app_translation_service.dart';
 
 class AspectsScreen extends StatefulWidget {
-  const AspectsScreen({super.key});
+  final BirthChartModel? chart;
+  final UserProfile? profile;
+
+  const AspectsScreen({
+    super.key,
+    this.chart,
+    this.profile,
+  });
 
   @override
   State<AspectsScreen> createState() => _AspectsScreenState();
@@ -13,26 +24,76 @@ class AspectsScreen extends StatefulWidget {
 class _AspectsScreenState extends State<AspectsScreen> {
   bool _includeTransits = false;
   bool _isTriangleGridView = true;
+  BirthChartModel? _resolvedChart;
+  UserProfile? _resolvedProfile;
+
+  String _localizeCoord(String raw) {
+    if (raw.isEmpty) return raw;
+    var res = raw;
+    for (final s in AspectsService.zodiacSigns) {
+      if (res.contains(s)) {
+        res = res.replaceAll(s, AppTranslationService.signName(s));
+      }
+    }
+    return res;
+  }
+
+  @override
+  void initState() {
+    super.initState();
+    _resolvedChart = widget.chart;
+    _resolvedProfile = widget.profile;
+    if (_resolvedChart == null) {
+      _loadUserChart();
+    }
+  }
+
+  Future<void> _loadUserChart() async {
+    final prof = _resolvedProfile ?? await StorageService.getProfile();
+    if (prof != null) {
+      final c = AstrologyEngine.calculateChart(
+        name: prof.name,
+        dateStr: prof.birthDate,
+        timeStr: prof.birthTime,
+        city: prof.birthCity.isEmpty ? 'İstanbul' : prof.birthCity,
+        country: prof.birthCountry.isEmpty ? 'Türkiye' : prof.birthCountry,
+      );
+      if (mounted) {
+        setState(() {
+          _resolvedProfile = prof;
+          _resolvedChart = c;
+        });
+      }
+    }
+  }
 
   @override
   Widget build(BuildContext context) {
-    final natalAspects = AspectsService.getNatalAspects();
-    final transitAspects = AspectsService.getTransitAspects();
-    final displayedAspects = _includeTransits
-        ? [...natalAspects, ...transitAspects]
-        : natalAspects;
+    final natalAspects = AspectsService.getNatalAspects(
+      chart: _resolvedChart,
+      profile: _resolvedProfile,
+    );
+    final transitAspects = AspectsService.getTransitAspects(
+      chart: _resolvedChart,
+      profile: _resolvedProfile,
+    );
+
+    // Sayfalar arası yorum ve liste tamamen değişir:
+    // - Yalnızca Natal Açılar: Doğum haritasının kendi içindeki natal gezegen açıları ve karakter yorumları
+    // - Natal + Transit Açılar: Anlık gökyüzü transitlerinin doğum haritası gezegenlerine yaptığı canlı açılar ve öngörü yorumları
+    final displayedAspects = _includeTransits ? transitAspects : natalAspects;
 
     return Scaffold(
       backgroundColor: AppColors.background,
       appBar: AppBar(
         backgroundColor: Colors.transparent,
         elevation: 0,
-        title: const FittedBox(
+        title: FittedBox(
           fit: BoxFit.scaleDown,
           alignment: Alignment.centerLeft,
           child: Text(
-            'Açılar Matrisi & Etkileşimler',
-            style: TextStyle(
+            AppTranslationService.tr('Açılar Matrisi & Etkileşimler'),
+            style: const TextStyle(
               fontSize: 16,
               fontWeight: FontWeight.bold,
               letterSpacing: 0.5,
@@ -41,7 +102,7 @@ class _AspectsScreenState extends State<AspectsScreen> {
         ),
         actions: [
           IconButton(
-            tooltip: 'Açılar Kılavuzu (Majör & Minör)',
+            tooltip: AppTranslationService.tr('Açılar Kılavuzu (Majör & Minör)'),
             icon: const Icon(Icons.menu_book_rounded, color: AppColors.starlightGold),
             onPressed: () => _showAspectsGuideModal(context),
           ),
@@ -70,7 +131,7 @@ class _AspectsScreenState extends State<AspectsScreen> {
                       children: [
                         Expanded(
                           child: _buildSegmentButton(
-                            title: 'Yalnızca Natal Açılar',
+                            title: AppTranslationService.tr('Yalnızca Natal Açılar'),
                             icon: Icons.brightness_medium_rounded,
                             isSelected: !_includeTransits,
                             onTap: () => setState(() => _includeTransits = false),
@@ -78,7 +139,7 @@ class _AspectsScreenState extends State<AspectsScreen> {
                         ),
                         Expanded(
                           child: _buildSegmentButton(
-                            title: 'Natal + Transit Açılar',
+                            title: AppTranslationService.tr('Natal + Transit Açılar'),
                             icon: Icons.bolt_rounded,
                             isSelected: _includeTransits,
                             onTap: () => setState(() => _includeTransits = true),
@@ -127,7 +188,7 @@ class _AspectsScreenState extends State<AspectsScreen> {
                                           ),
                                           const SizedBox(width: 4),
                                           Text(
-                                            'Izgara (Grid)',
+                                            '${AppTranslationService.tr("Izgara")} (${_includeTransits ? AppTranslationService.tr("Transit×Natal") : AppTranslationService.tr("Natal")})',
                                             style: TextStyle(
                                               fontSize: 11.5,
                                               fontWeight: FontWeight.bold,
@@ -168,7 +229,7 @@ class _AspectsScreenState extends State<AspectsScreen> {
                                           ),
                                           const SizedBox(width: 4),
                                           Text(
-                                            'Açı Listesi',
+                                            '${AppTranslationService.tr("Açı Listesi")} (${displayedAspects.length})',
                                             style: TextStyle(
                                               fontSize: 11.5,
                                               fontWeight: FontWeight.bold,
@@ -200,15 +261,15 @@ class _AspectsScreenState extends State<AspectsScreen> {
                             border: Border.all(
                                 color: AppColors.pastelLavender.withValues(alpha: 0.3)),
                           ),
-                          child: const Row(
+                          child: Row(
                             mainAxisSize: MainAxisSize.min,
                             children: [
-                              Icon(Icons.auto_stories_rounded,
+                              const Icon(Icons.auto_stories_rounded,
                                   size: 14, color: AppColors.pastelLavender),
-                              SizedBox(width: 4),
+                              const SizedBox(width: 4),
                               Text(
-                                'Rehber',
-                                style: TextStyle(
+                                AppTranslationService.tr('Rehber'),
+                                style: const TextStyle(
                                   fontSize: 11.5,
                                   fontWeight: FontWeight.bold,
                                   color: AppColors.pastelLavender,
@@ -220,11 +281,56 @@ class _AspectsScreenState extends State<AspectsScreen> {
                       ),
                     ],
                   ),
+                  const SizedBox(height: 8),
+                  // Active Mode Info Banner
+                  Container(
+                    width: double.infinity,
+                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 7),
+                    decoration: BoxDecoration(
+                      color: (_includeTransits
+                              ? AppColors.warningOrange
+                              : AppColors.pastelMint)
+                          .withValues(alpha: 0.12),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(
+                        color: (_includeTransits
+                                ? AppColors.warningOrange
+                                : AppColors.pastelMint)
+                            .withValues(alpha: 0.35),
+                      ),
+                    ),
+                    child: Row(
+                      children: [
+                        Icon(
+                           _includeTransits
+                              ? Icons.bolt_rounded
+                              : Icons.auto_awesome_rounded,
+                          size: 15,
+                          color: _includeTransits
+                              ? AppColors.warningOrange
+                              : AppColors.pastelMint,
+                        ),
+                        const SizedBox(width: 8),
+                        Expanded(
+                          child: Text(
+                            _includeTransits
+                                ? AppTranslationService.tr('CANLI TRANSİT → NATAL MODU: Anlık gökyüzü gezegenlerinin doğum haritanıza yaptığı güncel açılar ve öngörü yorumları listeleniyor.')
+                                : AppTranslationService.tr('NATAL HARİTA MODU: Doğum anınızdaki gezegenlerin kendi aralarındaki gerçek astronomik açıları ve karakter/potansiyel yorumları listeleniyor.'),
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: Colors.white70,
+                              height: 1.3,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
                 ],
               ),
             ),
 
-            const Divider(color: Colors.white10),
+            const Divider(color: Colors.white10, height: 8),
 
             // Content Area: Grid or List
             Expanded(
@@ -280,100 +386,147 @@ class _AspectsScreenState extends State<AspectsScreen> {
     );
   }
 
-  // --- Classical Astrology Aspect Triangle Grid ---
+  // --- Classical Astrology Aspect Triangle Grid / Transit×Natal Matrix ---
   Widget _buildTriangleGrid(BuildContext context) {
     final planets = AspectsService.matrixPlanets;
     final int count = planets.length;
 
-    return SingleChildScrollView(
-      scrollDirection: Axis.horizontal,
-      padding: const EdgeInsets.all(16),
-      child: SingleChildScrollView(
-        scrollDirection: Axis.vertical,
-        child: Column(
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            // Top Header: Planet symbols for columns
-            Row(
-              children: [
-                const SizedBox(width: 60), // Corner blank
-                for (int c = 0; c < count - 1; c++)
-                  Container(
-                    width: 44,
-                    height: 36,
-                    alignment: Alignment.center,
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceLight,
-                      border: Border.all(color: Colors.white12),
-                    ),
-                    child: Text(
-                      AspectsService.planetSymbols[planets[c]] ?? planets[c],
-                      style: const TextStyle(
-                        fontSize: 13,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.starlightGold,
-                      ),
-                    ),
-                  ),
-              ],
-            ),
-            // Rows (Lower triangle)
-            for (int r = 1; r < count; r++)
-              Row(
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        Expanded(
+          child: SingleChildScrollView(
+            scrollDirection: Axis.horizontal,
+            padding: const EdgeInsets.fromLTRB(16, 12, 16, 8),
+            child: SingleChildScrollView(
+              scrollDirection: Axis.vertical,
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Left Header (Row planet label)
-                  Container(
-                    width: 60,
-                    height: 44,
-                    padding: const EdgeInsets.symmetric(horizontal: 4),
-                    alignment: Alignment.centerLeft,
-                    decoration: BoxDecoration(
-                      color: AppColors.surfaceLight,
-                      border: Border.all(color: Colors.white12),
-                    ),
-                    child: Text(
-                      planets[r].length > 7 ? planets[r].substring(0, 6) : planets[r],
-                      style: const TextStyle(
-                        fontSize: 11,
-                        fontWeight: FontWeight.bold,
-                        color: AppColors.pastelLavender,
-                      ),
-                    ),
-                  ),
-                  // Cells for columns up to r
-                  for (int c = 0; c < count - 1; c++)
-                    if (c < r)
-                      _buildGridCell(context, planets[r], planets[c])
-                    else
+                  // Top Header: Planet symbols for columns (Natal Planets)
+                  Row(
+                    children: [
                       Container(
-                        width: 44,
-                        height: 44,
+                        width: 72,
+                        height: 36,
+                        alignment: Alignment.center,
                         decoration: BoxDecoration(
-                          color: Colors.black12,
-                          border: Border.all(color: Colors.white10),
+                          color: Colors.black26,
+                          border: Border.all(color: Colors.white12),
+                        ),
+                        child: Text(
+                          _includeTransits ? 'T ↓ / N →' : AppTranslationService.tr('NATAL'),
+                          style: const TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.bold,
+                            color: AppColors.starlightGold,
+                          ),
                         ),
                       ),
+                      for (int c = 0; c < (_includeTransits ? count : count - 1); c++)
+                        Container(
+                          width: 44,
+                          height: 36,
+                          alignment: Alignment.center,
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceLight,
+                            border: Border.all(color: Colors.white12),
+                          ),
+                          child: Text(
+                            AspectsService.planetSymbols[planets[c]] ?? planets[c],
+                            style: const TextStyle(
+                              fontSize: 13,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.starlightGold,
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  // Rows:
+                  // - If _includeTransits == false: Classical lower triangle (1..count-1)
+                  // - If _includeTransits == true: Full Transit rows (0..count-3, excluding ASC/MC transits) × Natal columns
+                  for (int r = (_includeTransits ? 0 : 1);
+                      r < (_includeTransits ? count - 2 : count);
+                      r++)
+                    Row(
+                      children: [
+                        // Left Header (Row planet label)
+                        Container(
+                          width: 72,
+                          height: 44,
+                          padding: const EdgeInsets.symmetric(horizontal: 5),
+                          alignment: Alignment.centerLeft,
+                          decoration: BoxDecoration(
+                            color: AppColors.surfaceLight,
+                            border: Border.all(color: Colors.white12),
+                          ),
+                          child: Text(
+                            _includeTransits
+                                ? 'T.${AppTranslationService.planetName(planets[r]).split(' ').first}'
+                                : AppTranslationService.planetName(planets[r]).split(' ').first,
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: TextStyle(
+                              fontSize: 10.5,
+                              fontWeight: FontWeight.bold,
+                              color: _includeTransits
+                                  ? AppColors.warningOrange
+                                  : AppColors.pastelLavender,
+                            ),
+                          ),
+                        ),
+                        // Cells
+                        for (int c = 0;
+                            c < (_includeTransits ? count : count - 1);
+                            c++)
+                          if (_includeTransits || c < r)
+                            _buildGridCell(context, planets[r], planets[c])
+                          else
+                            Container(
+                              width: 44,
+                              height: 44,
+                              decoration: BoxDecoration(
+                                color: Colors.black12,
+                                border: Border.all(color: Colors.white10),
+                              ),
+                            ),
+                      ],
+                    ),
                 ],
               ),
-            const SizedBox(height: 16),
-            const Row(
-              children: [
-                Icon(Icons.info_outline, size: 14, color: AppColors.textMuted),
-                SizedBox(width: 6),
-                Text(
-                  'Hücrelere dokunarak açının tam yorumunu ve orb derecesini görüntüleyebilirsiniz.',
-                  style: TextStyle(fontSize: 11, color: AppColors.textMuted),
-                ),
-              ],
             ),
-          ],
+          ),
         ),
-      ),
+        Padding(
+          padding: const EdgeInsets.fromLTRB(16, 4, 16, 12),
+          child: Row(
+            children: [
+              const Icon(Icons.info_outline, size: 14, color: AppColors.textMuted),
+              const SizedBox(width: 6),
+              Expanded(
+                child: Text(
+                  _includeTransits
+                      ? AppTranslationService.tr('Hücrelere dokunarak ilgili Transit gezegenin Natal gezegeninize yaptığı açının güncel öngörü yorumunu okuyabilirsiniz.')
+                      : AppTranslationService.tr('Hücrelere dokunarak doğum haritanızdaki iki gezegen arasındaki gerçek açının detaylı yorumunu okuyabilirsiniz.'),
+                  style: const TextStyle(fontSize: 11, color: AppColors.textMuted),
+                ),
+              ),
+            ],
+          ),
+        ),
+      ],
     );
   }
 
   Widget _buildGridCell(BuildContext context, String pA, String pB) {
-    final aspect = AspectsService.findAspectInGrid(pA, pB, includeTransits: _includeTransits);
+    final aspect = AspectsService.findAspectInGrid(
+      pA,
+      pB,
+      includeTransits: _includeTransits,
+      chart: _resolvedChart,
+      profile: _resolvedProfile,
+    );
 
     if (aspect == null) {
       return Container(
@@ -447,6 +600,18 @@ class _AspectsScreenState extends State<AspectsScreen> {
 
   // --- Aspects List View ---
   Widget _buildAspectsList(List<AspectHit> aspects) {
+    if (aspects.isEmpty) {
+      return Center(
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Text(
+            AppTranslationService.tr('Belirtilen orb aralığında aktif açı bulunamadı.'),
+            style: const TextStyle(color: AppColors.textMuted),
+          ),
+        ),
+      );
+    }
+
     return ListView.builder(
       padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
       itemCount: aspects.length,
@@ -490,17 +655,18 @@ class _AspectsScreenState extends State<AspectsScreen> {
                                 crossAxisAlignment: CrossAxisAlignment.start,
                                 children: [
                                   Text(
-                                    '${item.planetA} - ${item.planetB}',
-                                    maxLines: 1,
+                                    '${AppTranslationService.planetName(item.planetA)} (${_localizeCoord(item.planetADegreeSign)}) ${item.aspectSymbol} ${AppTranslationService.planetName(item.planetB)} (${_localizeCoord(item.planetBDegreeSign)})',
+                                    maxLines: 2,
                                     overflow: TextOverflow.ellipsis,
                                     style: const TextStyle(
-                                      fontSize: 14,
+                                      fontSize: 13.5,
                                       fontWeight: FontWeight.bold,
                                       color: Colors.white,
                                     ),
                                   ),
+                                  const SizedBox(height: 2),
                                   Text(
-                                    '${item.aspectName} Açı (Orb: ${item.orbStr})',
+                                    '${AppTranslationService.aspectName(item.aspectName)} ${AppTranslationService.tr("Açı")} (${item.aspectDegree.toInt()}°) • Orb: ${item.orbStr}',
                                     maxLines: 1,
                                     overflow: TextOverflow.ellipsis,
                                     style: TextStyle(
@@ -525,7 +691,7 @@ class _AspectsScreenState extends State<AspectsScreen> {
                           borderRadius: BorderRadius.circular(8),
                         ),
                         child: Text(
-                          item.isTransit ? 'TRANSİT' : 'NATAL',
+                          item.isTransit ? AppTranslationService.tr('TRANSİT') : AppTranslationService.tr('NATAL'),
                           style: TextStyle(
                             fontSize: 9.5,
                             fontWeight: FontWeight.bold,
@@ -562,7 +728,7 @@ class _AspectsScreenState extends State<AspectsScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => Container(
-        height: MediaQuery.of(context).size.height * 0.65,
+        height: MediaQuery.of(context).size.height * 0.68,
         decoration: const BoxDecoration(
           color: Color(0xFF13111C),
           borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
@@ -607,15 +773,20 @@ class _AspectsScreenState extends State<AspectsScreen> {
                       crossAxisAlignment: CrossAxisAlignment.start,
                       children: [
                         Text(
-                          '${hit.planetA} ${hit.aspectName} ${hit.planetB}',
+                          '${AppTranslationService.planetName(hit.planetA)} ${hit.aspectSymbol} ${AppTranslationService.planetName(hit.planetB)}',
+                          maxLines: 2,
+                          overflow: TextOverflow.ellipsis,
                           style: const TextStyle(
-                            fontSize: 16,
+                            fontSize: 15.5,
                             fontWeight: FontWeight.bold,
                             color: Colors.white,
                           ),
                         ),
+                        const SizedBox(height: 2),
                         Text(
-                          'Orb Sapması: ${hit.orbStr} | ${hit.isTransit ? 'Güncel Transit Etkisi' : 'Doğum Haritası Temel Açısı'}',
+                          '${_localizeCoord(hit.planetADegreeSign)} — ${_localizeCoord(hit.planetBDegreeSign)} | ${AppTranslationService.aspectName(hit.aspectName)} (${hit.aspectDegree.toInt()}°)',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
                           style: TextStyle(
                             fontSize: 11.5,
                             color: hit.color,
@@ -649,13 +820,17 @@ class _AspectsScreenState extends State<AspectsScreen> {
                             children: [
                               Icon(Icons.auto_awesome, size: 16, color: hit.color),
                               const SizedBox(width: 8),
-                              const Text(
-                                'PSİKOLOJİK & PRATİK ETKİSİ',
-                                style: TextStyle(
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white70,
-                                  letterSpacing: 0.8,
+                              Expanded(
+                                child: Text(
+                                  hit.isTransit
+                                      ? AppTranslationService.tr('CANLI TRANSİT ÖNGÖRÜ ANALİZİ')
+                                      : AppTranslationService.tr('DOĞUM HARİTASI (NATAL) ETKİ ANALİZİ'),
+                                  style: const TextStyle(
+                                    fontSize: 11.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: Colors.white70,
+                                    letterSpacing: 0.8,
+                                  ),
                                 ),
                               ),
                             ],
@@ -681,12 +856,16 @@ class _AspectsScreenState extends State<AspectsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Açı Tipi',
-                                    style: TextStyle(
+                                Text(AppTranslationService.tr('Açı Tipi'),
+                                    style: const TextStyle(
                                         fontSize: 11, color: AppColors.textMuted)),
                                 const SizedBox(height: 4),
                                 Text(
-                                  hit.isMajor ? 'Majör (Temel)' : 'Minör (İnce)',
+                                  hit.isMajor
+                                      ? '${AppTranslationService.tr("Majör")} (${hit.aspectDegree.toInt()}°)'
+                                      : '${AppTranslationService.tr("Minör")} (${hit.aspectDegree.toInt()}°)',
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
                                   style: TextStyle(
                                     fontSize: 13,
                                     fontWeight: FontWeight.bold,
@@ -704,8 +883,8 @@ class _AspectsScreenState extends State<AspectsScreen> {
                             child: Column(
                               crossAxisAlignment: CrossAxisAlignment.start,
                               children: [
-                                const Text('Tolerans (Orb)',
-                                    style: TextStyle(
+                                Text(AppTranslationService.tr('Tolerans (Orb Sapması)'),
+                                    style: const TextStyle(
                                         fontSize: 11, color: AppColors.textMuted)),
                                 const SizedBox(height: 4),
                                 Text(
@@ -732,7 +911,7 @@ class _AspectsScreenState extends State<AspectsScreen> {
     );
   }
 
-  // --- Full Major & Minor Aspects Guide Modal ---
+  // --- Full Major & Minor Aspects Guide Modal (Overflow-Free) ---
   void _showAspectsGuideModal(BuildContext context) {
     final list = AspectsService.allAspectDefinitions;
 
@@ -777,13 +956,15 @@ class _AspectsScreenState extends State<AspectsScreen> {
                           color: AppColors.starlightGold, size: 22),
                     ),
                     const SizedBox(width: 12),
-                    const Expanded(
+                    Expanded(
                       child: Column(
                         crossAxisAlignment: CrossAxisAlignment.start,
                         children: [
                           Text(
-                            'AÇILAR KILAVUZU (ANSİKLOPEDİ)',
-                            style: TextStyle(
+                            AppTranslationService.tr('AÇILAR KILAVUZU (ANSİKLOPEDİ)'),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
                               fontSize: 15,
                               fontWeight: FontWeight.bold,
                               letterSpacing: 0.6,
@@ -791,8 +972,10 @@ class _AspectsScreenState extends State<AspectsScreen> {
                             ),
                           ),
                           Text(
-                            'Majör ve Minör Gezegen Etkileşimleri',
-                            style: TextStyle(
+                            AppTranslationService.tr('Majör ve Minör Gezegen Etkileşimleri'),
+                            maxLines: 1,
+                            overflow: TextOverflow.ellipsis,
+                            style: const TextStyle(
                                 fontSize: 11.5, color: AppColors.textMuted),
                           ),
                         ],
@@ -807,16 +990,17 @@ class _AspectsScreenState extends State<AspectsScreen> {
                 ),
               ),
               const SizedBox(height: 8),
-              const TabBar(
+              TabBar(
                 indicatorColor: AppColors.starlightGold,
                 labelColor: AppColors.starlightGold,
                 unselectedLabelColor: AppColors.textMuted,
+                labelStyle: const TextStyle(fontSize: 12.5, fontWeight: FontWeight.bold),
                 tabs: [
-                  Tab(text: 'Majör Açılar (Ptolemaic)'),
-                  Tab(text: 'Minör Açılar (Özel)'),
+                  Tab(text: AppTranslationService.tr('Majör Açılar (Temel)')),
+                  Tab(text: AppTranslationService.tr('Minör Açılar (Özel)')),
                 ],
               ),
-              const Divider(color: Colors.white10),
+              const Divider(color: Colors.white10, height: 1),
               Expanded(
                 child: TabBarView(
                   children: [
@@ -851,74 +1035,80 @@ class _AspectsScreenState extends State<AspectsScreen> {
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
                 Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  crossAxisAlignment: CrossAxisAlignment.center,
                   children: [
-                    Row(
-                      children: [
-                        Container(
-                          width: 38,
-                          height: 38,
-                          decoration: BoxDecoration(
-                            color: def.color.withValues(alpha: 0.2),
-                            borderRadius: BorderRadius.circular(10),
-                            border: Border.all(
-                                color: def.color.withValues(alpha: 0.4)),
-                          ),
-                          child: Center(
-                            child: Text(
-                              def.symbol,
-                              style: TextStyle(
-                                fontSize: 18,
-                                fontWeight: FontWeight.bold,
-                                color: def.color,
-                              ),
-                            ),
-                          ),
-                        ),
-                        const SizedBox(width: 12),
-                        Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              def.name,
-                              style: TextStyle(
-                                fontSize: 14,
-                                fontWeight: FontWeight.bold,
-                                color: def.color,
-                              ),
-                            ),
-                            Text(
-                              '${def.degree.toInt()}° Açısı | Orb: ±${def.defaultOrb.toInt()}°',
-                              style: const TextStyle(
-                                fontSize: 11,
-                                color: AppColors.textMuted,
-                              ),
-                            ),
-                          ],
-                        ),
-                      ],
-                    ),
                     Container(
-                      padding: const EdgeInsets.symmetric(
-                          horizontal: 8, vertical: 3),
+                      width: 40,
+                      height: 40,
                       decoration: BoxDecoration(
-                        color: def.color.withValues(alpha: 0.15),
-                        borderRadius: BorderRadius.circular(8),
+                        color: def.color.withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(
+                            color: def.color.withValues(alpha: 0.4)),
                       ),
-                      child: Text(
-                        def.nature,
-                        style: TextStyle(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.bold,
-                          color: def.color,
+                      child: Center(
+                        child: Text(
+                          def.symbol,
+                          style: TextStyle(
+                            fontSize: 18,
+                            fontWeight: FontWeight.bold,
+                            color: def.color,
+                          ),
                         ),
+                      ),
+                    ),
+                    const SizedBox(width: 12),
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          Row(
+                            children: [
+                              Expanded(
+                                child: Text(
+                                  def.localizedName,
+                                  style: TextStyle(
+                                    fontSize: 13.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: def.color,
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              Container(
+                                padding: const EdgeInsets.symmetric(
+                                    horizontal: 7, vertical: 3),
+                                decoration: BoxDecoration(
+                                  color: def.color.withValues(alpha: 0.15),
+                                  borderRadius: BorderRadius.circular(6),
+                                ),
+                                child: Text(
+                                  def.localizedNature,
+                                  style: TextStyle(
+                                    fontSize: 9.5,
+                                    fontWeight: FontWeight.bold,
+                                    color: def.color,
+                                  ),
+                                ),
+                              ),
+                            ],
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${def.degree.toInt()}° ${AppTranslationService.tr("Açısı")} | ${AppTranslationService.tr("Orb Toleransı")}: ±${def.defaultOrb.toInt()}°',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              color: AppColors.textMuted,
+                            ),
+                          ),
+                        ],
                       ),
                     ),
                   ],
                 ),
                 const SizedBox(height: 10),
                 Text(
-                  def.description,
+                  def.localizedDescription,
                   style: const TextStyle(
                     fontSize: 12.5,
                     height: 1.45,
@@ -927,7 +1117,7 @@ class _AspectsScreenState extends State<AspectsScreen> {
                 ),
                 const SizedBox(height: 8),
                 Text(
-                  'Psikolojik Anlamı: ${def.psychologicalMeaning}',
+                  '${AppTranslationService.tr("Psikolojik Anlamı")}: ${def.localizedPsychologicalMeaning}',
                   style: const TextStyle(
                     fontSize: 12,
                     height: 1.4,
@@ -935,35 +1125,36 @@ class _AspectsScreenState extends State<AspectsScreen> {
                   ),
                 ),
                 const SizedBox(height: 10),
-                Row(
+                Column(
+                  crossAxisAlignment: CrossAxisAlignment.stretch,
                   children: [
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.pastelMint.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          '✨ Hediye: ${def.gift}',
-                          style: const TextStyle(
-                              fontSize: 11, color: AppColors.pastelMint),
-                        ),
+                    Container(
+                      padding: const EdgeInsets.all(9),
+                      decoration: BoxDecoration(
+                        color: AppColors.pastelMint.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: AppColors.pastelMint.withValues(alpha: 0.25)),
+                      ),
+                      child: Text(
+                        '✨ ${AppTranslationService.tr("Hediye")}: ${def.localizedGift}',
+                        style: const TextStyle(
+                            fontSize: 11.5, color: AppColors.pastelMint, height: 1.35),
                       ),
                     ),
-                    const SizedBox(width: 8),
-                    Expanded(
-                      child: Container(
-                        padding: const EdgeInsets.all(8),
-                        decoration: BoxDecoration(
-                          color: AppColors.warningOrange.withValues(alpha: 0.12),
-                          borderRadius: BorderRadius.circular(8),
-                        ),
-                        child: Text(
-                          '⚠️ Sınav: ${def.challenge}',
-                          style: const TextStyle(
-                              fontSize: 11, color: AppColors.warningOrange),
-                        ),
+                    const SizedBox(height: 6),
+                    Container(
+                      padding: const EdgeInsets.all(9),
+                      decoration: BoxDecoration(
+                        color: AppColors.warningOrange.withValues(alpha: 0.12),
+                        borderRadius: BorderRadius.circular(8),
+                        border: Border.all(
+                            color: AppColors.warningOrange.withValues(alpha: 0.25)),
+                      ),
+                      child: Text(
+                        '⚠️ ${AppTranslationService.tr("Sınav")}: ${def.localizedChallenge}',
+                        style: const TextStyle(
+                            fontSize: 11.5, color: AppColors.warningOrange, height: 1.35),
                       ),
                     ),
                   ],
