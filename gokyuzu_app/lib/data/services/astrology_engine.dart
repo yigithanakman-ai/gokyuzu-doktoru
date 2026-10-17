@@ -261,6 +261,7 @@ class AstrologyEngine {
       'sun': sunPos,
       'moon': moonPos,
       'ascendant': ascPos,
+      'rising': ascPos,
       'mercury': mercPos,
       'venus': venPos,
       'mars': marsPos,

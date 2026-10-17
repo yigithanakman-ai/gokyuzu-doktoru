@@ -6,6 +6,7 @@ import 'package:pdf/widgets.dart' as pw;
 import 'storage_service.dart';
 import 'predictive_astrology_service.dart';
 import 'eclipses_service.dart';
+import 'astrology_engine.dart';
 import '../models/birth_chart_model.dart';
 
 /// Gökyüzü Doktoru Profesyonel 10 Sayfalık Doğum Haritası ve Yaşam Rehberi Raporu (Word Formatı)
@@ -72,42 +73,75 @@ class PdfReportService {
       author: 'Gökyüzü Doktoru Astroloji ve Astronomi Sistemi',
     );
 
-    final String name = profile.name.isNotEmpty ? profile.name : 'Danışan';
-    final String sun = profile.sunSign.isNotEmpty ? profile.sunSign : 'Koç';
-    final String moon = profile.moonSign.isNotEmpty ? profile.moonSign : 'Boğa';
-    final String rising = profile.risingSign.isNotEmpty ? profile.risingSign : 'İkizler';
     final String birthDate = profile.birthDate.isNotEmpty ? profile.birthDate : '01.01.2000';
     final String birthTime = profile.birthTime.isNotEmpty ? profile.birthTime : '12:00';
     final String birthCity = profile.birthCity.isNotEmpty ? profile.birthCity : 'İstanbul';
     final String birthCountry = profile.birthCountry.isNotEmpty ? profile.birthCountry : 'Türkiye';
+    final String name = profile.name.isNotEmpty ? profile.name : 'Danışan';
 
-    final placidusData = PredictiveAstrologyService.calculatePlacidusHouses(profile: profile);
+    // Gerçek Uygulama Motorundan Doğum Haritasını Hesapla (360° Çark & Ephemeris ile Tam Senkronizasyon)
+    final realChart = AstrologyEngine.calculateChart(
+      name: name,
+      dateStr: birthDate,
+      timeStr: birthTime,
+      city: birthCity,
+      country: birthCountry,
+    );
+
+    final String sun = realChart.sunSign.isNotEmpty ? realChart.sunSign : (profile.sunSign.isNotEmpty ? profile.sunSign : 'Koç');
+    final String moon = realChart.moonSign.isNotEmpty ? realChart.moonSign : (profile.moonSign.isNotEmpty ? profile.moonSign : 'Boğa');
+    final String rising = realChart.risingSign.isNotEmpty ? realChart.risingSign : (profile.risingSign.isNotEmpty ? profile.risingSign : 'İkizler');
+
+    final syncedRawChart = <String, dynamic>{
+      ...profile.rawChart,
+      ...realChart.rawChart,
+    };
+    syncedRawChart['sun'] = realChart.sunFormatted;
+    syncedRawChart['moon'] = realChart.moonFormatted;
+    syncedRawChart['ascendant'] = realChart.risingFormatted;
+    syncedRawChart['rising'] = realChart.risingFormatted;
+    if (realChart.rawChart['mc'] != null) {
+      syncedRawChart['mc'] = realChart.rawChart['mc'];
+    }
+
+    final effectiveProfile = UserProfile(
+      name: name,
+      birthDate: birthDate,
+      birthTime: birthTime,
+      birthCountry: birthCountry,
+      birthCity: birthCity,
+      sunSign: sun,
+      moonSign: moon,
+      risingSign: rising,
+      gender: profile.gender,
+      language: profile.language,
+      isVip: profile.isVip,
+      rawChart: syncedRawChart,
+    );
+
+    final placidusData = PredictiveAstrologyService.calculatePlacidusHouses(profile: effectiveProfile);
     final rawCusps = Map<int, String>.from(placidusData['cuspFormatted'] as Map);
     final cusps = rawCusps.map((k, v) => MapEntry(k, v.replaceAll(RegExp(r'[\u2648-\u2653\u2600-\u26FF]'), '').replaceAll('  ', ' ').trim()));
     final isDay = placidusData['isDayChart'] as bool;
     final interceptedList = List<Map<String, dynamic>>.from(placidusData['interceptedSigns']);
 
-    final progData = PredictiveAstrologyService.calculateSecondaryProgressions(profile: profile);
-    final arcData = PredictiveAstrologyService.calculateSolarArc(profile: profile);
-    final zrData = PredictiveAstrologyService.calculateZodiacalReleasing(profile: profile);
-    final srData = PredictiveAstrologyService.calculateSolarReturn(profile: profile, selectedCity: birthCity);
-    final lrData = PredictiveAstrologyService.calculateLunarReturn(profile: profile, selectedCity: birthCity);
-    final eclipseAnalyses = EclipsesService.analyzePersonalEclipses(profile: profile);
+    final progData = PredictiveAstrologyService.calculateSecondaryProgressions(profile: effectiveProfile);
+    final arcData = PredictiveAstrologyService.calculateSolarArc(profile: effectiveProfile);
+    final zrData = PredictiveAstrologyService.calculateZodiacalReleasing(profile: effectiveProfile);
+    final srData = PredictiveAstrologyService.calculateSolarReturn(profile: effectiveProfile, selectedCity: birthCity);
+    final lrData = PredictiveAstrologyService.calculateLunarReturn(profile: effectiveProfile, selectedCity: birthCity);
+    final eclipseAnalyses = EclipsesService.analyzePersonalEclipses(profile: effectiveProfile);
     final nextEclipse = eclipseAnalyses.isNotEmpty ? eclipseAnalyses.first : null;
 
     // Dinamik Gezegen Haritası ve Element Puanlaması (Standart: ASC, Güneş, Ay: 3 | Merkür, Venüs, Mars, Jüpiter, Satürn, MC: 1 | Toplam 15)
-    final planetsMap = <String, PlanetPosition>{};
-    profile.rawChart.forEach((k, v) {
-      if (v != null) {
+    final planetsMap = Map<String, PlanetPosition>.from(realChart.planets);
+    effectiveProfile.rawChart.forEach((k, v) {
+      if (v != null && !planetsMap.containsKey(k)) {
         final rawStr = v.toString();
         final sign = rawStr.replaceAll('(r)', '').trim().split(' ').last;
         planetsMap[k] = PlanetPosition(name: k, sign: sign, formatted: rawStr);
       }
     });
-    planetsMap.putIfAbsent('sun', () => PlanetPosition(name: 'Güneş', sign: sun, formatted: profile.rawChart['sun']?.toString() ?? sun));
-    planetsMap.putIfAbsent('moon', () => PlanetPosition(name: 'Ay', sign: moon, formatted: profile.rawChart['moon']?.toString() ?? moon));
-    planetsMap.putIfAbsent('ascendant', () => PlanetPosition(name: 'Yükselen', sign: rising, formatted: profile.rawChart['rising']?.toString() ?? rising));
-    planetsMap.putIfAbsent('mc', () => PlanetPosition(name: 'MC', sign: cusps[10]?.split(' ').last ?? 'Kova', formatted: cusps[10] ?? 'Kova'));
 
     final elemScores = BirthChartModel.calculateElementScores(planetsMap);
     final modScores = BirthChartModel.calculateModalityScores(planetsMap);
@@ -228,10 +262,10 @@ class PdfReportService {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.symmetric(horizontal: 40, vertical: 36),
         build: (pw.Context context) {
-          final sunFormatted = profile.rawChart['sun']?.toString() ?? '$sun (Güneş)';
-          final moonFormatted = profile.rawChart['moon']?.toString() ?? '$moon (Ay)';
-          final ascFormatted = profile.rawChart['rising']?.toString() ?? profile.rawChart['ascendant']?.toString() ?? '$rising (Yükselen)';
-          final mcFormatted = cusps[10] ?? 'MC 10. Ev';
+          final sunFormatted = realChart.sunFormatted;
+          final moonFormatted = realChart.moonFormatted;
+          final ascFormatted = realChart.risingFormatted.isNotEmpty ? realChart.risingFormatted : (cusps[1] ?? '$rising (Yükselen)');
+          final mcFormatted = cusps[10] ?? realChart.rawChart['mc']?.toString() ?? 'MC 10. Ev';
 
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,
@@ -639,9 +673,9 @@ class PdfReportService {
         pageFormat: PdfPageFormat.a4,
         margin: const pw.EdgeInsets.symmetric(horizontal: 40, vertical: 36),
         build: (pw.Context context) {
-          final nn = profile.rawChart['north_node']?.toString() ?? 'KAD Oğlak';
-          final sn = profile.rawChart['south_node']?.toString() ?? 'GAD Yengeç';
-          final chiron = profile.rawChart['chiron']?.toString() ?? 'Şiron Yengeç';
+          final nn = realChart.rawChart['north_node']?.toString() ?? effectiveProfile.rawChart['north_node']?.toString() ?? 'KAD Oğlak';
+          final sn = realChart.rawChart['south_node']?.toString() ?? effectiveProfile.rawChart['south_node']?.toString() ?? 'GAD Yengeç';
+          final chiron = realChart.rawChart['chiron']?.toString() ?? effectiveProfile.rawChart['chiron']?.toString() ?? 'Şiron Yengeç';
 
           return pw.Column(
             crossAxisAlignment: pw.CrossAxisAlignment.start,

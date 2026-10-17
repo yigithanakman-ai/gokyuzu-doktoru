@@ -642,10 +642,10 @@ class PredictiveAstrologyService {
     final arcMin = ((arcTotal - arcDeg) * 60.0).round();
     final arcStr = '+${arcDeg.toString().padLeft(2, '0')}° ${arcMin.toString().padLeft(2, '0')}\'';
 
-    final natalSunLon = parseDegreeStringToLongitude(profile.rawChart['sun'], profile.sunSign.isNotEmpty ? profile.sunSign : 'Balık', 15.283);
-    final natalMoonLon = parseDegreeStringToLongitude(profile.rawChart['moon'], profile.moonSign.isNotEmpty ? profile.moonSign : 'Akrep', 9.533);
-    final natalAscLon = parseDegreeStringToLongitude(profile.rawChart['rising'] ?? profile.rawChart['ascendant'], profile.risingSign.isNotEmpty ? profile.risingSign : 'İkizler', 22.75);
-    final natalMcLon = parseDegreeStringToLongitude(profile.rawChart['mc'], 'Balık', 4.2);
+    final natalSunLon = parseDegreeStringToLongitude(profile.rawChart['sun'], profile.sunSign.isNotEmpty ? profile.sunSign : 'Balık', 15.0);
+    final natalMoonLon = parseDegreeStringToLongitude(profile.rawChart['moon'], profile.moonSign.isNotEmpty ? profile.moonSign : 'Akrep', 15.0);
+    final natalAscLon = parseDegreeStringToLongitude(profile.rawChart['rising'] ?? profile.rawChart['ascendant'], profile.risingSign.isNotEmpty ? profile.risingSign : 'İkizler', 15.0);
+    final natalMcLon = parseDegreeStringToLongitude(profile.rawChart['mc'], 'Kova', 15.0);
 
     final dirSunLon = _normalize(natalSunLon + arcTotal);
     final dirMoonLon = _normalize(natalMoonLon + arcTotal);
@@ -873,9 +873,9 @@ class PredictiveAstrologyService {
     // Gündüz / Gece Doğumu Ayrımı (Astronomik Ufuk / Sect Tespiti)
     final bool isDayBirth = isDayChart(profile);
 
-    final natalSunLon = parseDegreeStringToLongitude(profile.rawChart['sun'], profile.sunSign.isNotEmpty ? profile.sunSign : 'Balık', 15.283);
-    final natalMoonLon = parseDegreeStringToLongitude(profile.rawChart['moon'], profile.moonSign.isNotEmpty ? profile.moonSign : 'Akrep', 9.533);
-    final natalAscLon = parseDegreeStringToLongitude(profile.rawChart['rising'] ?? profile.rawChart['ascendant'], profile.risingSign.isNotEmpty ? profile.risingSign : 'İkizler', 22.75);
+    final natalSunLon = parseDegreeStringToLongitude(profile.rawChart['sun'], profile.sunSign.isNotEmpty ? profile.sunSign : 'Balık', 15.0);
+    final natalMoonLon = parseDegreeStringToLongitude(profile.rawChart['moon'], profile.moonSign.isNotEmpty ? profile.moonSign : 'Akrep', 15.0);
+    final natalAscLon = parseDegreeStringToLongitude(profile.rawChart['rising'] ?? profile.rawChart['ascendant'], profile.risingSign.isNotEmpty ? profile.risingSign : 'İkizler', 15.0);
 
     // Ruh Noktası (Lot of Spirit / Pars Spiritus):
     // Gündüz: ASC + Güneş - Ay | Gece: ASC + Ay - Güneş

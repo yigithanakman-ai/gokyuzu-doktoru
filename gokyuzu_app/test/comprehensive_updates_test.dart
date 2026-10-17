@@ -101,7 +101,7 @@ void main() {
       gender: 'Erkek',
       rawChart: {
         'sun': '15°17\' Balık',
-        'moon': '09°32\' Akrep',
+        'moon': '22°15\' Akrep',
         'rising': '08°45\' İkizler',
         'mercury': '02°11\' Balık',
         'venus': '14°42\' Koç',

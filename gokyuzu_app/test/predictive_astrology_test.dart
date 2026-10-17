@@ -18,10 +18,11 @@ void main() {
       language: 'tr',
       isVip: true,
       rawChart: {
-        'sun': '15°17\' Balık',
-        'moon': '09°32\' Akrep',
-        'rising': '22°45\' İkizler',
-        'mc': '04°12\' Balık',
+        'sun': '15°15\' Balık',
+        'moon': '22°15\' Akrep',
+        'rising': '08°45\' İkizler',
+        'ascendant': '08°45\' İkizler',
+        'mc': '14°27\' Kova',
       },
     );
 
