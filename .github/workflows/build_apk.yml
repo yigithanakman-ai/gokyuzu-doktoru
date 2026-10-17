@@ -49,10 +49,24 @@ jobs:
           echo "Resmi imza dosyaları GitHub sunucusuna başarıyla yüklendi ve bağlandı."
 
       - name: Release APK ve Play Store App Bundle (AAB) Derle
+        env:
+          GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd gokyuzu_app
-          flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation
-          flutter build appbundle --release --no-tree-shake-icons --android-skip-build-dependency-validation
+          flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation 2>&1 | tee /tmp/build_log.txt || true
+          if [ ! -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
+            echo "::error::Android Derleme Hatasi!"
+            tail -n 120 /tmp/build_log.txt
+            gh release create "build-err-$(date +%s)" /tmp/build_log.txt --title "Derleme Hatasi" --notes "Android derleme hatasi ayrintilari ekteki dosyada yer almaktadir."
+            exit 1
+          fi
+          flutter build appbundle --release --no-tree-shake-icons --android-skip-build-dependency-validation 2>&1 | tee /tmp/bundle_log.txt || true
+          if [ ! -f "build/app/outputs/bundle/release/app-release.aab" ]; then
+            echo "::error::Android App Bundle Hatasi!"
+            tail -n 120 /tmp/bundle_log.txt
+            gh release create "bundle-err-$(date +%s)" /tmp/bundle_log.txt --title "Bundle Hatasi" --notes "AAB derleme hatasi ayrintilari ekteki dosyada yer almaktadir."
+            exit 1
+          fi
 
       - name: Dağıtım Dosyalarını Kopyala
         run: |
