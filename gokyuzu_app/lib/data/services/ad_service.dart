@@ -117,6 +117,50 @@ class AdService {
     }
   }
 
+  /// Ödüllü reklam gösterimi (Kozmik Karar Pusulası +1 Hak vb. için)
+  static Future<bool> showRewardedAd({required VoidCallback onRewardGranted}) async {
+    if (!_isMobile) {
+      onRewardGranted();
+      return true;
+    }
+
+    try {
+      bool rewardEarned = false;
+      await RewardedAd.load(
+        adUnitId: testRewardedAdId,
+        request: const AdRequest(),
+        rewardedAdLoadCallback: RewardedAdLoadCallback(
+          onAdLoaded: (ad) {
+            ad.fullScreenContentCallback = FullScreenContentCallback(
+              onAdDismissedFullScreenContent: (ad) {
+                ad.dispose();
+                if (rewardEarned) {
+                  onRewardGranted();
+                }
+              },
+              onAdFailedToShowFullScreenContent: (ad, error) {
+                ad.dispose();
+                onRewardGranted();
+              },
+            );
+            ad.show(
+              onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
+                rewardEarned = true;
+              },
+            );
+          },
+          onAdFailedToLoad: (LoadAdError error) {
+            onRewardGranted();
+          },
+        ),
+      );
+      return true;
+    } catch (_) {
+      onRewardGranted();
+      return true;
+    }
+  }
+
   /// Reklam sayacını sıfırla
   static void resetCounter() {
     _tabSwitchCounter = 0;
