@@ -788,25 +788,42 @@ class _HomeScreenState extends State<HomeScreen> {
               ValueListenableBuilder<CosmicSeason>(
                 valueListenable: CosmicThemeService.seasonNotifier,
                 builder: (context, season, _) {
-                  if (season == CosmicSeason.standard) return const SizedBox.shrink();
+                  final isStandard = season == CosmicSeason.standard;
+                  final primary = CosmicThemeService.primaryAccentColor;
+                  final secondary = CosmicThemeService.secondaryAccentColor;
 
                   return Container(
                     margin: const EdgeInsets.only(bottom: 16),
                     padding: const EdgeInsets.all(14),
                     decoration: BoxDecoration(
                       gradient: LinearGradient(
-                        colors: [
-                          CosmicThemeService.primaryAccentColor.withValues(alpha: 0.22),
-                          CosmicThemeService.secondaryAccentColor.withValues(alpha: 0.18),
-                        ],
+                        colors: isStandard
+                            ? [
+                                AppColors.starlightGold.withValues(alpha: 0.16),
+                                AppColors.pastelLavender.withValues(alpha: 0.12),
+                              ]
+                            : [
+                                primary.withValues(alpha: 0.32),
+                                secondary.withValues(alpha: 0.24),
+                              ],
                         begin: Alignment.topLeft,
                         end: Alignment.bottomRight,
                       ),
                       borderRadius: BorderRadius.circular(18),
                       border: Border.all(
-                        color: CosmicThemeService.primaryAccentColor.withValues(alpha: 0.55),
-                        width: 1.2,
+                        color: isStandard
+                            ? AppColors.starlightGold.withValues(alpha: 0.45)
+                            : primary.withValues(alpha: 0.75),
+                        width: 1.4,
                       ),
+                      boxShadow: [
+                        if (!isStandard)
+                          BoxShadow(
+                            color: primary.withValues(alpha: 0.25),
+                            blurRadius: 18,
+                            spreadRadius: 2,
+                          ),
+                      ],
                     ),
                     child: Column(
                       crossAxisAlignment: CrossAxisAlignment.start,
@@ -815,44 +832,48 @@ class _HomeScreenState extends State<HomeScreen> {
                           children: [
                             Expanded(
                               child: Text(
-                                CosmicThemeService.seasonBadgeText,
+                                isStandard
+                                    ? '✨ KOZMİK TAKVİM & ÖZEL GÜNLER'
+                                    : CosmicThemeService.seasonBadgeText,
                                 style: TextStyle(
-                                  color: CosmicThemeService.primaryAccentColor,
+                                  color: isStandard ? AppColors.starlightGold : primary,
                                   fontWeight: FontWeight.w900,
-                                  fontSize: 12,
+                                  fontSize: 12.5,
                                   letterSpacing: 0.5,
                                 ),
                               ),
                             ),
-                            InkWell(
-                              onTap: () => _showCosmicSeasonPickerModal(context),
-                              borderRadius: BorderRadius.circular(8),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: Colors.black45,
-                                  borderRadius: BorderRadius.circular(8),
-                                  border: Border.all(color: Colors.white24),
+                            ElevatedButton.icon(
+                              onPressed: () => _showCosmicSeasonPickerModal(context),
+                              icon: const Icon(Icons.auto_fix_high_rounded, size: 14, color: Colors.black),
+                              label: const Text(
+                                'Demo Seç',
+                                style: TextStyle(
+                                  fontSize: 11,
+                                  fontWeight: FontWeight.w900,
+                                  color: Colors.black,
                                 ),
-                                child: const Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(Icons.tune_rounded, size: 12, color: Colors.white70),
-                                    SizedBox(width: 4),
-                                    Text('Demo Seç', style: TextStyle(fontSize: 10, color: Colors.white)),
-                                  ],
-                                ),
+                              ),
+                              style: ElevatedButton.styleFrom(
+                                backgroundColor: isStandard ? AppColors.starlightGold : primary,
+                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                                minimumSize: Size.zero,
+                                tapTargetSize: MaterialTapTargetSize.shrinkWrap,
+                                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                                elevation: 2,
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 6),
+                        const SizedBox(height: 8),
                         Text(
-                          CosmicThemeService.seasonBannerSubtitle,
+                          isStandard
+                              ? 'Cadılar Bayramı (Halloween), Yeni Yıl, Sevgililer Günü veya Bahar Ekinoksu temalarını canlı test etmek için "Demo Seç"e dokunun.'
+                              : CosmicThemeService.seasonBannerSubtitle,
                           style: const TextStyle(
                             color: Colors.white,
                             fontSize: 12,
-                            height: 1.4,
+                            height: 1.45,
                           ),
                         ),
                       ],

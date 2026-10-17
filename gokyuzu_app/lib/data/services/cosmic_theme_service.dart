@@ -23,8 +23,8 @@ class CosmicThemeService {
     final m = now.month;
     final d = now.day;
 
-    // 1. Cadılar Bayramı / Samhain (24 Ekim - 2 Kasım)
-    if ((m == 10 && d >= 24) || (m == 11 && d <= 2)) {
+    // 1. Cadılar Bayramı / Samhain (15 Ekim - 5 Kasım)
+    if ((m == 10 && d >= 15) || (m == 11 && d <= 5)) {
       return CosmicSeason.halloween;
     }
 
