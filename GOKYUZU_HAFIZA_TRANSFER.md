@@ -97,14 +97,32 @@ Müşterimiz Nazlı Gizem Hanım'ın geri bildirimi doğrultusunda tasarlanan ve
 
 ## 🔬 5. "Solar Fire'ı Nasıl Geçeriz?" — Küresel Ürün Önerileri & Yol Haritası
 
-| Özellik | Solar Fire / Astro Gold Durumu | Gökyüzü Doktoru Devrimi |
-| :--- | :--- | :--- |
-| **Vektörel Çark (Interactive Vector Wheel)** | Statik resim veya kaba çizgiler | GPU hızlandırmalı SVG Canvas çarkı; gezegene dokununca açı ışınlarının parlaması, orbların interaktif görünmesi |
-| **Çift Çark (Bi-Wheel / Synastry & Transit)** | Masaüstünde karmaşık menülerle açılır | İç çarkta Doğum Haritası, dış çarkta Anlık Transitler veya İlişki Haritası; altta zaman kaydırıcı (1 gün, 1 ay ileri sarma) |
-| **Asaletler Tablosu (Essential Dignities)** | Tablo halinde kuru metin | Ptolemaic Asaletler (Yöneticilik, Yücelim, Üçlü, Terim, Çehre, Zarar, Düşüş) tek ekranda renkli görsel rozetler |
-| **Sabian Sembolleri & Sabit Yıldızlar** | Ek menüde uzun listeler | Her gezegenin tam derecesine denk gelen Sabian Sembolü ve 36 kadim sabit yıldız kavuşumunun otomatik AI analizi |
-| **Astrokartografi (AstroLocality Map)** | 90'lardan kalma piksel harita | Vektörel dünya haritası üzerinde Güneş, Ay, Jüpiter, Venüs hatları (Nerede yaşamalıyım? Kariyer / Aşk hattım neresi?) |
-| **Astrolog İçin White-Label PDF** | Standart rapor şablonu | Astrologun kendi logosunu, adını ve Instagram hesabını 10 sayfalık rapora "Danışman" olarak ekleyebilmesi |
+| Özellik | Solar Fire / Astro Gold Durumu | Gökyüzü Doktoru Devrimi | Durum / Öncelik |
+| :--- | :--- | :--- | :--- |
+| **Vektörel Çark (Interactive Vector Wheel)** | Statik resim veya kaba çizgiler | GPU hızlandırmalı SVG Canvas çarkı; gezegene dokununca açı ışınlarının parlaması, orbların interaktif görünmesi | **Aşama 1 (Öncelikli)** |
+| **Çift Çark (Bi-Wheel / Synastry & Transit)** | Masaüstünde karmaşık menülerle açılır | İç çarkta Doğum Haritası, dış çarkta Anlık Transitler veya İlişki Haritası; altta zaman kaydırıcı (1 gün, 1 ay ileri sarma) | **Aşama 1 (Öncelikli)** |
+| **Asaletler Tablosu (Essential Dignities)** | Tablo halinde kuru metin | Ptolemaic Asaletler (Yöneticilik, Yücelim, Üçlü, Terim, Çehre, Zarar, Düşüş) tek ekranda renkli görsel rozetler | **Aşama 1 (Öncelikli)** |
+| **Sabian Sembolleri & Sabit Yıldızlar** | Ek menüde uzun listeler | Her gezegenin tam derecesine denk gelen Sabian Sembolü ve 36 kadim sabit yıldız kavuşumunun otomatik AI analizi | **Aşama 1** |
+| **Astrokartografi (AstroLocality Map)** | 90'lardan kalma piksel harita | Vektörel dünya haritası üzerinde gezegen hatları. *(⚠️ Patron'un haklı uyarısı: 200+ ülke koordinat/geocoding ve DST saat dilimi altyapısı kurulmadan yapılmayacak!)* | **Aşama 2 (Atlas Önkoşullu - Beklemede)** |
+| **Astrolog İçin White-Label PDF** | Standart rapor şablonu | Astrologun kendi logosunu, adını ve Instagram hesabını 10 sayfalık rapora "Danışman" olarak ekleyebilmesi | **Aşama 2** |
+
+---
+
+## 🗺️ 5.1. Patron'un Kritik Tespiti: Küresel Koordinasyon & Atlas Altyapısı (Gerçekler)
+
+> **Patron'un Uyarısı (18 Ekim 2026):**  
+> *"Astrokartografi bölümü hiç inandırıcı gelmedi çünkü biz halen uygulamada tüm bölge-yer-ülke-coğrafi koordinasyonunu veremedik (!), 200 küsür ülkenin her yerine ulaşıyor muyuz? Google Maps'ten API çekmedik veya ücretsiz harita bağlamadık. Astrokartografiyi nasıl yapacağız bu durumda?"*
+
+### Bu Tespit Neden %100 Doğru?
+1. Astrokartografi, bir gezegenin MC (Tepe Noktası) veya ASC (Yükselen) çizgilerinin dünya üzerindeki izdüşümüdür.
+2. Doğum saati UTC'ye çevrilirken yapılacak **1 saatlik bir yaz/kış saati (DST) veya saat dilimi hatası**, haritayı Dünya üzerinde **15 boylam derecesi (yaklaşık 1.600 kilometre)** kaydırır!
+3. Şu an `world_cities_service.dart` içinde Türkiye'nin 81 ili ve dünyanın belli başlı metropolleri kayıtlıdır. Dünyanın her köyü, ilçesi ve kasabası için küresel bir Geocoding API (Google Maps veya OpenStreetMap Nominatim) ve IANA Saat Dilimi Motoru entegre edilmeden astrokartografi sunulamaz; sunulursa profesyonel astroloji dünyasında güven kaybı yaşanır.
+
+### Geocoding & Atlas Çözüm Planı (Aşama 2):
+1. **OpenStreetMap (Nominatim & Photon) Entegrasyonu:** Tamamen ücretsiz, 200+ ülkedeki tüm ilçe, kasaba ve köyleri nokta atışı getiren açık kaynak arama motoru.
+2. **Google Maps Geocoding API Opsiyonu:** Yüksek hacimli ve kurumsal hassasiyette alternatif.
+3. **IANA Timezone Veritabanı:** Doğum tarihinin yaz/kış saatini (DST kanunlarını) hatasız hesaplama.
+4. *Karar:* Astrokartografi bu altyapı tam oturana kadar **beklemeye alınmıştır**. Öncelik, harita API'sine ihtiyaç duymayan ve doğrudan matematiksel efemerisle çalışan **İnteraktif Çift Çark (Bi-Wheel)** ve **VIP Platinum Çoklu Profil Yönetimi**ndedir.
 
 ---
 

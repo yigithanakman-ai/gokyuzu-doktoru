@@ -46,6 +46,8 @@ Patron'un vizyonu: Gökyüzü Doktoru'nu **Solar Fire, Astro Gold ve Sirius** gi
   Arşivdeki kayıtlı haritalardan (çocuk, eş, danışan) birine tek tıkla geçiş yapıldığında; tüm uygulamanın (Solar Return, Secondary Progress, Numeroloji, Anlık Transitler ve 10 Sayfalık PDF Kitapçığı) seçilen kişi adına hesaplanması.
 * **Üyelik Katmanı & Teşvik:**  
   Bu özellik **yalnızca VIP Platinum** üyelerin kullanımına açık olacaktır. Ücretsiz, Silver veya Gold kullanıcılar profil seçiciye dokunduğunda **"Hemen Platinum'a geçin, anında +1 Ekstra Kapsamlı PDF Raporu hediye kazanın!"** teşvik teklifiyle karşılaşacaktır.
+* **Atlas & Astrokartografi Notu:**  
+  Astrokartografi özelliği, 200+ ülke koordinat (Geocoding) ve tarihsel saat dilimi (DST) altyapısı kurulana kadar Patron'un haklı uyarısıyla beklemeye alınmıştır. Öncelik harita bağımsız çalışan İnteraktif Çift Çark ve VIP Platinum Çoklu Profil sistemindedir.
 
 ---
 
