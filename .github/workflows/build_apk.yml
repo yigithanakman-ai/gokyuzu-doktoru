@@ -51,17 +51,8 @@ jobs:
       - name: Release APK ve Play Store App Bundle (AAB) Derle
         run: |
           cd gokyuzu_app
-          flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation 2>&1 | tee /tmp/build.log
-          flutter build appbundle --release --no-tree-shake-icons --android-skip-build-dependency-validation 2>&1 | tee -a /tmp/build.log
-
-      - name: Hata Logunu Release Olarak Yayınla
-        if: failure()
-        uses: softprops/action-gh-release@v2
-        with:
-          tag_name: build-failure-log
-          name: "⚠️ Derleme Hatası Raporu"
-          body: "Android derlemesinde bir hata oluştu. Son loglar ekteki build_error.txt dosyasında yer almaktadır."
-          files: /tmp/build.log
+          flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation
+          flutter build appbundle --release --no-tree-shake-icons --android-skip-build-dependency-validation
 
       - name: Dağıtım Dosyalarını Kopyala
         run: |
