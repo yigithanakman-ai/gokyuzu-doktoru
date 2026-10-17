@@ -1,26 +1,58 @@
 # 🪐 Gökyüzü Doktoru — Proje Durumu, Yapılanlar ve Yol Haritası (Master El Kitabı)
 
-> **Bu Belgenin Amacı:** Bu dosya, Gökyüzü Doktoru mobil uygulamasının geliştirme, derleme, mağaza varlıkları, reklam entegrasyonu, yasal formları ve Google Play Console yayın süreçlerinin **eksiksiz durum kaydıdır**. Yeni bir yapay zeka oturumu veya geliştirici bu dosyayı okuduğunda, projenin geçmişini, anlık durumunu ve sırada yapılması gerekenleri adım adım anlayacaktır.
+> **Bu Belgenin Amacı:** Bu dosya, Gökyüzü Doktoru mobil uygulamasının geliştirme, derleme, mağaza varlıkları, reklam entegrasyonu, yasal formları, astrolojik hesaplama motorları ve Google Play Console yayın süreçlerinin **eksiksiz durum kaydıdır**. Yeni bir yapay zeka oturumu veya geliştirici bu dosyayı okuduğunda, projenin geçmişini, anlık durumunu ve sırada yapılması gerekenleri adım adım anlayacaktır.
 
 ---
 
 ## 📌 1. Temel Proje ve Kimlik Bilgileri
 
-* **Uygulama Adı:** Gökyüzü Doktoru
+* **Uygulama Adı:** Gökyüzü Doktoru (Sky Doctor)
 * **Paket Kimliği (Package Name / Application ID):** `com.gokyuzudoktoru.gokyuzu_app`
 * **Geliştirici Hesabı:** Yiğithan Akman (Google Play Console Bireysel Geliştirici)
-* **Teknoloji:** Flutter & Dart (Cross-platform)
+* **Hitap Kuralı:** Yiğithan Akman'a sistemde **"Patron" 👑** olarak hitap edilir.
+* **Teknoloji:** Flutter & Dart (Cross-platform: Android, iOS, macOS)
 * **GitHub Repository:** [https://github.com/yigithanakman-ai/gokyuzu-doktoru](https://github.com/yigithanakman-ai/gokyuzu-doktoru)
 * **Aktif Git Dalı (Branch):** `main`
-* **Son Canlıya Alınan Sürüm:** `1.0.2` (Sürüm Kodu / VersionCode: `3`)
+* **En Son Git Commit:** `6a9cab3` (*feat: default horoscopes to rising sign, fix Placidus eclipse house calculation, and ensure tablet/macbook vertical responsiveness*)
+* **Mevcut Sürüm:** `1.0.3+4` (VersionName: `1.0.3`, VersionCode: `4`)
 * **Resmi İletişim / Destek E-postası:** `yigithanakman@gokyuzudoktoru.com`
-* **Resmi Web Sitesi:** `https://gokyuzudoktoru.com`
+* **Resmi Yasal Merkez (GitHub Pages):** `https://yigithanakman-ai.github.io/gokyuzu-doktoru/`
 
 ---
 
-## 🔐 2. Dijital İmza (Upload Keystore) Bilgileri
+## 🚀 2. En Son Tamamlanan Geliştirmeler & Kök Neden Çözümleri
 
-Google Play Store'a `.aab` (Android App Bundle) yükleyebilmek için resmi upload anahtarı oluşturulmuş ve CI/CD hattına bağlanmıştır:
+### A. Astro Bülten Burç Yorumları (Yükselen Burç Önceliği & Bilgilendirme Notu)
+* **Yükselen Burç Önceliği:** Astro Bülten modalı açıldığında, burç yorumları artık varsayılan olarak kullanıcının **Yükselen Burcu** seçilerek listelenir. Yükselen burç profilde boşsa Güneş burcuna düşer.
+* **Bilgilendirme Notu:** 12 burç seçicisinin hemen üzerine şu not eklenmiştir:
+  > *"Burç yorumları öncelikle Yükselen burcunuza göre takip edilmelidir. Yükselen burcunuzu bilmiyorsanız Güneş burcunuzu baz alabilirsiniz."*
+* **Çoklu Dil Rozetleri:** Burç butonlarında kullanıcının yükselen burcuna altın sarısı `YÜKSELEN` (`RISING` / `上昇宮`), güneş burcuna nane yeşili `GÜNEŞ` (`SUN` / `太陽`) rozetleri yerleştirildi ve 12 burcun isimleri seçili dile göre dinamik çevrildi.
+
+### B. Tutulma Ev Hesaplama Hatasının Düzeltilmesi (Placidus Kök Neden Çözümü)
+* **Önceki Hata:** Tutulma servisi burç indeks farkına dayalı `(safeEcIdx - safeAscIdx + 12) % 12 + 1` Whole Sign mantığı kullandığı için, 4. Ev girişi 14° Aslan olan birinin 20° Aslan'daki tutulması yanlışlıkla 3. ev olarak yorumlanıyordu.
+* **Kök Neden Düzeltmesi:** [eclipses_service.dart](file:///Users/yigithanakman/Desktop/Gökyüzü_YapayZeka_Sistemi/gokyuzu_app/lib/data/services/eclipses_service.dart) içinde kullanıcının gerçek doğum saati ve koordinatlarına göre hesaplanan **Placidus ev kaspları** (`PredictiveAstrologyService.calculatePlacidusHouses`) bağlandı.
+* **Sonuç:** 4. Ev kaspı 14° Aslan (134°) ve 5. Ev kaspı 10° Başak (160°) olan bir haritada, 20° Aslan (140°) tutulması artık kesin olarak **4. Ev (4. Ev - 10. Ev Aksı: Yuva & Kökler / Kariyer & Zirve)** olarak analiz edilmektedir. [predictive_astrology_test.dart](file:///Users/yigithanakman/Desktop/Gökyüzü_YapayZeka_Sistemi/gokyuzu_app/test/predictive_astrology_test.dart) test paketi ile doğrulandı.
+
+### C. Efemeris ve Astroloji Motoru Harmonizasyonu (Solar Fire / Astro Gold)
+* `AstrologyEngine`, `SkyTransitsService` ve `AstroBulletinService` aynı jeosantrik matematiksel altyapıya bağlandı.
+* Chiron anlık olarak Koç burcunun retro derecesindedir (`28°46' Retro Koç`).
+* Venüs-Plüton karesi ve Jüpiter-Chiron sekstili gibi majör gökyüzü transitleri kesin efemeris gün ve derecesinde gösterilir.
+
+### D. %100 Gömülü Çoklu Dil Desteği (TR / EN / JA)
+* [app_translation_service.dart](file:///Users/yigithanakman/Desktop/Gökyüzü_YapayZeka_Sistemi/gokyuzu_app/lib/data/services/app_translation_service.dart) servisi üzerinden tüm sistem (gezegenler, burçlar, evler, açılar, günlük enerjiler, butonlar, uyarılar) Türkçe, İngilizce ve Japonca dillerine eksiksiz çevrilmiştir.
+* Dil değiştirildiğinde uygulama yeniden başlatma gerektirmeden anında reaktif olarak güncellenir.
+
+### E. MacBook, iPad ve Tabletler İçin Dikey Format (Responsive Container)
+* [main.dart](file:///Users/yigithanakman/Desktop/Gökyüzü_YapayZeka_Sistemi/gokyuzu_app/lib/main.dart) `MaterialApp.builder` içerisine `BoxConstraints(maxWidth: 600)` ve `Color(0xFF0D0A14)` kozmik arka plan eklendi.
+* Tüm `showModalBottomSheet` modallarına `maxWidth: 600` kısıtı tanımlandı.
+* Geniş ekranlarda (MacBook, iMac, iPad Pro, Android tabletler) kartlar yatayda orantısız esnemez; telefon formundaki şık dikey kaset merkezde korunur.
+
+### F. Aydınlatma Metni & KVKK Onayı
+* Onboarding ekranındaki KVKK onay kutusu ekranın en altına, ana form butonunun hemen üzerine taşındı; ekran taşmaları tamamen engellendi.
+
+---
+
+## 🔐 3. Dijital İmza (Upload Keystore) Bilgileri
 
 * **Keystore Konumu:** `gokyuzu_app/android/app/upload-keystore.jks`
 * **Key Properties:** `gokyuzu_app/android/key.properties`
@@ -30,87 +62,55 @@ Google Play Store'a `.aab` (Android App Bundle) yükleyebilmek için resmi uploa
 
 ---
 
-## 💰 3. Google AdMob & Reklam Kimliği (AD_ID) Entegrasyonu
+## 💰 4. Google AdMob & Reklam Kimliği (AD_ID) Entegrasyonu
 
 * **AdMob Resmi Uygulama Kimliği (App ID):** `ca-app-pub-1133172251227471~4078534665`
 * **Manifest Ayarı (`AndroidManifest.xml`):**
   * `com.google.android.gms.ads.APPLICATION_ID` tanımlandı.
   * `com.google.android.gms.permission.AD_ID` resmi reklam kimliği izni eklendi.
-* **Flutter Kod Entegrasyonu:**
-  * `google_mobile_ads: ^5.2.0` paketi entegre edildi.
-  * `main.dart` içinde `MobileAds.instance.initialize()` ile başlatıldı.
-  * `gokyuzu_app/lib/data/services/ad_service.dart` servisi yazıldı.
-  * Doğum haritası detay sayfası ve analiz geçişlerine Interstitial (Tam ekran geçiş reklamı) bağlandı.
-* **Android SDK Seviyeleri (Google Play 2026 Şartı):**
+* **Android SDK Seviyeleri (Google Play 2026 Zorunluluğu):**
   * `compileSdk = 36`
-  * `targetSdk = 36` (Google'ın zorunlu tuttuğu Android 16 düzeyi)
+  * `targetSdk = 36` (Android 15 / 16 gereksinimi tam karşılandı)
   * `minSdk = 21`
 
 ---
 
-## 📜 4. Yasal Belgeler ve Google Play Politikaları (100% Tamamlandı)
+## 📜 5. Yasal Belgeler ve Mağaza Uyumluluğu
 
-* **Gizlilik Politikası (KVKK & GDPR Uyumlu):**
-  * Barındırılan Canlı Link: `https://github.com/yigithanakman-ai/gokyuzu-doktoru/blob/main/PRIVACY_POLICY.md`
-  * Raw Format: `https://raw.githubusercontent.com/yigithanakman-ai/gokyuzu-doktoru/main/PRIVACY_POLICY.md`
-* **Play Console Anketleri:**
-  * **Uygulama Erişimi:** Giriş kimlik bilgisi tanımlandı (`test@gokyuzudoktoru.com` / `Gokyuzu2026!`), misafir modunda kısıtlama olmadığı belirtildi.
-  * **İçerik Derecelendirmesi (IARC):** "Diğer Tüm Uygulama Türleri" seçildi, Genel İzleyici (PEGI 3) sertifikası alındı.
-  * **Hedef Kitle:** 18 yaş ve üzeri seçildi, çocuklara hitap etmediği beyan edildi.
-  * **Veri Güvenliği (Data Safety):** Cihaz dışına veri aktarılmadığı (on-device processing) belirtildi.
-  * **Reklam Kimliği (AD_ID):** "Evet, reklam ve pazarlama amacıyla kullanılıyor" olarak işaretlendi.
+* **Resmi Yasal Merkez:** `https://yigithanakman-ai.github.io/gokyuzu-doktoru/` (GitHub Pages üzerinde `docs/index.html` olarak barındırılmaktadır).
+* **Gizlilik Politikası (KVKK / GDPR / Açık Rıza):** Mağaza gereksinimlerine uygun olarak Türkçe, İngilizce ve genel yasal standartlarla hazırlanmıştır.
+* **Statik Kod Analizi:** `dart analyze lib/` ve `analyze_files` çıktısı: **0 Hata (No errors)**.
+* **Birim Testleri:** `test/predictive_astrology_test.dart` içindeki Placidus ve tutulma testleri %100 başarılıdır.
 
 ---
 
-## 🎨 5. Mağaza Varlıkları (Store Assets)
+## 🎨 6. Mağaza Varlıkları (Store Assets)
 
-* **Uygulama İkonu (512x512 PNG):** Hermetik Caduceus ve kozmik yörüngeler (`store_assets/google_play_icon_512x512.png`). Mağazada yayında.
-* **Öne Çıkan Görsel / Banner (1024x500 JPG):** Kozmik Zodyak ve derin gökyüzü (`store_assets/google_play_feature_graphic_1024x500.jpg`).
-* **Ekran Görüntüleri (Phone Screenshots):** 1080x2160 boyutunda 5 adet standart mağaza görseli (`store_assets/screenshots/screenshot_1.png` - `5.png`).
-* **Mağaza Metinleri:**
-  * **Kısa Açıklama:** `Derin doğum haritası analizi, kadim gökyüzü bilgeliği ve transit rehberi.`
-  * **Tam Açıklama:** 4 sütunlu kadim astroloji, tıp tarihi ve hekimlik felsefesiyle harmanlanmış detaylı açıklama.
+* **Uygulama İkonu (512x512 PNG):** `store_assets/google_play_icon_512x512.png`
+* **Öne Çıkan Görsel / Banner (1024x500 JPG):** `store_assets/google_play_feature_graphic_1024x500.jpg`
+* **Ekran Görüntüleri:** `store_assets/screenshots/screenshot_1.png` - `5.png` (1080x2160 dikey format).
 
 ---
 
-## 🚀 6. Google Play Console Test Kanalları Anlık Durumu
+## 🚀 7. Google Play Console Test Kanalları Anlık Durumu
 
 ### A. Dahili Test (Internal Testing)
 * **Durum:** Aktif ve Canlı.
-* **Yüklü Sürüm:** `1.0.0 (1)`
-* **Özellik:** Google onayı beklemez, eklenen test kullanıcıları anında indirebilir.
 
 ### B. Kapalı Test - Alpha (Closed Testing)
 * **Durum:** **İncelemede ("Değişiklikleriniz şu anda inceleniyor")**
-* **Yüklü Sürüm:** `3 (1.0.2)`
-* **Hedeflenen Ülkeler:** 177 Ülke ve bölge (Türkiye, Almanya, ABD dahil tüm dünya).
+* **Hedeflenen Ülkeler:** 177 Ülke ve bölge.
 * **Geri Bildirim Adresi:** `yigithanakman@gokyuzudoktoru.com`
-* **Test Grubu:** `geliştirici` listesi bağlı.
-
----
-
-## ⚠️ 7. Test Kullanıcılarına Link Gönderme Kuralı (HAYATİ BİLGİ)
-
-Kullanıcılara doğrudan normal Play Store linki (`play.google.com/store/apps/details?id=...`) **gönderilmemelidir**.  
-Eğer doğrudan o link gönderilirse Google kullanıcının testçi olduğunu algılayamaz ve ekranda uyuyan uydu (**"Nicht gefunden / Bulunamadı"**) çıkar!
-
-### Doğru Davet Yöntemi:
-Kullanıcılara Google Play Console'daki **"Web'de katılın"** altındaki davet linki gönderilmelidir:
-👉 **`https://play.google.com/apps/testing/com.gokyuzudoktoru.gokyuzu_app`**
-
-1. Kullanıcı bu linke tıklar.
-2. Açılan resmi Google sayfasında mavi **"PROGRAMA KATIL" (Become a tester)** butonuna basar.
-3. Ardından sayfadaki **"Google Play'den İndir"** linkine tıklayarak mağazadan uygulamayı indirir.
-
-> **NOT:** Kapalı test sürümü şu anda Google'ın inceleme masasında olduğu için, bu link Google incelemeyi bitirip onayladığı an (birkaç saat içinde) aktifleşecektir.
+* **Resmi Test Katılım Linki:**
+  👉 **`https://play.google.com/apps/testing/com.gokyuzudoktoru.gokyuzu_app`**
 
 ---
 
 ## 🗺️ 8. Sırada Yapılacaklar (Adım Adım Yol Haritası)
 
-1. **Google Onayını Beklemek:**  
-   Google ekibi Kapalı Test sürümünü onayladığında (genellikle 24 saat içinde) Gmail adresine bildirim gelir ve durum "Kullanıma sunuldu / Yayında" olur.
-2. **20 Test Kullanıcısının Dahil Edilmesi:**  
+1. **Google İnceleme Onayının Alınması:**  
+   Google Play Console ekibi kapalı test sürümünü onayladığında durum "Kullanıma sunuldu / Yayında" durumuna geçecektir.
+2. **20 Test Kullanıcısının Davet Edilmesi:**  
    Google Play Console -> **"Kontrol paneli"**ne girildiğinde, 20 test kullanıcısı ve 14 günlük test süreci ilerleme çubuğu açılacaktır. 20 kişinin Gmail adresi listeye eklenir ve yukarıdaki "testing" davet linki kendilerine iletilir.
 3. **14 Günlük Süreç:**  
    20 kullanıcının uygulamayı telefonlarında 14 gün boyunca tutması ve ara sıra açması sağlanır.
