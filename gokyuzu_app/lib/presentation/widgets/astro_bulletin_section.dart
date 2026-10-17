@@ -41,7 +41,6 @@ class _AstroBulletinSectionState extends State<AstroBulletinSection> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      constraints: const BoxConstraints(maxWidth: 600),
       backgroundColor: Colors.transparent,
       builder: (ctx) => _AstroBulletinModalContent(
         profile: widget.profile,

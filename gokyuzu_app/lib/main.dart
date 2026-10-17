@@ -65,16 +65,6 @@ class GokyuzuDoktoruApp extends StatelessWidget {
             GlobalCupertinoLocalizations.delegate,
           ],
           home: const SplashScreen(),
-          builder: (context, child) {
-            return Container(
-              color: const Color(0xFF0D0A14),
-              alignment: Alignment.center,
-              child: ConstrainedBox(
-                constraints: const BoxConstraints(maxWidth: 600),
-                child: child ?? const SizedBox.shrink(),
-              ),
-            );
-          },
         );
       },
     );

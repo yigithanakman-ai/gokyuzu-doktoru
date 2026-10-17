@@ -100,10 +100,10 @@ Gökyüzü_YapayZeka_Sistemi/
 
 ---
 
-## 5. 💻 CİHAZ UYUMLULUĞU: MACBOOK, IPAD, TABLET VE MOBİL (DİKEY FORMAT)
-* **Merkezi Kısıtlama:** `gokyuzu_app/lib/main.dart` içindeki `MaterialApp.builder` ile tüm ekranlar merkezde `maxWidth: 600` piksel kaset içine alınmıştır.
-* **Geniş Ekran Koruması:** MacBook (macOS masaüstü), iPad ve Android tabletlerde uygulama yatayda orantısız esnemez; merkezde derin kozmik gece tonu (`#0D0A14`) ile sarılmış kusursuz dikey mobil arayüz sunar.
-* **Alt Modallar (Bottom Sheets):** `showModalBottomSheet` pencerelerine `constraints: const BoxConstraints(maxWidth: 600)` tanımlanmıştır.
+## 5. 💻 CİHAZ UYUMLULUĞU: MACBOOK, IPAD, TABLET, KATLANABİLİR VE MOBİL (TAM GENİŞLİK VE ESNEK TASARIM)
+* **Kısıtlamasız Doğal Tasarım:** Daraltıcı `maxWidth: 600` kaset kısıtı tamamen kaldırılmıştır.
+* **Tam Ekran Deneyimi:** MacBook (macOS), iPad, Android tabletler ve katlanabilir cihazlarda uygulama ekranın tüm genişliğini doğal olarak kullanır; siyah boşluklar veya minik bir telefon kasetine sıkışma yaşanmaz.
+* **Esnek ve Akıcı Yerleşim:** Tüm kartlar ve listeler cihazın sunduğu geniş alana ferah bir şekilde yayılır.
 
 ---
 

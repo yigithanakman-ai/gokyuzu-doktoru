@@ -42,10 +42,9 @@
 * [app_translation_service.dart](file:///Users/yigithanakman/Desktop/Gökyüzü_YapayZeka_Sistemi/gokyuzu_app/lib/data/services/app_translation_service.dart) servisi üzerinden tüm sistem (gezegenler, burçlar, evler, açılar, günlük enerjiler, butonlar, uyarılar) Türkçe, İngilizce ve Japonca dillerine eksiksiz çevrilmiştir.
 * Dil değiştirildiğinde uygulama yeniden başlatma gerektirmeden anında reaktif olarak güncellenir.
 
-### E. MacBook, iPad ve Tabletler İçin Dikey Format (Responsive Container)
-* [main.dart](file:///Users/yigithanakman/Desktop/Gökyüzü_YapayZeka_Sistemi/gokyuzu_app/lib/main.dart) `MaterialApp.builder` içerisine `BoxConstraints(maxWidth: 600)` ve `Color(0xFF0D0A14)` kozmik arka plan eklendi.
-* Tüm `showModalBottomSheet` modallarına `maxWidth: 600` kısıtı tanımlandı.
-* Geniş ekranlarda (MacBook, iMac, iPad Pro, Android tabletler) kartlar yatayda orantısız esnemez; telefon formundaki şık dikey kaset merkezde korunur.
+### E. MacBook, iPad, Tablet ve Katlanabilir Cihazlar İçin Tam Genişlikte Esnek Tasarım
+* Daraltıcı `maxWidth: 600` kaset kısıtı tamamen kaldırılmıştır.
+* MacBook, iPad, Android tablet ve katlanabilir ekranlarda uygulama ekranın tüm genişliğini doğal olarak kullanarak ferah, akıcı ve kısıtlamasız bir deneyim sunar. Siyah yan barlar kaldırılmıştır.
 
 ### F. Aydınlatma Metni & KVKK Onayı
 * Onboarding ekranındaki KVKK onay kutusu ekranın en altına, ana form butonunun hemen üzerine taşındı; ekran taşmaları tamamen engellendi.

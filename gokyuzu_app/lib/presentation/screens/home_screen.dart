@@ -2773,7 +2773,6 @@ class _HomeScreenState extends State<HomeScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      constraints: const BoxConstraints(maxWidth: 600),
       backgroundColor: Colors.transparent,
       builder: (ctx) => PersonalEclipsesCounselingSheet(profile: widget.profile),
     );
@@ -2783,7 +2782,6 @@ class _HomeScreenState extends State<HomeScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      constraints: const BoxConstraints(maxWidth: 600),
       backgroundColor: Colors.transparent,
       builder: (ctx) => SynastryModalContent(profile: widget.profile),
     );
@@ -2793,7 +2791,6 @@ class _HomeScreenState extends State<HomeScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      constraints: const BoxConstraints(maxWidth: 600),
       backgroundColor: Colors.transparent,
       builder: (ctx) => SolarReturnModalContent(profile: widget.profile),
     );
@@ -2803,7 +2800,6 @@ class _HomeScreenState extends State<HomeScreen> {
     showModalBottomSheet(
       context: context,
       isScrollControlled: true,
-      constraints: const BoxConstraints(maxWidth: 600),
       backgroundColor: Colors.transparent,
       builder: (ctx) => RectificationModalContent(
         profile: widget.profile,
