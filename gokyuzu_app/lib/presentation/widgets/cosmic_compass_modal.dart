@@ -127,13 +127,15 @@ class _CosmicCompassModalState extends State<CosmicCompassModal>
     try {
       final rewarded = await AdService.showRewardedAd(
         onRewardGranted: () async {
-          await CosmicCompassService.addAdBonusQuota();
+          final success = await CosmicCompassService.addAdBonusQuota();
           await _loadQuota();
           if (mounted) {
             ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text('Tebrikler! +1 Kozmik Karar Pusulası hakkı tanımlandı. 🎉'),
-                backgroundColor: AppColors.starlightGold,
+              SnackBar(
+                content: Text(success
+                    ? 'Tebrikler! +1 Kozmik Karar Pusulası hakkı tanımlandı. 🎉'
+                    : 'Bugünkü reklamla hak kazanma limitiniz (günde maks. 1 reklam) dolmuştur. ⏳'),
+                backgroundColor: success ? AppColors.starlightGold : Colors.orange.shade800,
               ),
             );
           }
@@ -142,13 +144,15 @@ class _CosmicCompassModalState extends State<CosmicCompassModal>
 
       if (!rewarded) {
         // Simülasyon / Test reklamı fallback
-        await CosmicCompassService.addAdBonusQuota();
+        final success = await CosmicCompassService.addAdBonusQuota();
         await _loadQuota();
         if (mounted) {
           ScaffoldMessenger.of(context).showSnackBar(
-            const SnackBar(
-              content: Text('+1 Kozmik Karar Pusulası hakkı eklendi! ✨'),
-              backgroundColor: AppColors.starlightGold,
+            SnackBar(
+              content: Text(success
+                  ? '+1 Kozmik Karar Pusulası hakkı eklendi! ✨'
+                  : 'Bugünkü reklam hakkınız dolmuştur (Günde maks. 1 reklam). ⏳'),
+              backgroundColor: success ? AppColors.starlightGold : Colors.orange.shade800,
             ),
           );
         }
@@ -279,6 +283,26 @@ class _CosmicCompassModalState extends State<CosmicCompassModal>
                           minimumSize: Size.zero,
                           tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                           shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
+                        ),
+                      )
+                    else if (!isUnlimited && tier == 'Standart')
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(8),
+                          border: Border.all(color: Colors.white24, width: 0.8),
+                        ),
+                        child: const Row(
+                          mainAxisSize: MainAxisSize.min,
+                          children: [
+                            Icon(Icons.check_circle_outline_rounded, size: 12, color: AppColors.starlightGold),
+                            SizedBox(width: 4),
+                            Text(
+                              'Reklam Kullanıldı',
+                              style: TextStyle(fontSize: 10, color: Colors.white70, fontWeight: FontWeight.w600),
+                            ),
+                          ],
                         ),
                       ),
                   ],

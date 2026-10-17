@@ -90,19 +90,19 @@ void main() {
 
   test('3. PDF 10-page report generation succeeds with new data', () async {
     final profile = UserProfile(
-      name: 'Yiğithan Akman',
-      birthDate: '06.03.1991',
-      birthTime: '16:30',
+      name: 'Test Danışan',
+      birthDate: '06.06.1991',
+      birthTime: '17:42',
       birthCountry: 'Türkiye',
-      birthCity: 'Bolu',
-      sunSign: 'Balık',
-      moonSign: 'Akrep',
-      risingSign: 'İkizler',
+      birthCity: 'Sakarya',
+      sunSign: 'İkizler',
+      moonSign: 'Balık',
+      risingSign: 'Akrep',
       gender: 'Erkek',
       rawChart: {
-        'sun': '15°17\' Balık',
-        'moon': '22°15\' Akrep',
-        'rising': '08°45\' İkizler',
+        'sun': '15°24\' İkizler',
+        'moon': '12°10\' Balık',
+        'rising': '20°15\' Akrep',
         'mercury': '02°11\' Balık',
         'venus': '14°42\' Koç',
         'mars': '16°08\' İkizler',
@@ -111,7 +111,7 @@ void main() {
       },
     );
 
-    final file = await PdfReportService.generate10PageBooklet(profile: profile);
+    final file = await PdfReportService.generate10PageBooklet(profile: profile, autoOpen: false);
     expect(await file.exists(), isTrue);
     expect(await file.length(), greaterThan(10000));
     print('PDF generated successfully at: ${file.path} (${await file.length()} bytes)');

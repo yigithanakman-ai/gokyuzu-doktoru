@@ -38,7 +38,10 @@ class PdfReportService {
   }
 
   /// 10 Sayfalık Word Tarzı Yalın, Temiz ve Türkçe Karakter Uyumlu PDF Raporu Üretir
-  static Future<File> generate10PageBooklet({required UserProfile profile}) async {
+  static Future<File> generate10PageBooklet({
+    required UserProfile profile,
+    bool autoOpen = false,
+  }) async {
     final regularFont = await _loadFont(
       'assets/fonts/Arial-Regular.ttf',
       '/System/Library/Fonts/Supplemental/Arial.ttf',
@@ -853,8 +856,8 @@ class PdfReportService {
         final downloadsFile = File('$homeDir/Downloads/$fileName');
         await downloadsFile.writeAsBytes(bytes);
 
-        // Auto-open on macOS
-        if (Platform.isMacOS) {
+        // Open only if explicitly requested by user interaction
+        if (autoOpen && Platform.isMacOS) {
           Process.run('open', [desktopFile.path]);
         }
       }
@@ -863,3 +866,4 @@ class PdfReportService {
     return file;
   }
 }
+

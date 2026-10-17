@@ -58,10 +58,17 @@ void main() {
       expect(status['remaining'], 0);
 
       // Ad bonus gives +1 question
-      await CosmicCompassService.addAdBonusQuota();
+      final firstAdRes = await CosmicCompassService.addAdBonusQuota();
+      expect(firstAdRes, isTrue);
       status = await CosmicCompassService.checkQuotaStatus();
       expect(status['canAsk'], isTrue);
       expect(status['remaining'], 1);
+
+      // Second ad bonus on same day is STRICTLY REJECTED
+      final secondAdRes = await CosmicCompassService.addAdBonusQuota();
+      expect(secondAdRes, isFalse);
+      status = await CosmicCompassService.checkQuotaStatus();
+      expect(status['canWatchAdForBonus'], isFalse);
     });
 
     test('Consulting compass returns score, needle degrees, and mandatory legal notice', () async {
@@ -94,23 +101,7 @@ void main() {
       SharedPreferences.setMockInitialValues({});
     });
 
-    test('Generates deterministic referral code from name and sun sign', () {
-      final profile = UserProfile(
-        name: 'Yiğithan Akman',
-        birthDate: '1991-06-06',
-        birthTime: '17:42',
-        birthCity: 'Sakarya',
-        sunSign: 'İkizler',
-        moonSign: 'Balık',
-        risingSign: 'Akrep',
-      );
-
-      final code = ReferralService.generateReferralCode(profile);
-      expect(code, startsWith('GOK-'));
-      expect(code, contains('İK'));
-    });
-
-    test('Redeeming friend code awards free 10-page PDF report and rejects self-code', () async {
+    test('Generates secure alphanumeric single-use voucher code', () async {
       final profile = UserProfile(
         name: 'Patron',
         birthDate: '1991-06-06',
@@ -121,24 +112,58 @@ void main() {
         risingSign: 'Akrep',
       );
 
-      final myCode = ReferralService.generateReferralCode(profile);
+      final code = await ReferralService.getOrCreateUserReferralCode(profile);
+      expect(code, startsWith('GOK-'));
+      expect(code.length, 13);
+    });
+
+    test('Redeeming friend code awards free 10-page PDF report and enforces single-use', () async {
+      final profile = UserProfile(
+        name: 'Patron',
+        birthDate: '1991-06-06',
+        birthTime: '17:42',
+        birthCity: 'Sakarya',
+        sunSign: 'İkizler',
+        moonSign: 'Balık',
+        risingSign: 'Akrep',
+      );
+
+      final myCode = await ReferralService.getOrCreateUserReferralCode(profile);
 
       // Self-redemption should be blocked
       final selfRes = await ReferralService.redeemCode(code: myCode, currentProfile: profile);
       expect(selfRes['success'], isFalse);
 
       // Valid friend code gives free PDF gift
-      final friendRes = await ReferralService.redeemCode(code: 'GOK-ARKADAS-KO', currentProfile: profile);
+      final friendRes = await ReferralService.redeemCode(code: 'GOK-ARK1-KOD2', currentProfile: profile);
       expect(friendRes['success'], isTrue);
       expect(await ReferralService.hasFreePdfGift(), isTrue);
       expect(await ReferralService.hasRedeemedReferral(), isTrue);
 
-      // Cannot redeem second time
-      final duplicateRes = await ReferralService.redeemCode(code: 'GOK-DIGER-BO', currentProfile: profile);
+      // Cannot redeem second time on this device
+      final duplicateRes = await ReferralService.redeemCode(code: 'GOK-ARK3-KOD4', currentProfile: profile);
       expect(duplicateRes['success'], isFalse);
+
+      // If another user tries to use the already redeemed code 'GOK-ARK1-KOD2', it is rejected as consumed!
+      final otherProfile = UserProfile(
+        name: 'Other User',
+        birthDate: '1995-01-01',
+        birthTime: '12:00',
+        birthCity: 'Ankara',
+        sunSign: 'Oğlak',
+        moonSign: 'Kova',
+        risingSign: 'Balık',
+      );
+      // Reset device redemption state for testing the code's ledger
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setBool('user_has_redeemed_referral', false);
+
+      final consumedCodeRes = await ReferralService.redeemCode(code: 'GOK-ARK1-KOD2', currentProfile: otherProfile);
+      expect(consumedCodeRes['success'], isFalse);
+      expect(consumedCodeRes['message'], contains('tek kullanımlıktır'));
     });
 
-    test('Successful invite grants 3-day VIP membership to inviter', () async {
+    test('Successful invite grants 3-day VIP membership to inviter and prepares fresh code', () async {
       await ReferralService.recordSuccessfulInvite();
       final count = await ReferralService.getInvitedCount();
       expect(count, 1);
@@ -197,8 +222,8 @@ void main() {
       // Subchunk 2 is 'data'
       expect(String.fromCharCodes(wavBytes.sublist(36, 40)), 'data');
 
-      // 44-byte header + (44100 samples * 2 bytes) = 88244 bytes
-      expect(wavBytes.length, 44 + (44100 * 2));
+      // 44-byte header + (44100 samples * 4 bytes for stereo) = 176444 bytes
+      expect(wavBytes.length, 44 + (44100 * 4));
     });
   });
 

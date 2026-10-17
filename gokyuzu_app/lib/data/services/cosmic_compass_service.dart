@@ -84,11 +84,12 @@ class CosmicCompassService {
       };
     }
 
-    // Ücretsiz Üye
+    // Ücretsiz Üye: Günde 1 soru hakkı + günde en fazla 1 ödüllü reklamla +1 hak kazanabilme
     final usedToday = prefs.getInt(todayKey) ?? 0;
     final bonusAds = prefs.getInt('${todayKey}_bonus') ?? 0;
-    final maxFreeDaily = 1 + bonusAds;
+    final maxFreeDaily = 1 + min(1, bonusAds);
     final remaining = max(0, maxFreeDaily - usedToday);
+    final canWatchAd = bonusAds < 1;
 
     return {
       'canAsk': remaining > 0,
@@ -96,7 +97,8 @@ class CosmicCompassService {
       'tier': 'Standart',
       'isUnlimited': false,
       'period': 'günlük',
-      'canWatchAdForBonus': true,
+      'canWatchAdForBonus': canWatchAd,
+      'bonusAdsUsedToday': bonusAds,
     };
   }
 
@@ -114,13 +116,17 @@ class CosmicCompassService {
     await prefs.setInt(weekKey, usedWeek + 1);
   }
 
-  /// Reklam izleyince ücretsiz üyeye +1 hak ekler
-  static Future<void> addAdBonusQuota() async {
+  /// Reklam izleyince ücretsiz üyeye +1 hak ekler (Günde KESİNLİKLE EN FAZLA 1 KEZ İZLENİR)
+  static Future<bool> addAdBonusQuota() async {
     final prefs = await SharedPreferences.getInstance();
     final now = DateTime.now();
     final bonusKey = 'compass_usage_${now.year}_${now.month}_${now.day}_bonus';
     final cur = prefs.getInt(bonusKey) ?? 0;
+    if (cur >= 1) {
+      return false; // Günlük 1 reklam limiti doldu
+    }
     await prefs.setInt(bonusKey, cur + 1);
+    return true;
   }
 
   /// Doğum haritası ve anlık gökyüzü enerjisine göre karar pusulasını çalıştırır

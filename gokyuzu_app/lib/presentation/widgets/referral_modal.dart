@@ -48,6 +48,7 @@ class _ReferralModalState extends State<ReferralModal> {
   }
 
   Future<void> _loadReferralData() async {
+    final activeCode = await ReferralService.getOrCreateUserReferralCode(widget.profile);
     final count = await ReferralService.getInvitedCount();
     final vipDays = await ReferralService.getRemainingVipGiftDays();
     final redeemed = await ReferralService.hasRedeemedReferral();
@@ -55,6 +56,7 @@ class _ReferralModalState extends State<ReferralModal> {
 
     if (mounted) {
       setState(() {
+        _myReferralCode = activeCode;
         _invitedCount = count;
         _remainingVipDays = vipDays;
         _hasRedeemed = redeemed;
