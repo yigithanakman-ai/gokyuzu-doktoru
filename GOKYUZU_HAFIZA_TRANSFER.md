@@ -125,18 +125,21 @@ Müşterimiz Nazlı Gizem Hanım'ın geri bildirimi doğrultusunda tasarlanan ve
 
 ---
 
-## 🎯 6. Şu Anki Teknik Durum & Tamamlanan Devrimler (18 Ekim 2026)
+## 🎯 6. Şu Anki Teknik Durum & Tamamlanan Devrimler (18 Ekim 2026 - 02:45 TSİ)
 
 1. **Mağaza Yayını:** `v1.0.4+5` Google Play Console Kapalı Testte incelemededir.
-2. **VIP Platinum Çoklu Profil Seçici (4/1) — [TAMAMLANDI]:**
+2. **VIP Platinum Çoklu Profil Seçici (4/1) — [TAMAMLANDI & ZIRHLANDI]:**
    * `ActiveProfileService` ve `ActiveProfileBar` entegre edildi.
    * HomeScreen'den veya Arşiv'den çocuk, eş veya danışan seçildiğinde; tüm uygulamanın öngörüleri (Solar Return, Progress, Firdaria, Numeroloji) ve 10 Sayfalık Kapsamlı PDF kitapçığı o kişi adına üretilmektedir.
-   * Platinum olmayan kullanıcılara `PlatinumMultiProfileUpsellSheet` üzerinden **"+1 Ekstra Kapsamlı PDF Raporu Hediye!"** teşviki sunulmaktadır.
-3. **İnteraktif Çift Çark & Zaman Makinesi (4/2) — [TAMAMLANDI]:**
-   * `InteractiveBiWheelModal` ve `BiWheelPainter` devreye alındı.
-   * İç Çark: Doğum (Natal) Haritası.
-   * Dış Çark: Anlık Transitler veya Sinastri Partneri.
-   * Solar Fire Zaman Makinesi: `-1 Ay`, `-1 Gün`, `-1 Saat`, `ŞİMDİ`, `+1 Saat`, `+1 Gün`, `+1 Ay` butonlarıyla transit gezegenlerin hareketini gerçek zamanlı izleme.
-   * Gezegen dokunulduğunda parlayan GPU vektörel açı ışınları (Kavuşum, Sekstil, Kare, Üçgen, Karşıt).
-   * HomeScreen'deki ana vitrin kartından ve `ChartDetailScreen` zodyak çarkı sekmesinden tek tıkla açılabilmektedir.
-4. **Kod Sağlığı:** `dart analyze lib` 0 Hata / 0 Uyarı ile tertemizdir.
+   * Platinum olmayan kullanıcılara `PlatinumMultiProfileUpsellSheet` üzerinden **"+1 Ekstra Kapsamlı 10 Sayfalık PDF Raporu Hediye!"** teşviki sunulmaktadır.
+   * **Gizli Kod Güvenliği:** Master VIP erişim kodu (`gkyz2453`) yalnızca Patron ve Yapay Zekâ arasındaki bir sırdır; müşteri tarafındaki yükseltme sayfalarında hiçbir kod alanı, kupon girişi veya secret input bırakılmamış, arayüz tamamen temizlenmiştir.
+3. **İnteraktif Çift Çark & Zaman Makinesinin 360° Çark Sayfasına Gömülmesi (4/2) — [TAMAMLANDI]:**
+   * `ChartDetailScreen` içindeki **360° Çark** sekmesine doğrudan entegre edildi. Ayrı bir modala gitmeye gerek kalmadan sayfa içi toggle (`[🪐 Tekli Doğum Çarkı]` / `[🔭 Canlı Çift Çark (Transit)]`) ile çalışır.
+   * **İç Çark:** Doğum (Natal) Haritası (Altın tonları).
+   * **Dış Çark:** Anlık Transitler (Turkuaz/Siyan tonları).
+   * **Solar Fire Zaman Makinesi Stepper:** `-1 Ay`, `-1 G`, `-1 S`, `ŞİMDİ`, `+1 S`, `+1 G`, `+1 Ay` butonlarıyla zaman ileri/geri sarıldığında transit haritası anında yeniden hesaplanır.
+   * **Serbest Dokunmatik Döndürme (Pan Rotation):** Kullanıcı çarkı parmağıyla 360° döndürebilir, tek tıkla açıyı sıfırlayabilir.
+   * **Açı Işını Odaklama:** Güneş, Ay, Merkür, Venüs, Mars, Jüpiter, Satürn, Uranüs, Neptün, Plüton chiplerine tıklandığında yalnızca o gezegene ait açı ışınları merkez diskte parlar.
+   * **Canlı Transit-Natal Açı Akışı:** Tespit edilen tüm majör açılar (Kavuşum, Sekstil, Kare, Üçgen, Karşıt) orp değerleriyle birlikte renkli kartlar halinde listelenir.
+   * **Gezegen Konum Karşılaştırma Tablosu:** Doğum derecesi ile anlık transit derecesi yan yana gösterilir.
+4. **Kod Sağlığı:** `dart analyze lib` 0 Hata / 0 Uyarı ile %100 kusursuzdur.

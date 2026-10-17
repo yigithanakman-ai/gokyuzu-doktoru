@@ -41,13 +41,15 @@
 
 Patron'un vizyonu: Gökyüzü Doktoru'nu **Solar Fire, Astro Gold ve Sirius** gibi 90'lardan kalma pahalı masaüstü yazılımların küresel çaptaki en güçlü, modern, yapay zekâ destekli ve estetik alternatifi haline getirmektir.
 
-### Sıradaki Dev Geliştirme (VIP Platinum Özel):
-* **Çoklu Harita & Danışan Yönetimi (Context Switcher):**  
-  Arşivdeki kayıtlı haritalardan (çocuk, eş, danışan) birine tek tıkla geçiş yapıldığında; tüm uygulamanın (Solar Return, Secondary Progress, Numeroloji, Anlık Transitler ve 10 Sayfalık PDF Kitapçığı) seçilen kişi adına hesaplanması.
-* **Üyelik Katmanı & Teşvik:**  
-  Bu özellik **yalnızca VIP Platinum** üyelerin kullanımına açık olacaktır. Ücretsiz, Silver veya Gold kullanıcılar profil seçiciye dokunduğunda **"Hemen Platinum'a geçin, anında +1 Ekstra Kapsamlı PDF Raporu hediye kazanın!"** teşvik teklifiyle karşılaşacaktır.
+### Tamamlanan Yeni Yetenekler (18 Ekim 2026):
+* **VIP Platinum Çoklu Profil Seçici (`active_profile_service.dart`, `ActiveProfileBar`):**  
+  Arşivdeki kayıtlı haritalardan (çocuk, eş, danışan) birine tek tıkla geçiş yapıldığında; tüm uygulamanın (Solar Return, Secondary Progress, Numeroloji, Anlık Transitler ve 10 Sayfalık PDF Kitapçığı) seçilen kişi adına hesaplanması tamamlandı.
+* **Gizli Kod Güvenliği & Teşvik:**  
+  Müşteri yükseltme arayüzünden (`platinum_multiprofile_upsell_sheet.dart`) tüm promosyon kodu/gizli kod giriş alanları silindi; master erişim kodu (`gkyz2453`) yalnızca Patron ve Yapay Zekâ sırrı olarak korundu. Sayfada **"+1 Ekstra Kapsamlı PDF Raporu Hediye!"** teşvik teklifi bırakıldı.
+* **360° Çark Sayfasına Gömülü İnteraktif Çift Çark & Zaman Makinesi (`chart_detail_screen.dart`):**  
+  Doğum haritası detay ekranındaki 360° Çark sekmesine çift çark doğrudan gömüldü. Segmented switch (`[🪐 Tekli Doğum Çarkı]` / `[🔭 Canlı Çift Çark]`), Solar Fire zaman makinesi butonları (`-1 Ay`, `-1 G`, `-1 S`, `ŞİMDİ`, `+1 S`, `+1 G`, `+1 Ay`), parmakla 360° serbest döndürme, gezegen açı ışını odaklama filtreleri ve canlı transit açı akışı entegre edildi.
 * **Atlas & Astrokartografi Notu:**  
-  Astrokartografi özelliği, 200+ ülke koordinat (Geocoding) ve tarihsel saat dilimi (DST) altyapısı kurulana kadar Patron'un haklı uyarısıyla beklemeye alınmıştır. Öncelik harita bağımsız çalışan İnteraktif Çift Çark ve VIP Platinum Çoklu Profil sistemindedir.
+  Astrokartografi özelliği, 200+ ülke koordinat (Geocoding) ve tarihsel saat dilimi (DST) altyapısı için Patron'un onayıyla Seçenek 2 & 3 (Cihaz içi gömülü atlas + OpenStreetMap/Photon, sıfır ücretli API) olarak planlandı.
 
 ---
 
@@ -66,3 +68,4 @@ Patron'un vizyonu: Gökyüzü Doktoru'nu **Solar Fire, Astro Gold ve Sirius** gi
 * **Resmi Yasal Merkez:** `https://yigithanakman-ai.github.io/gokyuzu-doktoru/` (GitHub Pages üzerinde `docs/index.html` olarak barındırılmaktadır).
 * **Gizlilik Politikası:** Canlı yayın anonsları, atölye bildirimleri ve yasal sorumluluk reddi metinleriyle günceldir.
 * **Statik Kod Analizi:** `dart analyze lib/` çıktısı: **0 Hata (No issues found)**.
+

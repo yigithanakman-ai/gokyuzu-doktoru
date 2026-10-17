@@ -12,59 +12,10 @@ void showPlatinumMultiProfileUpsellSheet(BuildContext context, {String? targetPr
   );
 }
 
-class PlatinumMultiProfileUpsellSheet extends StatefulWidget {
+class PlatinumMultiProfileUpsellSheet extends StatelessWidget {
   final String? targetProfileName;
 
   const PlatinumMultiProfileUpsellSheet({super.key, this.targetProfileName});
-
-  @override
-  State<PlatinumMultiProfileUpsellSheet> createState() => _PlatinumMultiProfileUpsellSheetState();
-}
-
-class _PlatinumMultiProfileUpsellSheetState extends State<PlatinumMultiProfileUpsellSheet> {
-  final TextEditingController _codeController = TextEditingController();
-  bool _isEnteringCode = false;
-  String? _codeError;
-
-  @override
-  void dispose() {
-    _codeController.dispose();
-    super.dispose();
-  }
-
-  Future<void> _submitCode() async {
-    final code = _codeController.text.trim();
-    if (code.isEmpty) return;
-
-    final success = await StorageService.activateVipCode(code);
-    if (!mounted) return;
-
-    if (success) {
-      Navigator.of(context).pop();
-      ScaffoldMessenger.of(context).showSnackBar(
-        const SnackBar(
-          content: Row(
-            children: [
-              Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFD700)),
-              SizedBox(width: 8),
-              Expanded(
-                child: Text(
-                  '🎉 VIP Platinum Aktif Edildi! Artık tüm danışan ve aile haritaları arasında serbestçe geçiş yapabilirsiniz.',
-                  style: TextStyle(fontWeight: FontWeight.bold),
-                ),
-              ),
-            ],
-          ),
-          backgroundColor: Color(0xFF6C5CE7),
-          duration: Duration(seconds: 4),
-        ),
-      );
-    } else {
-      setState(() {
-        _codeError = 'Geçersiz veya süresi dolmuş VIP kodu.';
-      });
-    }
-  }
 
   @override
   Widget build(BuildContext context) {
@@ -73,7 +24,7 @@ class _PlatinumMultiProfileUpsellSheetState extends State<PlatinumMultiProfileUp
         top: 24,
         left: 20,
         right: 20,
-        bottom: MediaQuery.of(context).viewInsets.bottom + 24,
+        bottom: MediaQuery.of(context).viewInsets.bottom + 28,
       ),
       decoration: const BoxDecoration(
         color: Color(0xFF13101E),
@@ -152,7 +103,7 @@ class _PlatinumMultiProfileUpsellSheetState extends State<PlatinumMultiProfileUp
             const SizedBox(height: 16),
 
             // Description
-            if (widget.targetProfileName != null) ...[
+            if (targetProfileName != null) ...[
               Container(
                 padding: const EdgeInsets.all(12),
                 decoration: BoxDecoration(
@@ -166,7 +117,7 @@ class _PlatinumMultiProfileUpsellSheetState extends State<PlatinumMultiProfileUp
                     const SizedBox(width: 8),
                     Expanded(
                       child: Text(
-                        '${widget.targetProfileName} haritasını aktif bağlam olarak kullanmak ve tüm analizleri bu kişi adına üretmek VIP Platinum gerektirir.',
+                        '$targetProfileName haritasını aktif bağlam olarak kullanmak ve tüm analizleri bu kişi adına üretmek VIP Platinum gerektirir.',
                         style: const TextStyle(fontSize: 12, color: Colors.white70),
                       ),
                     ),
@@ -192,7 +143,7 @@ class _PlatinumMultiProfileUpsellSheetState extends State<PlatinumMultiProfileUp
             _buildFeatureTile(
               icon: Icons.auto_awesome_rounded,
               title: 'Solar Fire & Astro Gold Seviyesi',
-              subtitle: 'Solar Return (Güneş Dönüşü), İkincil İlerletimler (Progress) ve Firdaria döngülerini seçilen kişinin yaşına göre çıkarın.',
+              subtitle: 'Solar Return (Güneş Dönüşü), İkincil İlerletimler (Progress) ve Firdaria döngülerini seçilen kişinin doğum anına göre çıkarın.',
             ),
             const SizedBox(height: 16),
 
@@ -252,115 +203,57 @@ class _PlatinumMultiProfileUpsellSheetState extends State<PlatinumMultiProfileUp
             ),
             const SizedBox(height: 20),
 
-            // Code Entry or Upgrade Buttons
-            if (!_isEnteringCode) ...[
-              ElevatedButton.icon(
-                style: ElevatedButton.styleFrom(
-                  backgroundColor: AppColors.starlightGold,
-                  foregroundColor: Colors.black,
-                  padding: const EdgeInsets.symmetric(vertical: 14),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                  elevation: 6,
-                ),
-                onPressed: () {
-                  setState(() {
-                    _isEnteringCode = true;
-                  });
-                },
-                icon: const Icon(Icons.key_rounded, size: 20),
-                label: const Text(
-                  'VIP Kod / Promosyon Kuponu Gir',
-                  style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14),
-                ),
+            // Upgrade and Close Action Buttons
+            ElevatedButton.icon(
+              style: ElevatedButton.styleFrom(
+                backgroundColor: AppColors.starlightGold,
+                foregroundColor: Colors.black,
+                padding: const EdgeInsets.symmetric(vertical: 14),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+                elevation: 6,
               ),
-              const SizedBox(height: 10),
-              OutlinedButton.icon(
-                style: OutlinedButton.styleFrom(
-                  foregroundColor: Colors.white70,
-                  side: const BorderSide(color: Colors.white24),
-                  padding: const EdgeInsets.symmetric(vertical: 12),
-                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
-                ),
-                onPressed: () => Navigator.of(context).pop(),
-                icon: const Icon(Icons.close_rounded, size: 18),
-                label: Text(AppTranslationService.tr('Daha Sonra')),
-              ),
-            ] else ...[
-              Container(
-                padding: const EdgeInsets.all(14),
-                decoration: BoxDecoration(
-                  color: Colors.white.withValues(alpha: 0.05),
-                  borderRadius: BorderRadius.circular(14),
-                  border: Border.all(color: Colors.white12),
-                ),
-                child: Column(
-                  crossAxisAlignment: CrossAxisAlignment.stretch,
-                  children: [
-                    TextField(
-                      controller: _codeController,
-                      textCapitalization: TextCapitalization.characters,
-                      style: const TextStyle(
-                        color: Colors.white,
-                        fontWeight: FontWeight.bold,
-                        letterSpacing: 2,
-                      ),
-                      decoration: InputDecoration(
-                        hintText: 'Örn: GKYZ2453',
-                        hintStyle: const TextStyle(color: Colors.white30, letterSpacing: 1),
-                        labelText: 'VIP Platinum Aktivasyon Kodu',
-                        labelStyle: const TextStyle(color: AppColors.starlightGold),
-                        errorText: _codeError,
-                        prefixIcon: const Icon(Icons.vpn_key_rounded, color: AppColors.starlightGold),
-                        filled: true,
-                        fillColor: Colors.black26,
-                        border: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: Colors.white24),
-                        ),
-                        focusedBorder: OutlineInputBorder(
-                          borderRadius: BorderRadius.circular(12),
-                          borderSide: const BorderSide(color: AppColors.starlightGold),
-                        ),
-                      ),
-                    ),
-                    const SizedBox(height: 12),
-                    Row(
-                      children: [
-                        Expanded(
-                          child: OutlinedButton(
-                            style: OutlinedButton.styleFrom(
-                              foregroundColor: Colors.white60,
-                              side: const BorderSide(color: Colors.white24),
-                            ),
-                            onPressed: () {
-                              setState(() {
-                                _isEnteringCode = false;
-                                _codeError = null;
-                              });
-                            },
-                            child: const Text('Geri'),
-                          ),
-                        ),
-                        const SizedBox(width: 10),
-                        Expanded(
-                          child: ElevatedButton(
-                            style: ElevatedButton.styleFrom(
-                              backgroundColor: AppColors.starlightGold,
-                              foregroundColor: Colors.black,
-                            ),
-                            onPressed: _submitCode,
-                            child: const Text(
-                              'Aktif Et & Kilidi Aç',
+              onPressed: () async {
+                await StorageService.setVipTier(VipTier.platinum);
+                if (context.mounted) {
+                  Navigator.of(context).pop();
+                  ScaffoldMessenger.of(context).showSnackBar(
+                    const SnackBar(
+                      content: Row(
+                        children: [
+                          Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFD700)),
+                          SizedBox(width: 8),
+                          Expanded(
+                            child: Text(
+                              '🎉 Tebrikler! VIP Platinum üyeliğiniz ve +1 Hediye PDF raporunuz aktif edildi.',
                               style: TextStyle(fontWeight: FontWeight.bold),
                             ),
                           ),
-                        ),
-                      ],
+                        ],
+                      ),
+                      backgroundColor: Color(0xFF6C5CE7),
+                      duration: Duration(seconds: 4),
                     ),
-                  ],
-                ),
+                  );
+                }
+              },
+              icon: const Icon(Icons.workspace_premium_rounded, size: 20),
+              label: const Text(
+                'VIP Platinum\'a Yükselt 👑',
+                style: TextStyle(fontWeight: FontWeight.w900, fontSize: 14),
               ),
-            ],
+            ),
+            const SizedBox(height: 10),
+            OutlinedButton.icon(
+              style: OutlinedButton.styleFrom(
+                foregroundColor: Colors.white70,
+                side: const BorderSide(color: Colors.white24),
+                padding: const EdgeInsets.symmetric(vertical: 12),
+                shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+              ),
+              onPressed: () => Navigator.of(context).pop(),
+              icon: const Icon(Icons.close_rounded, size: 18),
+              label: Text(AppTranslationService.tr('Daha Sonra')),
+            ),
           ],
         ),
       ),

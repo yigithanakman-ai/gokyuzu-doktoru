@@ -38,7 +38,6 @@ import '../widgets/birthday_solar_return_modal.dart';
 import '../widgets/cosmic_frequencies_modal.dart';
 import '../../data/services/active_profile_service.dart';
 import '../widgets/active_profile_bar.dart';
-import '../widgets/interactive_bi_wheel_modal.dart';
 
 class HomeScreen extends StatefulWidget {
   final UserProfile profile;
@@ -880,28 +879,6 @@ class _HomeScreenState extends State<HomeScreen> {
                 onProfileChanged: () {
                   setState(() {});
                   _fetchDailyHoroscope();
-                },
-              ),
-              const SizedBox(height: 8),
-
-              // 🔭 Canlı İnteraktif Çift Çark (Solar Fire Bi-Wheel)
-              _buildCosmicActionCard(
-                iconText: '🔭',
-                title: AppTranslationService.tr('İnteraktif Çift Çark (Bi-Wheel)'),
-                subtitle: AppTranslationService.tr('Natal & Canlı Transitler • Zaman Makinesi'),
-                badgeText: 'SOLAR FIRE',
-                badgeColor: const Color(0xFF00CEC9),
-                gradientColors: [
-                  const Color(0xFF00CEC9).withValues(alpha: 0.20),
-                  const Color(0xFF6C5CE7).withValues(alpha: 0.16),
-                ],
-                borderColor: const Color(0xFF00CEC9).withValues(alpha: 0.5),
-                onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => InteractiveBiWheelModal(natalProfile: _effectiveProfile),
-                    ),
-                  );
                 },
               ),
               const SizedBox(height: 12),

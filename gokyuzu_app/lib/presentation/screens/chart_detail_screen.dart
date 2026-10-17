@@ -1,3 +1,4 @@
+import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/models/birth_chart_model.dart';
@@ -12,6 +13,7 @@ import '../../data/services/chakra_service.dart';
 import '../../data/services/crystals_service.dart';
 import '../../data/services/kabbalah_tree_service.dart';
 import '../../data/services/predictive_astrology_service.dart';
+import '../../data/services/astrology_engine.dart';
 import '../widgets/glass_card.dart';
 import '../widgets/chart_wheel_painter.dart';
 import '../../data/services/ad_service.dart';
@@ -37,9 +39,21 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
   int _sacredSubTab = 0;
   bool _isVip = false;
 
+  // --- İnteraktif Çift Çark (Bi-Wheel) State ---
+  bool _isBiWheelActive = false;
+  DateTime _simulatedTransitDate = DateTime.now();
+  TimeOfDay _simulatedTransitTime = TimeOfDay.fromDateTime(DateTime.now());
+  BirthChartModel? _transitChart;
+  String? _selectedBiWheelPlanet;
+  double _biWheelRotationAngle = 0.0;
+
   @override
   void initState() {
     super.initState();
+    final now = DateTime.now();
+    _simulatedTransitDate = now;
+    _simulatedTransitTime = TimeOfDay.fromDateTime(now);
+    _calculateTransitChart();
     _checkVip();
     _fetchChart();
     AdService.preloadInterstitial();
@@ -637,219 +651,993 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
     return 15.0;
   }
 
+  // --- Transit & Bi-Wheel Calculations ---
+  void _calculateTransitChart() {
+    _transitChart = AstrologyEngine.calculateChart(
+      name: 'Transit Gökyüzü',
+      birthDate: _simulatedTransitDate,
+      birthTime: _simulatedTransitTime,
+      city: widget.profile.birthCity.isEmpty ? 'İstanbul' : widget.profile.birthCity,
+      country: widget.profile.birthCountry.isEmpty ? 'Türkiye' : widget.profile.birthCountry,
+    );
+  }
+
+  void _stepBiWheelTime({int days = 0, int hours = 0, int months = 0, int years = 0}) {
+    DateTime newDt = _simulatedTransitDate;
+    if (years != 0) {
+      newDt = DateTime(newDt.year + years, newDt.month, newDt.day, newDt.hour, newDt.minute);
+    }
+    if (months != 0) {
+      int m = newDt.month + months;
+      int y = newDt.year;
+      while (m > 12) {
+        m -= 12;
+        y += 1;
+      }
+      while (m < 1) {
+        m += 12;
+        y -= 1;
+      }
+      newDt = DateTime(y, m, math.min(newDt.day, 28), newDt.hour, newDt.minute);
+    }
+    if (days != 0) {
+      newDt = newDt.add(Duration(days: days));
+    }
+    if (hours != 0) {
+      newDt = newDt.add(Duration(hours: hours));
+    }
+
+    setState(() {
+      _simulatedTransitDate = newDt;
+      _simulatedTransitTime = TimeOfDay.fromDateTime(newDt);
+      _calculateTransitChart();
+    });
+  }
+
+  void _resetBiWheelToNow() {
+    final now = DateTime.now();
+    setState(() {
+      _simulatedTransitDate = now;
+      _simulatedTransitTime = TimeOfDay.fromDateTime(now);
+      _biWheelRotationAngle = 0.0;
+      _selectedBiWheelPlanet = null;
+      _calculateTransitChart();
+    });
+  }
+
+  String _formatTransitDateTime() {
+    final d = _simulatedTransitDate;
+    final t = _simulatedTransitTime;
+    final hStr = t.hour.toString().padLeft(2, '0');
+    final mStr = t.minute.toString().padLeft(2, '0');
+    const months = [
+      '', 'Ocak', 'Şubat', 'Mart', 'Nisan', 'Mayıs', 'Haziran',
+      'Temmuz', 'Ağustos', 'Eylül', 'Ekim', 'Kasım', 'Aralık'
+    ];
+    return '${d.day} ${months[d.month]} ${d.year} • $hStr:$mStr';
+  }
+
+  Future<void> _pickBiWheelDateTime() async {
+    final pickedDate = await showDatePicker(
+      context: context,
+      initialDate: _simulatedTransitDate,
+      firstDate: DateTime(1900),
+      lastDate: DateTime(2100),
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF00CEC9),
+              onPrimary: Colors.black,
+              surface: Color(0xFF1E1838),
+              onSurface: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedDate == null || !mounted) return;
+
+    final pickedTime = await showTimePicker(
+      context: context,
+      initialTime: _simulatedTransitTime,
+      builder: (context, child) {
+        return Theme(
+          data: ThemeData.dark().copyWith(
+            colorScheme: const ColorScheme.dark(
+              primary: Color(0xFF00CEC9),
+              onPrimary: Colors.black,
+              surface: Color(0xFF1E1838),
+              onSurface: Colors.white,
+            ),
+          ),
+          child: child!,
+        );
+      },
+    );
+
+    if (pickedTime == null || !mounted) return;
+
+    setState(() {
+      _simulatedTransitDate = pickedDate;
+      _simulatedTransitTime = pickedTime;
+      _calculateTransitChart();
+    });
+  }
+
+  List<Map<String, dynamic>> _getBiWheelActiveAspects() {
+    if (_chart == null || _transitChart == null) return [];
+    final List<Map<String, dynamic>> aspects = [];
+    final planetKeys = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
+
+    double getAbsoluteDegree(BirthChartModel chart, String key) {
+      final p = chart.planets[key];
+      if (p == null) return 0.0;
+      final zodiacSigns = ['Koç', 'Boğa', 'İkizler', 'Yengeç', 'Aslan', 'Başak', 'Terazi', 'Akrep', 'Yay', 'Oğlak', 'Kova', 'Balık'];
+      final idx = zodiacSigns.indexOf(p.sign);
+      final sDeg = idx >= 0 ? idx * 30.0 : 0.0;
+      final deg = _parseDegreeFromFormatted(p.formatted);
+      return (sDeg + deg) % 360.0;
+    }
+
+    for (final tKey in planetKeys) {
+      final tDeg = getAbsoluteDegree(_transitChart!, tKey);
+      final tPlanet = _transitChart!.planets[tKey];
+      if (tPlanet == null) continue;
+
+      for (final nKey in planetKeys) {
+        if (_selectedBiWheelPlanet != null && _selectedBiWheelPlanet != tKey && _selectedBiWheelPlanet != nKey) {
+          continue;
+        }
+
+        final nDeg = getAbsoluteDegree(_chart!, nKey);
+        final nPlanet = _chart!.planets[nKey];
+        if (nPlanet == null) continue;
+
+        double diff = (tDeg - nDeg).abs() % 360.0;
+        if (diff > 180.0) diff = 360.0 - diff;
+
+        String? aspectType;
+        String? aspectSymbol;
+        Color? aspectColor;
+        double orb = 0.0;
+
+        if (diff <= 5.0) {
+          aspectType = 'Kavuşum (0°)';
+          aspectSymbol = '☌';
+          aspectColor = const Color(0xFFFFD700);
+          orb = diff;
+        } else if ((diff - 60.0).abs() <= 4.0) {
+          aspectType = 'Sekstil (60°)';
+          aspectSymbol = '✶';
+          aspectColor = const Color(0xFF74B9FF);
+          orb = (diff - 60.0).abs();
+        } else if ((diff - 90.0).abs() <= 5.0) {
+          aspectType = 'Kare (90°)';
+          aspectSymbol = '■';
+          aspectColor = const Color(0xFFFF5252);
+          orb = (diff - 90.0).abs();
+        } else if ((diff - 120.0).abs() <= 5.0) {
+          aspectType = 'Üçgen (120°)';
+          aspectSymbol = '▲';
+          aspectColor = const Color(0xFF55EFC4);
+          orb = (diff - 120.0).abs();
+        } else if ((diff - 180.0).abs() <= 5.0) {
+          aspectType = 'Karşıt (180°)';
+          aspectSymbol = '☍';
+          aspectColor = const Color(0xFFA29BFE);
+          orb = (diff - 180.0).abs();
+        }
+
+        if (aspectType != null) {
+          aspects.add({
+            'transitKey': tKey,
+            'natalKey': nKey,
+            'transitName': _getTurkishPlanetName(tKey),
+            'natalName': _getTurkishPlanetName(nKey),
+            'transitSymbol': _getPlanetSymbol(tKey),
+            'natalSymbol': _getPlanetSymbol(nKey),
+            'transitSign': tPlanet.sign,
+            'natalSign': nPlanet.sign,
+            'aspectType': aspectType,
+            'aspectSymbol': aspectSymbol,
+            'aspectColor': aspectColor,
+            'orb': orb.toStringAsFixed(1),
+          });
+        }
+      }
+    }
+    return aspects;
+  }
+
   // --- 360 Wheel View ---
   Widget _buildWheelView() {
     return SingleChildScrollView(
-      padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 12),
+      padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
       child: Column(
         crossAxisAlignment: CrossAxisAlignment.center,
         children: [
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              color: AppColors.pastelLavender.withValues(alpha: 0.12),
-              borderRadius: BorderRadius.circular(14),
-              border: Border.all(
-                  color: AppColors.pastelLavender.withValues(alpha: 0.3)),
-            ),
-            child: const Row(
-              children: [
-                Icon(Icons.info_outline_rounded,
-                    size: 16, color: AppColors.pastelLavender),
-                SizedBox(width: 8),
-                Expanded(
-                  child: Text(
-                    'Geocentric Placidus 360° Zodyak Çarkı. Yükselen (ASC) 9 yönünde, Tepe Noktası (MC) 12 yönündedir.',
-                    style: TextStyle(fontSize: 11.5, color: Colors.white70),
-                  ),
-                ),
-              ],
-            ),
-          ),
-          const SizedBox(height: 12),
-          ElevatedButton.icon(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: const Color(0xFF00CEC9),
-              foregroundColor: Colors.black,
-              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
-              elevation: 4,
-            ),
-            onPressed: () {
-              Navigator.of(context).push(
-                MaterialPageRoute(
-                  builder: (_) => InteractiveBiWheelModal(natalProfile: widget.profile),
-                ),
-              );
-            },
-            icon: const Icon(Icons.blur_circular_rounded, size: 18),
-            label: const Text(
-              'İnteraktif Çift Çarkı Aç (Solar Fire Zaman Makinesi)',
-              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
-            ),
-          ),
-          const SizedBox(height: 16),
+          // Segmented Switcher: Single Natal Wheel vs Interactive Bi-Wheel
+          _buildWheelModeToggle(),
+          const SizedBox(height: 14),
 
-          // Wheel Canvas
-          // Wheel Canvas
-          LayoutBuilder(
-            builder: (context, constraints) {
-              final canvasSize = constraints.maxWidth.clamp(260.0, 320.0);
-              return Center(
-                child: SizedBox(
-                  width: canvasSize,
-                  height: canvasSize,
-                  child: CustomPaint(
-                    painter: ChartWheelPainter(
-                      planets: _chart!.planets.map((k, v) => MapEntry(k, {
-                            'sign': v.sign,
-                            'degree': _parseDegreeFromFormatted(v.formatted),
-                            'isRetrograde': v.isRetrograde,
-                          })),
-                      ascendantSign: _chart!.risingSign,
-                      ascDegree: _parseDegreeFromFormatted(_chart!.risingFormatted),
-                      mcSign: _chart!.planets['mc']?.sign ?? 'Kova',
-                      mcDegree: _parseDegreeFromFormatted(_chart!.planets['mc']?.formatted ?? '14°30\' Kova'),
+          if (!_isBiWheelActive) ...[
+            _buildSingleWheelContent(),
+          ] else ...[
+            _buildBiWheelContent(),
+          ],
+        ],
+      ),
+    );
+  }
+
+  Widget _buildWheelModeToggle() {
+    return Container(
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: AppColors.surfaceLight,
+        borderRadius: BorderRadius.circular(16),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Row(
+        children: [
+          Expanded(
+            child: InkWell(
+              onTap: () {
+                if (_isBiWheelActive) {
+                  setState(() => _isBiWheelActive = false);
+                }
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  color: !_isBiWheelActive ? AppColors.starlightGold : Colors.transparent,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
+                  child: Text(
+                    '🪐 Tekli Doğum Çarkı',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.bold,
+                      color: !_isBiWheelActive ? Colors.black : Colors.white70,
                     ),
                   ),
                 ),
-              );
-            },
-          ),
-          const SizedBox(height: 16),
-
-          // Legend
-          Container(
-            padding: const EdgeInsets.all(14),
-            decoration: BoxDecoration(
-              color: AppColors.surfaceLight,
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(color: Colors.white10),
-            ),
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                const Text(
-                  'Açı & Aks Göstergeleri',
-                  style: TextStyle(
-                    fontSize: 12,
-                    fontWeight: FontWeight.bold,
-                    color: AppColors.starlightGold,
-                  ),
-                ),
-                const SizedBox(height: 8),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildLegendItem('ASC', 'Yükselen', AppColors.starlightGold),
-                    _buildLegendItem('MC', 'Kariyer', AppColors.pastelMint),
-                    _buildLegendItem('DSC', 'İlişkiler', AppColors.pastelLavender),
-                    _buildLegendItem('IC', 'Kökler', AppColors.pastelBlue),
-                  ],
-                ),
-                const Divider(color: Colors.white10, height: 16),
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceAround,
-                  children: [
-                    _buildLegendItem('▲ 120°', 'Üçgen', AppColors.pastelMint),
-                    _buildLegendItem('■ 90°', 'Kare', AppColors.savageRed),
-                    _buildLegendItem('☍ 180°', 'Karşıt', AppColors.starlightGold),
-                    _buildLegendItem('✶ 60°', 'Sekstil', AppColors.pastelBlue),
-                  ],
-                ),
-              ],
+              ),
             ),
           ),
-          const SizedBox(height: 16),
-
-          // Quick Planet List
-          ..._chart!.planets.entries.map((entry) {
-            final p = entry.value;
-            return Container(
-              margin: const EdgeInsets.only(bottom: 8),
-              child: InkWell(
-                onTap: () => _showPlanetDetailSheet(context, entry.key, p),
-                borderRadius: BorderRadius.circular(12),
-                child: Container(
-                  padding: const EdgeInsets.symmetric(
-                      horizontal: 14, vertical: 10),
-                  decoration: BoxDecoration(
-                    color: const Color(0xFF1A1625),
-                    borderRadius: BorderRadius.circular(12),
-                    border: Border.all(color: Colors.white10),
-                  ),
+          const SizedBox(width: 4),
+          Expanded(
+            child: InkWell(
+              onTap: () {
+                if (!_isBiWheelActive) {
+                  if (_transitChart == null) {
+                    _calculateTransitChart();
+                  }
+                  setState(() => _isBiWheelActive = true);
+                }
+              },
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(vertical: 10),
+                decoration: BoxDecoration(
+                  gradient: _isBiWheelActive
+                      ? const LinearGradient(
+                          colors: [Color(0xFF00CEC9), Color(0xFF6C5CE7)],
+                        )
+                      : null,
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                child: Center(
                   child: Row(
-                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    mainAxisAlignment: MainAxisAlignment.center,
                     children: [
-                      Expanded(
-                        child: Row(
-                          children: [
-                            Text(
-                              _getPlanetSymbol(entry.key),
-                              style: const TextStyle(
-                                fontSize: 16,
-                                color: AppColors.starlightGold,
-                              ),
-                            ),
-                            const SizedBox(width: 8),
-                            Flexible(
-                              child: Text(
-                                _getTurkishPlanetName(entry.key),
-                                maxLines: 1,
-                                overflow: TextOverflow.ellipsis,
-                                style: const TextStyle(
-                                  fontSize: 13,
-                                  fontWeight: FontWeight.bold,
-                                  color: Colors.white,
-                                ),
-                              ),
-                            ),
-                            if (p.isRetrograde) ...[
-                              const SizedBox(width: 6),
-                              Container(
-                                padding: const EdgeInsets.symmetric(
-                                    horizontal: 5, vertical: 1),
-                                decoration: BoxDecoration(
-                                  color: AppColors.savageRed
-                                      .withValues(alpha: 0.2),
-                                  borderRadius: BorderRadius.circular(4),
-                                ),
-                                child: Text(
-                                  AppTranslationService.tr('Rx (Geri)'),
-                                  style: const TextStyle(
-                                    fontSize: 8.5,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.savageRed,
-                                  ),
-                                ),
-                              ),
-                            ],
-                          ],
-                        ),
+                      Icon(
+                        Icons.blur_circular_rounded,
+                        size: 15,
+                        color: _isBiWheelActive ? Colors.white : const Color(0xFF00CEC9),
                       ),
-                      const SizedBox(width: 8),
-                      Row(
-                        mainAxisSize: MainAxisSize.min,
-                        children: [
-                          Text(
-                            '${p.sign} (${p.formatted})',
-                            style: const TextStyle(
-                              fontSize: 11.5,
-                              color: AppColors.textSecondary,
-                            ),
-                          ),
-                          const SizedBox(width: 4),
-                          const Icon(Icons.arrow_forward_ios_rounded,
-                              size: 11, color: AppColors.textMuted),
-                        ],
+                      const SizedBox(width: 6),
+                      Text(
+                        '🔭 Canlı Çift Çark (Transit)',
+                        style: TextStyle(
+                          fontSize: 12,
+                          fontWeight: FontWeight.bold,
+                          color: _isBiWheelActive ? Colors.white : Colors.white70,
+                        ),
                       ),
                     ],
                   ),
                 ),
               ),
-            );
-          }),
+            ),
+          ),
         ],
+      ),
+    );
+  }
+
+  Widget _buildSingleWheelContent() {
+    return Column(
+      children: [
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: AppColors.pastelLavender.withValues(alpha: 0.12),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(
+                color: AppColors.pastelLavender.withValues(alpha: 0.3)),
+          ),
+          child: const Row(
+            children: [
+              Icon(Icons.info_outline_rounded,
+                  size: 16, color: AppColors.pastelLavender),
+              SizedBox(width: 8),
+              Expanded(
+                child: Text(
+                  'Geocentric Placidus 360° Zodyak Çarkı. Yükselen (ASC) 9 yönünde, Tepe Noktası (MC) 12 yönündedir.',
+                  style: TextStyle(fontSize: 11.5, color: Colors.white70),
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Wheel Canvas
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final canvasSize = constraints.maxWidth.clamp(260.0, 320.0);
+            return Center(
+              child: SizedBox(
+                width: canvasSize,
+                height: canvasSize,
+                child: CustomPaint(
+                  painter: ChartWheelPainter(
+                    planets: _chart!.planets.map((k, v) => MapEntry(k, {
+                          'sign': v.sign,
+                          'degree': _parseDegreeFromFormatted(v.formatted),
+                          'isRetrograde': v.isRetrograde,
+                        })),
+                    ascendantSign: _chart!.risingSign,
+                    ascDegree: _parseDegreeFromFormatted(_chart!.risingFormatted),
+                    mcSign: _chart!.planets['mc']?.sign ?? 'Kova',
+                    mcDegree: _parseDegreeFromFormatted(_chart!.planets['mc']?.formatted ?? '14°30\' Kova'),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 16),
+
+        // Legend
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceLight,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white10),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Text(
+                'Açı & Aks Göstergeleri',
+                style: TextStyle(
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                  color: AppColors.starlightGold,
+                ),
+              ),
+              const SizedBox(height: 8),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildLegendItem('ASC', 'Yükselen', AppColors.starlightGold),
+                  _buildLegendItem('MC', 'Kariyer', AppColors.pastelMint),
+                  _buildLegendItem('DSC', 'İlişkiler', AppColors.pastelLavender),
+                  _buildLegendItem('IC', 'Kökler', AppColors.pastelBlue),
+                ],
+              ),
+              const Divider(color: Colors.white10, height: 16),
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceAround,
+                children: [
+                  _buildLegendItem('▲ 120°', 'Üçgen', AppColors.pastelMint),
+                  _buildLegendItem('■ 90°', 'Kare', AppColors.savageRed),
+                  _buildLegendItem('☍ 180°', 'Karşıt', AppColors.starlightGold),
+                  _buildLegendItem('✶ 60°', 'Sekstil', AppColors.pastelBlue),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 16),
+
+        // Quick Planet List
+        ..._chart!.planets.entries.map((entry) {
+          final p = entry.value;
+          return Container(
+            margin: const EdgeInsets.only(bottom: 8),
+            child: InkWell(
+              onTap: () => _showPlanetDetailSheet(context, entry.key, p),
+              borderRadius: BorderRadius.circular(12),
+              child: Container(
+                padding: const EdgeInsets.symmetric(
+                    horizontal: 14, vertical: 10),
+                decoration: BoxDecoration(
+                  color: const Color(0xFF1A1625),
+                  borderRadius: BorderRadius.circular(12),
+                  border: Border.all(color: Colors.white10),
+                ),
+                child: Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    Expanded(
+                      child: Row(
+                        children: [
+                          Text(
+                            _getPlanetSymbol(entry.key),
+                            style: const TextStyle(
+                              fontSize: 16,
+                              color: AppColors.starlightGold,
+                            ),
+                          ),
+                          const SizedBox(width: 8),
+                          Flexible(
+                            child: Text(
+                              _getTurkishPlanetName(entry.key),
+                              maxLines: 1,
+                              overflow: TextOverflow.ellipsis,
+                              style: const TextStyle(
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ),
+                          if (p.isRetrograde) ...[
+                            const SizedBox(width: 6),
+                            Container(
+                              padding: const EdgeInsets.symmetric(
+                                  horizontal: 5, vertical: 1),
+                              decoration: BoxDecoration(
+                                color: AppColors.savageRed
+                                    .withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(4),
+                              ),
+                              child: Text(
+                                AppTranslationService.tr('Rx (Geri)'),
+                                style: const TextStyle(
+                                  fontSize: 8.5,
+                                  fontWeight: FontWeight.bold,
+                                  color: AppColors.savageRed,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ],
+                      ),
+                    ),
+                    const SizedBox(width: 8),
+                    Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        Text(
+                          '${p.sign} (${p.formatted})',
+                          style: const TextStyle(
+                            fontSize: 11.5,
+                            color: AppColors.textSecondary,
+                          ),
+                        ),
+                        const SizedBox(width: 4),
+                        const Icon(Icons.arrow_forward_ios_rounded,
+                            size: 11, color: AppColors.textMuted),
+                      ],
+                    ),
+                  ],
+                ),
+              ),
+            ),
+          );
+        }),
+      ],
+    );
+  }
+
+  Widget _buildBiWheelContent() {
+    if (_transitChart == null) {
+      _calculateTransitChart();
+    }
+    final activeAspects = _getBiWheelActiveAspects();
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.stretch,
+      children: [
+        // 1. Dual Wheel Info Badge
+        Container(
+          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFF00CEC9).withValues(alpha: 0.15),
+                AppColors.starlightGold.withValues(alpha: 0.10),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(14),
+            border: Border.all(color: const Color(0xFF00CEC9).withValues(alpha: 0.35)),
+          ),
+          child: Row(
+            children: [
+              const Icon(Icons.layers_rounded, color: Color(0xFF00CEC9), size: 20),
+              const SizedBox(width: 10),
+              Expanded(
+                child: Column(
+                  crossAxisAlignment: CrossAxisAlignment.start,
+                  children: [
+                    Row(
+                      children: [
+                        Container(
+                          width: 8, height: 8,
+                          decoration: const BoxDecoration(color: Color(0xFF00CEC9), shape: BoxShape.circle),
+                        ),
+                        const SizedBox(width: 5),
+                        const Text('Dış Çark: Canlı Transitler', style: TextStyle(color: Color(0xFF00CEC9), fontWeight: FontWeight.bold, fontSize: 11)),
+                        const SizedBox(width: 12),
+                        Container(
+                          width: 8, height: 8,
+                          decoration: const BoxDecoration(color: AppColors.starlightGold, shape: BoxShape.circle),
+                        ),
+                        const SizedBox(width: 5),
+                        const Text('İç Çark: Doğum (Natal)', style: TextStyle(color: AppColors.starlightGold, fontWeight: FontWeight.bold, fontSize: 11)),
+                      ],
+                    ),
+                    const SizedBox(height: 3),
+                    const Text(
+                      'Solar Fire standardında çift katmanlı efemeris çarkı. Zaman makinesiyle gökyüzünü ileri/geri yürütün.',
+                      style: TextStyle(fontSize: 10.5, color: Colors.white70),
+                    ),
+                  ],
+                ),
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // 2. Simulated Date & Time Bar + Steppers
+        Container(
+          padding: const EdgeInsets.all(12),
+          decoration: BoxDecoration(
+            color: const Color(0xFF161226),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white12),
+          ),
+          child: Column(
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  InkWell(
+                    onTap: _pickBiWheelDateTime,
+                    borderRadius: BorderRadius.circular(10),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.08),
+                        borderRadius: BorderRadius.circular(10),
+                        border: Border.all(color: const Color(0xFF00CEC9).withValues(alpha: 0.4)),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.event_rounded, size: 16, color: Color(0xFF00CEC9)),
+                          const SizedBox(width: 6),
+                          Text(
+                            _formatTransitDateTime(),
+                            style: const TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 12.5,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(Icons.arrow_drop_down_rounded, size: 18, color: Colors.white54),
+                        ],
+                      ),
+                    ),
+                  ),
+                  Row(
+                    children: [
+                      InkWell(
+                        onTap: _resetBiWheelToNow,
+                        borderRadius: BorderRadius.circular(8),
+                        child: Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 5),
+                          decoration: BoxDecoration(
+                            color: AppColors.starlightGold.withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(8),
+                            border: Border.all(color: AppColors.starlightGold.withValues(alpha: 0.5)),
+                          ),
+                          child: const Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Icon(Icons.bolt_rounded, size: 13, color: AppColors.starlightGold),
+                              SizedBox(width: 3),
+                              Text(
+                                'ŞİMDİ',
+                                style: TextStyle(
+                                  color: AppColors.starlightGold,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 10.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ),
+                      const SizedBox(width: 6),
+                      IconButton(
+                        icon: const Icon(Icons.fullscreen_rounded, color: Colors.white70, size: 20),
+                        tooltip: 'Tam Ekran Aç',
+                        constraints: const BoxConstraints(),
+                        padding: EdgeInsets.zero,
+                        onPressed: () {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (_) => InteractiveBiWheelModal(natalProfile: widget.profile),
+                            ),
+                          );
+                        },
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              // Stepper buttons
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  _buildBiWheelStepButton('-1 Ay', () => _stepBiWheelTime(months: -1)),
+                  _buildBiWheelStepButton('-1 G', () => _stepBiWheelTime(days: -1)),
+                  _buildBiWheelStepButton('-1 S', () => _stepBiWheelTime(hours: -1)),
+                  Container(height: 16, width: 1, color: Colors.white24),
+                  _buildBiWheelStepButton('+1 S', () => _stepBiWheelTime(hours: 1)),
+                  _buildBiWheelStepButton('+1 G', () => _stepBiWheelTime(days: 1)),
+                  _buildBiWheelStepButton('+1 Ay', () => _stepBiWheelTime(months: 1)),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // 3. Dual Wheel Interactive Canvas with Drag Rotation
+        LayoutBuilder(
+          builder: (context, constraints) {
+            final canvasSize = constraints.maxWidth.clamp(280.0, 340.0);
+            return GestureDetector(
+              onPanUpdate: (details) {
+                setState(() {
+                  _biWheelRotationAngle += details.delta.dx * 0.01;
+                });
+              },
+              child: Center(
+                child: SizedBox(
+                  width: canvasSize,
+                  height: canvasSize,
+                  child: CustomPaint(
+                    painter: BiWheelPainter(
+                      natalChart: _chart!,
+                      outerChart: _transitChart!,
+                      selectedPlanet: _selectedBiWheelPlanet,
+                      rotationOffsetRad: _biWheelRotationAngle,
+                      onAspectFound: (_) {},
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 6),
+
+        // Rotate gesture caption & reset
+        Row(
+          mainAxisAlignment: MainAxisAlignment.center,
+          children: [
+            const Icon(Icons.touch_app_outlined, size: 14, color: Colors.white38),
+            const SizedBox(width: 4),
+            const Text(
+              'Çarkı parmağınızla 360° serbestçe döndürebilirsiniz',
+              style: TextStyle(fontSize: 11, color: Colors.white38),
+            ),
+            if (_biWheelRotationAngle != 0.0) ...[
+              const SizedBox(width: 8),
+              InkWell(
+                onTap: () => setState(() => _biWheelRotationAngle = 0.0),
+                child: const Text(
+                  '↺ Sıfırla',
+                  style: TextStyle(
+                    fontSize: 11,
+                    color: Color(0xFF00CEC9),
+                    fontWeight: FontWeight.bold,
+                  ),
+                ),
+              ),
+            ],
+          ],
+        ),
+        const SizedBox(height: 14),
+
+        // 4. Aspect Ray Filter Chips
+        Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Açı Işınlarını Odakla (Tıklayın):',
+              style: TextStyle(
+                fontSize: 12,
+                fontWeight: FontWeight.bold,
+                color: AppColors.starlightGold,
+              ),
+            ),
+            const SizedBox(height: 8),
+            SingleChildScrollView(
+              scrollDirection: Axis.horizontal,
+              physics: const BouncingScrollPhysics(),
+              child: Row(
+                children: [
+                  _buildBiWheelFilterChip(null, 'Tümü'),
+                  ...['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'].map((k) {
+                    return _buildBiWheelFilterChip(
+                      k,
+                      '${_getPlanetSymbol(k)} ${_getTurkishPlanetName(k)}',
+                    );
+                  }),
+                ],
+              ),
+            ),
+          ],
+        ),
+        const SizedBox(height: 14),
+
+        // 5. Active Transit-to-Natal Aspects Feed
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: AppColors.surfaceLight,
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white12),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    _selectedBiWheelPlanet != null
+                        ? '${_getTurkishPlanetName(_selectedBiWheelPlanet!)} Transit Açıları'
+                        : 'Aktif Transit - Doğum Açıları',
+                    style: const TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.bold,
+                      color: AppColors.starlightGold,
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF00CEC9).withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Text(
+                      '${activeAspects.length} Açı',
+                      style: const TextStyle(
+                        fontSize: 11,
+                        color: Color(0xFF00CEC9),
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              if (activeAspects.isEmpty) ...[
+                const Padding(
+                  padding: EdgeInsets.symmetric(vertical: 8),
+                  child: Center(
+                    child: Text(
+                      'Seçilen kriterde 5° orp aralığında majör transit açı bulunamadı.',
+                      style: TextStyle(fontSize: 11.5, color: Colors.white54),
+                    ),
+                  ),
+                ),
+              ] else ...[
+                ...activeAspects.map((asp) {
+                  final Color aColor = asp['aspectColor'] as Color? ?? Colors.cyan;
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 8),
+                    padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF141022),
+                      borderRadius: BorderRadius.circular(10),
+                      border: Border.all(color: aColor.withValues(alpha: 0.35)),
+                    ),
+                    child: Row(
+                      children: [
+                        Container(
+                          width: 26, height: 26,
+                          decoration: BoxDecoration(
+                            color: aColor.withValues(alpha: 0.18),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Center(
+                            child: Text(
+                              asp['aspectSymbol'] as String,
+                              style: TextStyle(
+                                color: aColor,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ),
+                        const SizedBox(width: 10),
+                        Expanded(
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                'Transit ${asp['transitSymbol']} ${asp['transitName']} (${asp['transitSign']}) ${asp['aspectSymbol']} Doğum ${asp['natalSymbol']} ${asp['natalName']} (${asp['natalSign']})',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              const SizedBox(height: 2),
+                              Text(
+                                '${asp['aspectType']} • Orp: ${asp['orb']}°',
+                                style: TextStyle(
+                                  color: aColor,
+                                  fontSize: 10.5,
+                                ),
+                              ),
+                            ],
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                }),
+              ],
+            ],
+          ),
+        ),
+        const SizedBox(height: 14),
+
+        // 6. Comparative Planetary Coordinates (Natal vs Transit)
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF141022),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: Colors.white10),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              const Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  Text(
+                    'Gezegen',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Colors.white60),
+                  ),
+                  Text(
+                    'Doğum (İç)',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: AppColors.starlightGold),
+                  ),
+                  Text(
+                    'Transit (Dış)',
+                    style: TextStyle(fontSize: 11, fontWeight: FontWeight.bold, color: Color(0xFF00CEC9)),
+                  ),
+                ],
+              ),
+              const Divider(color: Colors.white12, height: 14),
+              ...['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'].map((k) {
+                final np = _chart!.planets[k];
+                final tp = _transitChart!.planets[k];
+                return Padding(
+                  padding: const EdgeInsets.symmetric(vertical: 4),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Row(
+                        children: [
+                          Text(_getPlanetSymbol(k), style: const TextStyle(color: Colors.white, fontSize: 13)),
+                          const SizedBox(width: 6),
+                          Text(_getTurkishPlanetName(k), style: const TextStyle(color: Colors.white, fontSize: 11.5)),
+                        ],
+                      ),
+                      Text(
+                        np != null ? '${np.sign} ${np.formatted}' : '—',
+                        style: const TextStyle(color: AppColors.starlightGold, fontSize: 11),
+                      ),
+                      Text(
+                        tp != null ? '${tp.sign} ${tp.formatted}' : '—',
+                        style: const TextStyle(color: Color(0xFF00CEC9), fontSize: 11),
+                      ),
+                    ],
+                  ),
+                );
+              }),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildBiWheelStepButton(String label, VoidCallback onPressed) {
+    return InkWell(
+      onTap: onPressed,
+      borderRadius: BorderRadius.circular(8),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 6),
+        decoration: BoxDecoration(
+          color: Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(8),
+          border: Border.all(color: Colors.white10),
+        ),
+        child: Text(
+          label,
+          style: const TextStyle(
+            color: Colors.white70,
+            fontSize: 11,
+            fontWeight: FontWeight.bold,
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildBiWheelFilterChip(String? planetKey, String label) {
+    final isSelected = _selectedBiWheelPlanet == planetKey;
+    return Padding(
+      padding: const EdgeInsets.only(right: 6),
+      child: InkWell(
+        onTap: () {
+          setState(() {
+            _selectedBiWheelPlanet = isSelected ? null : planetKey;
+          });
+        },
+        borderRadius: BorderRadius.circular(10),
+        child: Container(
+          padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+          decoration: BoxDecoration(
+            color: isSelected ? const Color(0xFF00CEC9) : Colors.white.withValues(alpha: 0.06),
+            borderRadius: BorderRadius.circular(10),
+            border: Border.all(
+              color: isSelected ? const Color(0xFF00CEC9) : Colors.white12,
+            ),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              color: isSelected ? Colors.black : Colors.white70,
+              fontSize: 11,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+            ),
+          ),
+        ),
       ),
     );
   }
