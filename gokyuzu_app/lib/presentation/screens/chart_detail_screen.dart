@@ -18,6 +18,7 @@ import '../../data/services/ad_service.dart';
 import 'aspects_screen.dart';
 import '../widgets/eclipses_academy_view.dart';
 import '../../data/services/app_translation_service.dart';
+import '../widgets/interactive_bi_wheel_modal.dart';
 
 class ChartDetailScreen extends StatefulWidget {
   final UserProfile profile;
@@ -663,6 +664,28 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                   ),
                 ),
               ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: const Color(0xFF00CEC9),
+              foregroundColor: Colors.black,
+              padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 10),
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(12)),
+              elevation: 4,
+            ),
+            onPressed: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => InteractiveBiWheelModal(natalProfile: widget.profile),
+                ),
+              );
+            },
+            icon: const Icon(Icons.blur_circular_rounded, size: 18),
+            label: const Text(
+              'İnteraktif Çift Çarkı Aç (Solar Fire Zaman Makinesi)',
+              style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12),
             ),
           ),
           const SizedBox(height: 16),

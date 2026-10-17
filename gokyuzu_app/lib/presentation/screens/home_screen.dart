@@ -36,6 +36,9 @@ import '../widgets/cosmic_compass_modal.dart';
 import '../widgets/referral_modal.dart';
 import '../widgets/birthday_solar_return_modal.dart';
 import '../widgets/cosmic_frequencies_modal.dart';
+import '../../data/services/active_profile_service.dart';
+import '../widgets/active_profile_bar.dart';
+import '../widgets/interactive_bi_wheel_modal.dart';
 
 class HomeScreen extends StatefulWidget {
   final UserProfile profile;
@@ -100,13 +103,29 @@ class _HomeScreenState extends State<HomeScreen> {
     }
   }
 
+  UserProfile get _effectiveProfile => ActiveProfileService.getEffectiveProfile(widget.profile);
+
   @override
   void initState() {
     super.initState();
+    ActiveProfileService.activeProfileNotifier.addListener(_onActiveProfileChanged);
     _checkVipStatus();
     _fetchDailyHoroscope();
     _initNotifications();
     _checkBirthdayCelebration();
+  }
+
+  @override
+  void dispose() {
+    ActiveProfileService.activeProfileNotifier.removeListener(_onActiveProfileChanged);
+    super.dispose();
+  }
+
+  void _onActiveProfileChanged() {
+    if (mounted) {
+      setState(() {});
+      _fetchDailyHoroscope();
+    }
   }
 
   void _checkBirthdayCelebration() {
@@ -504,15 +523,16 @@ class _HomeScreenState extends State<HomeScreen> {
 
   Future<void> _fetchDailyHoroscope() async {
     try {
+      final prof = _effectiveProfile;
       final liveChart = AstrologyEngine.calculateChart(
-        name: widget.profile.name,
-        dateStr: widget.profile.birthDate,
-        timeStr: widget.profile.birthTime,
-        city: widget.profile.birthCity,
-        country: widget.profile.birthCountry,
+        name: prof.name,
+        dateStr: prof.birthDate,
+        timeStr: prof.birthTime,
+        city: prof.birthCity,
+        country: prof.birthCountry,
       );
       final horoscope = await ApiService.getDailyHoroscope(
-        name: widget.profile.name,
+        name: prof.name,
         chart: {
           'sun': liveChart.sunSign,
           'moon': liveChart.moonSign,
@@ -691,7 +711,7 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                             const SizedBox(height: 2),
                             Text(
-                              '${AppTranslationService.tr('Merhaba')}, ${_capitalize(widget.profile.name)}',
+                              '${AppTranslationService.tr('Merhaba')}, ${_capitalize(_effectiveProfile.name)}',
                               maxLines: 1,
                               overflow: TextOverflow.ellipsis,
                               style: Theme.of(context)
@@ -854,6 +874,38 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 16),
 
+              // VIP Platinum Aktif Profil Seçici (Context Switcher)
+              ActiveProfileBar(
+                mainProfile: widget.profile,
+                onProfileChanged: () {
+                  setState(() {});
+                  _fetchDailyHoroscope();
+                },
+              ),
+              const SizedBox(height: 8),
+
+              // 🔭 Canlı İnteraktif Çift Çark (Solar Fire Bi-Wheel)
+              _buildCosmicActionCard(
+                iconText: '🔭',
+                title: AppTranslationService.tr('İnteraktif Çift Çark (Bi-Wheel)'),
+                subtitle: AppTranslationService.tr('Natal & Canlı Transitler • Zaman Makinesi'),
+                badgeText: 'SOLAR FIRE',
+                badgeColor: const Color(0xFF00CEC9),
+                gradientColors: [
+                  const Color(0xFF00CEC9).withValues(alpha: 0.20),
+                  const Color(0xFF6C5CE7).withValues(alpha: 0.16),
+                ],
+                borderColor: const Color(0xFF00CEC9).withValues(alpha: 0.5),
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (_) => InteractiveBiWheelModal(natalProfile: _effectiveProfile),
+                    ),
+                  );
+                },
+              ),
+              const SizedBox(height: 12),
+
               // Kozmik Sezon & Bayramlar Canlı Banner'ı (Sadece Özel Günlerde Otomatik Açılır)
               ValueListenableBuilder<CosmicSeason>(
                 valueListenable: CosmicThemeService.seasonNotifier,
@@ -918,11 +970,11 @@ class _HomeScreenState extends State<HomeScreen> {
               Builder(
                 builder: (context) {
                   final liveChart = AstrologyEngine.calculateChart(
-                    name: widget.profile.name,
-                    dateStr: widget.profile.birthDate,
-                    timeStr: widget.profile.birthTime,
-                    city: widget.profile.birthCity,
-                    country: widget.profile.birthCountry,
+                    name: _effectiveProfile.name,
+                    dateStr: _effectiveProfile.birthDate,
+                    timeStr: _effectiveProfile.birthTime,
+                    city: _effectiveProfile.birthCity,
+                    country: _effectiveProfile.birthCountry,
                   );
                   final elemScores = liveChart.elements;
                   final fireScore = elemScores['Ateş'] ?? 0;
@@ -1534,7 +1586,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 24),
 
               // Astro Bülten Section (12 Burç Yorumları, Aylık Takvim & Haftalık Özet)
-              AstroBulletinSection(profile: widget.profile),
+              AstroBulletinSection(profile: _effectiveProfile),
               const SizedBox(height: 24),
 
               // Quick Actions
@@ -1549,7 +1601,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   Navigator.of(context).push(
                     MaterialPageRoute(
                       builder: (_) =>
-                          ChartDetailScreen(profile: widget.profile),
+                          ChartDetailScreen(profile: _effectiveProfile),
                     ),
                   );
                 },
@@ -1708,7 +1760,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 onTap: () {
                   Navigator.of(context).push(
                     MaterialPageRoute(
-                      builder: (_) => NumerologyScreen(profile: widget.profile),
+                      builder: (_) => NumerologyScreen(profile: _effectiveProfile),
                     ),
                   );
                 },
@@ -3366,7 +3418,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => PersonalEclipsesCounselingSheet(profile: widget.profile),
+      builder: (ctx) => PersonalEclipsesCounselingSheet(profile: _effectiveProfile),
     );
   }
 
@@ -3375,7 +3427,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => SynastryModalContent(profile: widget.profile),
+      builder: (ctx) => SynastryModalContent(profile: _effectiveProfile),
     );
   }
 
@@ -3384,7 +3436,7 @@ class _HomeScreenState extends State<HomeScreen> {
       context: context,
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
-      builder: (ctx) => SolarReturnModalContent(profile: widget.profile),
+      builder: (ctx) => SolarReturnModalContent(profile: _effectiveProfile),
     );
   }
 
@@ -3394,7 +3446,7 @@ class _HomeScreenState extends State<HomeScreen> {
       isScrollControlled: true,
       backgroundColor: Colors.transparent,
       builder: (ctx) => RectificationModalContent(
-        profile: widget.profile,
+        profile: _effectiveProfile,
         onTimeSaved: () async {
           final updated = await StorageService.getProfile();
           if (updated != null && mounted) {
@@ -3436,7 +3488,7 @@ class _HomeScreenState extends State<HomeScreen> {
 
     setState(() => _isGeneratingPdf = true);
     try {
-      final file = await PdfReportService.generate10PageBooklet(profile: widget.profile);
+      final file = await PdfReportService.generate10PageBooklet(profile: _effectiveProfile);
       await prefs.setInt(quotaKey, usedCount + 1);
 
       if (mounted) {

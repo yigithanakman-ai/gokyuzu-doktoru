@@ -5,6 +5,7 @@ import '../../data/services/astrology_engine.dart';
 import '../../data/services/profile_archive_service.dart';
 import '../../data/services/storage_service.dart';
 import '../../data/services/world_cities_service.dart';
+import '../../data/services/active_profile_service.dart';
 import 'chart_detail_screen.dart';
 import 'cosmic_notes_screen.dart';
 import '../../data/services/app_translation_service.dart';
@@ -851,6 +852,50 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                     ],
                   ),
                 ],
+              ),
+              const SizedBox(height: 10),
+              InkWell(
+                onTap: () async {
+                  final mainProf = await StorageService.getProfile();
+                  if (!mounted) return;
+                  if (mainProf != null) {
+                    final switched = await ActiveProfileService.switchProfile(
+                      context: context,
+                      targetSavedProfile: profile,
+                      mainProfile: mainProf,
+                    );
+                    if (switched && mounted) {
+                      setState(() {});
+                    }
+                  }
+                },
+                borderRadius: BorderRadius.circular(10),
+                child: Container(
+                  width: double.infinity,
+                  padding: const EdgeInsets.symmetric(vertical: 8),
+                  decoration: BoxDecoration(
+                    color: AppColors.starlightGold.withValues(alpha: 0.12),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: AppColors.starlightGold.withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      const Icon(Icons.flash_on_rounded, size: 14, color: AppColors.starlightGold),
+                      const SizedBox(width: 6),
+                      Text(
+                        AppTranslationService.tr('Bu Haritayı Uygulamaya Yansıt (VIP)'),
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.starlightGold,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
             ],
           ),

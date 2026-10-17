@@ -118,17 +118,25 @@ Müşterimiz Nazlı Gizem Hanım'ın geri bildirimi doğrultusunda tasarlanan ve
 2. Doğum saati UTC'ye çevrilirken yapılacak **1 saatlik bir yaz/kış saati (DST) veya saat dilimi hatası**, haritayı Dünya üzerinde **15 boylam derecesi (yaklaşık 1.600 kilometre)** kaydırır!
 3. Şu an `world_cities_service.dart` içinde Türkiye'nin 81 ili ve dünyanın belli başlı metropolleri kayıtlıdır. Dünyanın her köyü, ilçesi ve kasabası için küresel bir Geocoding API (Google Maps veya OpenStreetMap Nominatim) ve IANA Saat Dilimi Motoru entegre edilmeden astrokartografi sunulamaz; sunulursa profesyonel astroloji dünyasında güven kaybı yaşanır.
 
-### Geocoding & Atlas Çözüm Planı (Aşama 2):
-1. **OpenStreetMap (Nominatim & Photon) Entegrasyonu:** Tamamen ücretsiz, 200+ ülkedeki tüm ilçe, kasaba ve köyleri nokta atışı getiren açık kaynak arama motoru.
-2. **Google Maps Geocoding API Opsiyonu:** Yüksek hacimli ve kurumsal hassasiyette alternatif.
-3. **IANA Timezone Veritabanı:** Doğum tarihinin yaz/kış saatini (DST kanunlarını) hatasız hesaplama.
-4. *Karar:* Astrokartografi bu altyapı tam oturana kadar **beklemeye alınmıştır**. Öncelik, harita API'sine ihtiyaç duymayan ve doğrudan matematiksel efemerisle çalışan **İnteraktif Çift Çark (Bi-Wheel)** ve **VIP Platinum Çoklu Profil Yönetimi**ndedir.
+### Geocoding & Atlas Çözüm Planı (Patron'un Kararı):
+* **Seçilen Yöntem: Seçenek 2 & 3 (Cihaz İçi Gömülü Atlas + OpenStreetMap / Photon Geocoding)**
+* **Kural:** Kesinlikle ücretsiz açık kaynaklı servisler ve yerel gömülü SQLite/JSON veritabanı kullanılacaktır. Sıfır ücretli servis, Google Maps veya üçüncü parti fatura kesinlikle kabul edilmeyecektir.
+* **Durum:** Ön altyapı `world_cities_service.dart` içinde offline veritabanı ve Photon arama motoruyla hazır beklemektedir.
 
 ---
 
-## 🎯 6. Şu Anki Teknik Durum & Bir Sonraki Adım
+## 🎯 6. Şu Anki Teknik Durum & Tamamlanan Devrimler (18 Ekim 2026)
 
-1. **Mağaza Yayını:** `v1.0.4+5` Google Play Console Kapalı Testte hızlı kalite kontrolünden geçti ve incelemededir.
-2. **Yerel Dosyalar:** Masaüstünde resmi `gokyuzu-doktoru-v1.0.4.aab` ve `gokyuzu-doktoru-v1.0.4.apk` mevcuttur.
-3. **Kod Sağlığı:** `dart analyze lib` 0 Hata ile tertemizdir.
-4. **Sıradaki Kodlama Görevi:** VIP Platinum Aktif Profil Seçici mekanizmasını ve +1 hediye PDF teşvik sheet'ini hazırlamak.
+1. **Mağaza Yayını:** `v1.0.4+5` Google Play Console Kapalı Testte incelemededir.
+2. **VIP Platinum Çoklu Profil Seçici (4/1) — [TAMAMLANDI]:**
+   * `ActiveProfileService` ve `ActiveProfileBar` entegre edildi.
+   * HomeScreen'den veya Arşiv'den çocuk, eş veya danışan seçildiğinde; tüm uygulamanın öngörüleri (Solar Return, Progress, Firdaria, Numeroloji) ve 10 Sayfalık Kapsamlı PDF kitapçığı o kişi adına üretilmektedir.
+   * Platinum olmayan kullanıcılara `PlatinumMultiProfileUpsellSheet` üzerinden **"+1 Ekstra Kapsamlı PDF Raporu Hediye!"** teşviki sunulmaktadır.
+3. **İnteraktif Çift Çark & Zaman Makinesi (4/2) — [TAMAMLANDI]:**
+   * `InteractiveBiWheelModal` ve `BiWheelPainter` devreye alındı.
+   * İç Çark: Doğum (Natal) Haritası.
+   * Dış Çark: Anlık Transitler veya Sinastri Partneri.
+   * Solar Fire Zaman Makinesi: `-1 Ay`, `-1 Gün`, `-1 Saat`, `ŞİMDİ`, `+1 Saat`, `+1 Gün`, `+1 Ay` butonlarıyla transit gezegenlerin hareketini gerçek zamanlı izleme.
+   * Gezegen dokunulduğunda parlayan GPU vektörel açı ışınları (Kavuşum, Sekstil, Kare, Üçgen, Karşıt).
+   * HomeScreen'deki ana vitrin kartından ve `ChartDetailScreen` zodyak çarkı sekmesinden tek tıkla açılabilmektedir.
+4. **Kod Sağlığı:** `dart analyze lib` 0 Hata / 0 Uyarı ile tertemizdir.
