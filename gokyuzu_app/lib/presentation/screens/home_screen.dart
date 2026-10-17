@@ -29,6 +29,8 @@ import '../widgets/lunar_return_modal.dart';
 import '../widgets/rectification_modal.dart';
 import '../widgets/astro_bulletin_section.dart';
 import '../widgets/personal_eclipses_counseling_sheet.dart';
+import '../../data/services/cosmic_theme_service.dart';
+import '../widgets/cosmic_story_share_modal.dart';
 
 class HomeScreen extends StatefulWidget {
   final UserProfile profile;
@@ -272,6 +274,210 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
+  void _showCosmicSeasonPickerModal(BuildContext context) {
+    showModalBottomSheet(
+      context: context,
+      backgroundColor: const Color(0xFF13101E),
+      shape: const RoundedRectangleBorder(
+        borderRadius: BorderRadius.vertical(top: Radius.circular(24)),
+        side: BorderSide(color: AppColors.starlightGold, width: 1.2),
+      ),
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            final activeSeason = CosmicThemeService.currentSeason;
+            return SafeArea(
+              child: Padding(
+                padding: const EdgeInsets.symmetric(horizontal: 20, vertical: 16),
+                child: SingleChildScrollView(
+                  child: Column(
+                    mainAxisSize: MainAxisSize.min,
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Center(
+                        child: Container(
+                          width: 40,
+                          height: 4,
+                          margin: const EdgeInsets.only(bottom: 16),
+                          decoration: BoxDecoration(
+                            color: Colors.white24,
+                            borderRadius: BorderRadius.circular(2),
+                          ),
+                        ),
+                      ),
+                      Row(
+                        children: [
+                          Container(
+                            padding: const EdgeInsets.all(8),
+                            decoration: BoxDecoration(
+                              color: AppColors.starlightGold.withValues(alpha: 0.15),
+                              shape: BoxShape.circle,
+                            ),
+                            child: const Text('✨', style: TextStyle(fontSize: 18)),
+                          ),
+                          const SizedBox(width: 10),
+                          const Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Text(
+                                  'Kozmik Sezon & Bayram Teması',
+                                  style: TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 16,
+                                    fontWeight: FontWeight.bold,
+                                  ),
+                                ),
+                                Text(
+                                  'Uygulama atmosferi ve gezegen kostümlerini test edin',
+                                  style: TextStyle(color: Colors.white54, fontSize: 11),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
+                      ),
+                      const SizedBox(height: 16),
+                      _buildSeasonOptionTile(
+                        ctx,
+                        title: 'Otomatik Takvim (Sıfır Efor)',
+                        subtitle: 'Tarihe göre bayram ve ekinoksları otomatik uygular',
+                        emoji: '⚡',
+                        season: null,
+                        isSelected: CosmicThemeService.currentSeason == CosmicSeason.standard,
+                      ),
+                      _buildSeasonOptionTile(
+                        ctx,
+                        title: 'Cadılar Bayramı (Halloween Demosu)',
+                        subtitle: 'Balkabakları, cadı şapkası, yarasalar ve mistik mor/turuncu',
+                        emoji: '🎃',
+                        season: CosmicSeason.halloween,
+                        isSelected: activeSeason == CosmicSeason.halloween,
+                        badgeText: 'CANLI DEMO',
+                      ),
+                      _buildSeasonOptionTile(
+                        ctx,
+                        title: 'Yeni Yıl & Kış Gündönümü',
+                        subtitle: 'Altın kraliyet tacı, kar taneleri, hediye kutuları ve ışıltı',
+                        emoji: '🎄',
+                        season: CosmicSeason.newYear,
+                        isSelected: activeSeason == CosmicSeason.newYear,
+                      ),
+                      _buildSeasonOptionTile(
+                        ctx,
+                        title: 'Sevgililer Günü & Venüs Kapısı',
+                        subtitle: 'Aşk kalpleri, kırmızı güller ve ruh eşi frekansı',
+                        emoji: '💖',
+                        season: CosmicSeason.valentines,
+                        isSelected: activeSeason == CosmicSeason.valentines,
+                      ),
+                      _buildSeasonOptionTile(
+                        ctx,
+                        title: 'İlkbahar Ekinoksu & 0° Koç Yeni Yılı',
+                        subtitle: 'Bahar uyanışı, taze filizler ve canlandırıcı yeşil aura',
+                        emoji: '🌸',
+                        season: CosmicSeason.springEquinox,
+                        isSelected: activeSeason == CosmicSeason.springEquinox,
+                      ),
+                      const SizedBox(height: 10),
+                    ],
+                  ),
+                ),
+              ),
+            );
+          },
+        );
+      },
+    );
+  }
+
+  Widget _buildSeasonOptionTile(
+    BuildContext sheetContext, {
+    required String title,
+    required String subtitle,
+    required String emoji,
+    required CosmicSeason? season,
+    required bool isSelected,
+    String? badgeText,
+  }) {
+    return Container(
+      margin: const EdgeInsets.only(bottom: 8),
+      decoration: BoxDecoration(
+        color: isSelected
+            ? AppColors.starlightGold.withValues(alpha: 0.15)
+            : Colors.white.withValues(alpha: 0.04),
+        borderRadius: BorderRadius.circular(14),
+        border: Border.all(
+          color: isSelected ? AppColors.starlightGold : Colors.white12,
+          width: isSelected ? 1.5 : 1.0,
+        ),
+      ),
+      child: ListTile(
+        onTap: () {
+          CosmicThemeService.setOverrideSeason(season);
+          Navigator.of(sheetContext).pop();
+          if (mounted) setState(() {});
+          ScaffoldMessenger.of(context).showSnackBar(
+            SnackBar(
+              content: Text(
+                season == null
+                    ? '⚡ Kozmik Takvim Otomatik Moda Alındı.'
+                    : '$emoji ${CosmicThemeService.seasonBadgeText} aktif edildi!',
+              ),
+              backgroundColor: CosmicThemeService.primaryAccentColor,
+              duration: const Duration(seconds: 2),
+            ),
+          );
+        },
+        leading: Container(
+          padding: const EdgeInsets.all(8),
+          decoration: BoxDecoration(
+            color: Colors.white.withValues(alpha: 0.08),
+            shape: BoxShape.circle,
+          ),
+          child: Text(emoji, style: const TextStyle(fontSize: 18)),
+        ),
+        title: Row(
+          children: [
+            Expanded(
+              child: Text(
+                title,
+                style: TextStyle(
+                  color: isSelected ? AppColors.starlightGold : Colors.white,
+                  fontWeight: FontWeight.bold,
+                  fontSize: 13,
+                ),
+              ),
+            ),
+            if (badgeText != null)
+              Container(
+                padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                decoration: BoxDecoration(
+                  color: const Color(0xFFFF7518),
+                  borderRadius: BorderRadius.circular(6),
+                ),
+                child: Text(
+                  badgeText,
+                  style: const TextStyle(
+                    fontSize: 9,
+                    fontWeight: FontWeight.w900,
+                    color: Colors.black,
+                  ),
+                ),
+              ),
+          ],
+        ),
+        subtitle: Text(
+          subtitle,
+          style: const TextStyle(color: Colors.white54, fontSize: 11),
+        ),
+        trailing: isSelected
+            ? const Icon(Icons.check_circle_rounded, color: AppColors.starlightGold, size: 20)
+            : const Icon(Icons.arrow_forward_ios_rounded, color: Colors.white24, size: 14),
+      ),
+    );
+  }
+
   Future<void> _checkVipStatus() async {
     final vip = await StorageService.isVip();
     if (mounted) {
@@ -507,6 +713,38 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                     tooltip: AppTranslationService.tr('Gökyüzü Bildirimleri'),
                   ),
+                  const SizedBox(width: 5),
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () => _showCosmicSeasonPickerModal(context),
+                    icon: ValueListenableBuilder<CosmicSeason>(
+                      valueListenable: CosmicThemeService.seasonNotifier,
+                      builder: (context, season, _) {
+                        final emoji = season == CosmicSeason.halloween
+                            ? '🎃'
+                            : (season == CosmicSeason.newYear
+                                ? '🎄'
+                                : (season == CosmicSeason.valentines
+                                    ? '💖'
+                                    : (season == CosmicSeason.springEquinox
+                                        ? '🌸'
+                                        : '✨')));
+                        return Container(
+                          padding: const EdgeInsets.all(7),
+                          decoration: BoxDecoration(
+                            shape: BoxShape.circle,
+                            color: CosmicThemeService.primaryAccentColor.withValues(alpha: 0.20),
+                            border: Border.all(
+                              color: CosmicThemeService.primaryAccentColor.withValues(alpha: 0.60),
+                            ),
+                          ),
+                          child: Text(emoji, style: const TextStyle(fontSize: 14)),
+                        );
+                      },
+                    ),
+                    tooltip: AppTranslationService.tr('Kozmik Sezon & Bayram Teması'),
+                  ),
                   const SizedBox(width: 6),
                   IconButton(
                     padding: EdgeInsets.zero,
@@ -544,7 +782,84 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                 ],
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 16),
+
+              // Kozmik Sezon & Bayramlar Canlı Banner'ı
+              ValueListenableBuilder<CosmicSeason>(
+                valueListenable: CosmicThemeService.seasonNotifier,
+                builder: (context, season, _) {
+                  if (season == CosmicSeason.standard) return const SizedBox.shrink();
+
+                  return Container(
+                    margin: const EdgeInsets.only(bottom: 16),
+                    padding: const EdgeInsets.all(14),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          CosmicThemeService.primaryAccentColor.withValues(alpha: 0.22),
+                          CosmicThemeService.secondaryAccentColor.withValues(alpha: 0.18),
+                        ],
+                        begin: Alignment.topLeft,
+                        end: Alignment.bottomRight,
+                      ),
+                      borderRadius: BorderRadius.circular(18),
+                      border: Border.all(
+                        color: CosmicThemeService.primaryAccentColor.withValues(alpha: 0.55),
+                        width: 1.2,
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Expanded(
+                              child: Text(
+                                CosmicThemeService.seasonBadgeText,
+                                style: TextStyle(
+                                  color: CosmicThemeService.primaryAccentColor,
+                                  fontWeight: FontWeight.w900,
+                                  fontSize: 12,
+                                  letterSpacing: 0.5,
+                                ),
+                              ),
+                            ),
+                            InkWell(
+                              onTap: () => _showCosmicSeasonPickerModal(context),
+                              borderRadius: BorderRadius.circular(8),
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: Colors.black45,
+                                  borderRadius: BorderRadius.circular(8),
+                                  border: Border.all(color: Colors.white24),
+                                ),
+                                child: const Row(
+                                  mainAxisSize: MainAxisSize.min,
+                                  children: [
+                                    Icon(Icons.tune_rounded, size: 12, color: Colors.white70),
+                                    SizedBox(width: 4),
+                                    Text('Demo Seç', style: TextStyle(fontSize: 10, color: Colors.white)),
+                                  ],
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 6),
+                        Text(
+                          CosmicThemeService.seasonBannerSubtitle,
+                          style: const TextStyle(
+                            color: Colors.white,
+                            fontSize: 12,
+                            height: 1.4,
+                          ),
+                        ),
+                      ],
+                    ),
+                  );
+                },
+              ),
 
               // Big 3 Summary Badges (Canlı Astronomik Motor ile Senkronize)
               Builder(
@@ -708,6 +1023,55 @@ class _HomeScreenState extends State<HomeScreen> {
                     ),
                   );
                 },
+              ),
+              const SizedBox(height: 10),
+
+              // 📸 9:16 Instagram Story & WhatsApp Paylaşım Kartı
+              Container(
+                width: double.infinity,
+                margin: const EdgeInsets.only(bottom: 4),
+                child: ElevatedButton.icon(
+                  onPressed: () => CosmicStoryShareModal.show(context, widget.profile),
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: AppColors.starlightGold.withValues(alpha: 0.15),
+                    foregroundColor: AppColors.starlightGold,
+                    side: const BorderSide(color: AppColors.starlightGold, width: 1.2),
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
+                    elevation: 0,
+                  ),
+                  icon: const Icon(Icons.auto_awesome_rounded, color: AppColors.starlightGold, size: 20),
+                  label: Row(
+                    mainAxisAlignment: MainAxisAlignment.center,
+                    children: [
+                      Text(
+                        AppTranslationService.tr('📸 Instagram Story Kartı Oluştur (9:16)'),
+                        style: const TextStyle(
+                          fontSize: 13,
+                          fontWeight: FontWeight.bold,
+                          color: Colors.white,
+                          letterSpacing: 0.3,
+                        ),
+                      ),
+                      const SizedBox(width: 8),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: AppColors.starlightGold,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: const Text(
+                          'YENİ',
+                          style: TextStyle(
+                            fontSize: 9,
+                            fontWeight: FontWeight.w900,
+                            color: Colors.black,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
               ),
               const SizedBox(height: 14),
 

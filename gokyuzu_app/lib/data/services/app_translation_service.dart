@@ -291,6 +291,51 @@ class AppTranslationService {
 
   // --- DOĞRUDAN TÜRKÇE CÜMLE / ETİKET TABLOSU (Her Yerde Kusursuz Çalışır) ---
   static const Map<String, Map<String, String>> _phraseTranslations = {
+    '📸 Instagram Story Kartı Oluştur (9:16)': {
+      'tr': '📸 Instagram Story Kartı Oluştur (9:16)',
+      'en': '📸 Create Instagram Story Card (9:16)',
+      'ja': '📸 Instagramストーリーカード作成 (9:16)',
+    },
+    'Kozmik Sezon & Bayram Teması': {
+      'tr': 'Kozmik Sezon & Bayram Teması',
+      'en': 'Cosmic Season & Holiday Theme',
+      'ja': 'コズミックシーズン＆祝日テーマ',
+    },
+    'Hikayede Paylaş': {
+      'tr': 'Hikayede Paylaş',
+      'en': 'Share to Story',
+      'ja': 'ストーリーで共有',
+    },
+    'Görseli Kaydet': {
+      'tr': 'Görseli Kaydet',
+      'en': 'Save Image',
+      'ja': '画像を保存',
+    },
+    'Otomatik Takvim (Sıfır Efor)': {
+      'tr': 'Otomatik Takvim (Sıfır Efor)',
+      'en': 'Automatic Calendar (Zero Effort)',
+      'ja': '自動カレンダー (設定不要)',
+    },
+    'Cadılar Bayramı (Halloween Demosu)': {
+      'tr': 'Cadılar Bayramı (Halloween Demosu)',
+      'en': 'Halloween (Live Demo)',
+      'ja': 'ハロウィン (ライブデモ)',
+    },
+    'Yeni Yıl & Kış Gündönümü': {
+      'tr': 'Yeni Yıl & Kış Gündönümü',
+      'en': 'New Year & Winter Solstice',
+      'ja': '新年＆冬至',
+    },
+    'Sevgililer Günü & Venüs Kapısı': {
+      'tr': 'Sevgililer Günü & Venüs Kapısı',
+      'en': "Valentine's Day & Venus Portal",
+      'ja': 'バレンタインデー＆金星ポータル',
+    },
+    'İlkbahar Ekinoksu & 0° Koç Yeni Yılı': {
+      'tr': 'İlkbahar Ekinoksu & 0° Koç Yeni Yılı',
+      'en': 'Spring Equinox & 0° Aries New Year',
+      'ja': '春分の日＆牡羊座0°新年',
+    },
     // --- GEZEGEN KONUMLARI & NOKTALAR ---
     'GEZEGEN KONUMLARI & NOKTALAR': {
       'tr': 'GEZEGEN KONUMLARI & NOKTALAR',
