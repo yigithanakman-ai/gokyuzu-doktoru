@@ -1,16 +1,80 @@
-import 'package:flutter/services.dart';
+import 'package:flutter/foundation.dart';
+import 'package:flutter_local_notifications/flutter_local_notifications.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:timezone/data/latest_all.dart' as tz;
+import 'package:timezone/timezone.dart' as tz;
 import 'astrology_engine.dart';
 import 'sky_transits_service.dart';
 import 'storage_service.dart';
 
+/// Gerçek Cihaz Bildirim Servisi (Android 13+ ve iOS Tam Uyumlu)
 class NotificationService {
-  static const MethodChannel _channel =
-      MethodChannel('com.gokyuzudoktoru.gokyuzu_app/notifications');
+  static final FlutterLocalNotificationsPlugin _notificationsPlugin =
+      FlutterLocalNotificationsPlugin();
 
   static const String _prefEnabledKey = 'cosmic_notifications_enabled';
   static const String _prefAskedKey = 'cosmic_notifications_prompted';
   static const String _prefLastDailyPushKey = 'cosmic_last_daily_push_date';
+  static const String channelId = 'gokyuzu_cosmic_channel';
+  static const String channelName = 'Gökyüzü Doktoru Kozmik Bildirimler';
+
+  static bool _isInitialized = false;
+
+  /// Servisi başlat ve bildirim kanalını aç
+  static Future<void> init() async {
+    if (_isInitialized) return;
+
+    try {
+      tz.initializeTimeZones();
+      try {
+        tz.setLocalLocation(tz.getLocation('Europe/Istanbul'));
+      } catch (_) {}
+
+      const AndroidInitializationSettings initializationSettingsAndroid =
+          AndroidInitializationSettings('@mipmap/ic_launcher');
+
+      const DarwinInitializationSettings initializationSettingsDarwin =
+          DarwinInitializationSettings(
+        requestAlertPermission: false,
+        requestBadgePermission: false,
+        requestSoundPermission: false,
+      );
+
+      const LinuxInitializationSettings initializationSettingsLinux =
+          LinuxInitializationSettings(defaultActionName: 'Open');
+
+      const InitializationSettings initializationSettings =
+          InitializationSettings(
+        android: initializationSettingsAndroid,
+        iOS: initializationSettingsDarwin,
+        macOS: initializationSettingsDarwin,
+        linux: initializationSettingsLinux,
+      );
+
+      await _notificationsPlugin.initialize(
+        settings: initializationSettings,
+      );
+
+      // Android İçin Yüksek Öncelikli Kanal Oluştur
+      final androidImpl = _notificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      if (androidImpl != null) {
+        const AndroidNotificationChannel channel = AndroidNotificationChannel(
+          channelId,
+          channelName,
+          description:
+              'Günlük gezegen transitleri, Ay fazı ve kişisel astrolojik rehber bildirimleri.',
+          importance: Importance.max,
+          playSound: true,
+          enableVibration: true,
+        );
+        await androidImpl.createNotificationChannel(channel);
+      }
+
+      _isInitialized = true;
+    } catch (_) {}
+  }
 
   static Future<bool> hasPromptedUser() async {
     final prefs = await SharedPreferences.getInstance();
@@ -26,24 +90,49 @@ class NotificationService {
     final prefs = await SharedPreferences.getInstance();
     final prefVal = prefs.getBool(_prefEnabledKey) ?? false;
     if (!prefVal) return false;
-    try {
-      final osEnabled =
-          await _channel.invokeMethod<bool>('areNotificationsEnabled') ?? true;
-      return osEnabled;
-    } catch (_) {
-      return prefVal;
+
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      final androidImpl = _notificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      final osEnabled = await androidImpl?.areNotificationsEnabled();
+      if (osEnabled != null) return osEnabled && prefVal;
     }
+    return prefVal;
   }
 
+  /// Kullanıcıdan resmi işletim sistemi izinlerini iste ve bildirimleri aktif et
   static Future<bool> requestPermissionAndEnable(
     UserProfile profile, {
     bool sendImmediateConfirmation = true,
   }) async {
+    await init();
     await markPrompted();
-    bool granted = true;
+
+    bool granted = false;
     try {
-      granted =
-          await _channel.invokeMethod<bool>('requestPermission') ?? false;
+      if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+        final androidImpl = _notificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>();
+        // Android 13+ (API 33+) resmi izin penceresini açar
+        granted =
+            await androidImpl?.requestNotificationsPermission() ?? false;
+      } else if (!kIsWeb &&
+          (defaultTargetPlatform == TargetPlatform.iOS ||
+              defaultTargetPlatform == TargetPlatform.macOS)) {
+        final iosImpl = _notificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                IOSFlutterLocalNotificationsPlugin>();
+        granted = await iosImpl?.requestPermissions(
+              alert: true,
+              badge: true,
+              sound: true,
+            ) ??
+            false;
+      } else {
+        granted = true;
+      }
     } catch (_) {
       granted = true;
     }
@@ -60,17 +149,22 @@ class NotificationService {
     return granted;
   }
 
+  /// Bildirimleri tamamen kapat
   static Future<void> disableNotifications() async {
+    await init();
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_prefEnabledKey, false);
     try {
-      await _channel.invokeMethod('cancelAllNotifications');
+      await _notificationsPlugin.cancelAll();
     } catch (_) {}
   }
 
+  /// 3 Farklı Saat Diliminde Günlük Kozmik Bildirimleri Planla (09:30, 14:30, 20:30)
   static Future<void> scheduleDailyCosmicNotifications(
     UserProfile profile,
   ) async {
+    await init();
+
     final liveChart = AstrologyEngine.calculateChart(
       name: profile.name,
       dateStr: profile.birthDate,
@@ -92,7 +186,8 @@ class NotificationService {
     final sunSign = sunT?.sign ?? 'Koç';
     final moonSign = moonT?.sign ?? 'Boğa';
     final moonDeg = moonT?.degree.toInt() ?? 15;
-    final cleanName = profile.name.trim().isEmpty ? 'Kozmik Yolcu' : profile.name.trim();
+    final cleanName =
+        profile.name.trim().isEmpty ? 'Kozmik Yolcu' : profile.name.trim();
 
     final items = [
       {
@@ -121,17 +216,70 @@ class NotificationService {
       },
     ];
 
-    try {
-      await _channel.invokeMethod('scheduleDailyNotifications', {
-        'items': items,
-      });
-    } catch (_) {}
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+      channelId,
+      channelName,
+      channelDescription:
+          'Günlük gezegen transitleri ve astrolojik rehber bildirimleri.',
+      importance: Importance.max,
+      priority: Priority.high,
+      icon: '@mipmap/ic_launcher',
+      playSound: true,
+      enableVibration: true,
+    );
+
+    const DarwinNotificationDetails darwinDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: darwinDetails,
+      macOS: darwinDetails,
+    );
+
+    for (final item in items) {
+      final id = item['id'] as int;
+      final hour = item['hour'] as int;
+      final minute = item['minute'] as int;
+      final title = item['title'] as String;
+      final body = item['body'] as String;
+
+      try {
+        final scheduledTime = _nextInstanceOfTime(hour, minute);
+        await _notificationsPlugin.zonedSchedule(
+          id: id,
+          title: title,
+          body: body,
+          scheduledDate: scheduledTime,
+          notificationDetails: notificationDetails,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          matchDateTimeComponents: DateTimeComponents.time,
+        );
+      } catch (_) {}
+    }
   }
 
+  static tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
+    final tz.TZDateTime now = tz.TZDateTime.now(tz.local);
+    tz.TZDateTime scheduledDate =
+        tz.TZDateTime(tz.local, now.year, now.month, now.day, hour, minute);
+    if (scheduledDate.isBefore(now)) {
+      scheduledDate = scheduledDate.add(const Duration(days: 1));
+    }
+    return scheduledDate;
+  }
+
+  /// Anında Canlı Test / Hoş Geldin Bildirimi Gönder (Telefonda Hemen Görünür)
   static Future<void> sendTestOrDailyNotification(
     UserProfile profile, {
     bool isWelcome = false,
   }) async {
+    await init();
+
     final liveChart = AstrologyEngine.calculateChart(
       name: profile.name,
       dateStr: profile.birthDate,
@@ -154,16 +302,44 @@ class NotificationService {
     final body =
         'Transit Ay $moonDeg° $moonSign burcunda (${moonPhase.phaseName}). Sabah 09:30, Öğle 14:30 ve Akşam 20:30 kozmik bildirimleriniz telefonunuza düzenli olarak iletilecektir.';
 
+    const AndroidNotificationDetails androidDetails =
+        AndroidNotificationDetails(
+      channelId,
+      channelName,
+      channelDescription:
+          'Günlük gezegen transitleri ve astrolojik rehber bildirimleri.',
+      importance: Importance.max,
+      priority: Priority.high,
+      ticker: 'Kozmik Bildirim',
+      playSound: true,
+      enableVibration: true,
+      icon: '@mipmap/ic_launcher',
+    );
+
+    const DarwinNotificationDetails darwinDetails = DarwinNotificationDetails(
+      presentAlert: true,
+      presentBadge: true,
+      presentSound: true,
+    );
+
+    const NotificationDetails notificationDetails = NotificationDetails(
+      android: androidDetails,
+      iOS: darwinDetails,
+      macOS: darwinDetails,
+    );
+
     try {
-      await _channel.invokeMethod('showInstantNotification', {
-        'id': 999,
-        'title': title,
-        'body': body,
-      });
+      await _notificationsPlugin.show(
+        id: 999,
+        title: title,
+        body: body,
+        notificationDetails: notificationDetails,
+      );
     } catch (_) {}
   }
 
-  static Future<void> syncDailyNotificationsIfEnabled(UserProfile profile) async {
+  static Future<void> syncDailyNotificationsIfEnabled(
+      UserProfile profile) async {
     final enabled = await isEnabled();
     if (!enabled) return;
 

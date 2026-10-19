@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/services/storage_service.dart';
 import '../../data/services/app_translation_service.dart';
+import '../../data/services/notification_service.dart';
 import 'legal_document_screen.dart';
 import 'auth_screen.dart';
 
@@ -16,6 +17,7 @@ class ProfileScreen extends StatefulWidget {
 
 class _ProfileScreenState extends State<ProfileScreen> {
   bool _isVip = false;
+  bool _notificationsEnabled = false;
   Map<String, dynamic>? _savedAccount;
   List<Map<String, dynamic>> _feedbackList = [];
 
@@ -33,11 +35,13 @@ class _ProfileScreenState extends State<ProfileScreen> {
     final vip = await StorageService.isVip();
     final account = await StorageService.getUserAccount();
     final feedback = await StorageService.getFeedbackList();
+    final notifEnabled = await NotificationService.isEnabled();
     if (mounted) {
       setState(() {
         _isVip = vip;
         _savedAccount = account;
         _feedbackList = feedback;
+        _notificationsEnabled = notifEnabled;
       });
     }
   }
@@ -504,6 +508,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
             _buildLanguageCard(),
             const SizedBox(height: 16),
 
+            // BİLDİRİM AYARLARI KARTI (Gerçek Cihaz Bildirimleri)
+            _buildNotificationSettingsCard(),
+            const SizedBox(height: 16),
+
             // 2. ÜYELİK VE HESAP BİLGİSİ KARTI
             _buildAccountDetailsCard(),
             const SizedBox(height: 16),
@@ -763,6 +771,189 @@ class _ProfileScreenState extends State<ProfileScreen> {
             color: isSelected ? AppColors.starlightGold : Colors.white70,
           ),
         ),
+      ),
+    );
+  }
+
+  // BİLDİRİM AYARLARI KARTI (İşletim Sistemi İzinleri & Canlı Test)
+  Widget _buildNotificationSettingsCard() {
+    return Container(
+      padding: const EdgeInsets.all(16),
+      decoration: BoxDecoration(
+        color: AppColors.cardBackground.withAlpha(210),
+        borderRadius: BorderRadius.circular(18),
+        border: Border.all(
+          color: _notificationsEnabled
+              ? const Color(0xFF00E5FF).withAlpha(120)
+              : AppColors.cardBorder,
+          width: _notificationsEnabled ? 1.5 : 1.0,
+        ),
+      ),
+      child: Column(
+        crossAxisAlignment: CrossAxisAlignment.start,
+        children: [
+          Row(
+            mainAxisAlignment: MainAxisAlignment.spaceBetween,
+            children: [
+              Row(
+                children: [
+                  Container(
+                    padding: const EdgeInsets.all(6),
+                    decoration: BoxDecoration(
+                      color: const Color(0xFF00E5FF).withAlpha(30),
+                      shape: BoxShape.circle,
+                    ),
+                    child: const Icon(
+                      Icons.notifications_active_rounded,
+                      color: Color(0xFF00E5FF),
+                      size: 20,
+                    ),
+                  ),
+                  const SizedBox(width: 10),
+                  Text(
+                    AppTranslationService.tr('notifications'),
+                    style: const TextStyle(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ],
+              ),
+              Switch.adaptive(
+                value: _notificationsEnabled,
+                activeThumbColor: const Color(0xFF00E5FF),
+                activeTrackColor: const Color(0xFF00E5FF).withAlpha(90),
+                onChanged: (bool value) async {
+                  if (value) {
+                    final granted =
+                        await NotificationService.requestPermissionAndEnable(
+                      widget.profile,
+                      sendImmediateConfirmation: true,
+                    );
+                    if (mounted) {
+                      setState(() => _notificationsEnabled = granted);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(granted
+                              ? '🔔 Kozmik bildirimler aktif edildi! Test bildirimi gönderildi.'
+                              : '⚠️ Bildirim izni verilmedi. Ayarlardan izin vermeniz gerekebilir.'),
+                          backgroundColor: granted
+                              ? const Color(0xFF6C5CE7)
+                              : Colors.redAccent,
+                        ),
+                      );
+                    }
+                  } else {
+                    await NotificationService.disableNotifications();
+                    if (mounted) {
+                      setState(() => _notificationsEnabled = false);
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        const SnackBar(
+                          content: Text('Kozmik bildirimler kapatıldı.'),
+                          backgroundColor: Color(0xFF2C1E4A),
+                        ),
+                      );
+                    }
+                  }
+                },
+              ),
+            ],
+          ),
+          const SizedBox(height: 8),
+          Text(
+            AppTranslationService.tr('notifications_desc'),
+            style: const TextStyle(
+              fontSize: 12,
+              color: Colors.white70,
+              height: 1.4,
+            ),
+          ),
+          const SizedBox(height: 12),
+          Container(
+            padding: const EdgeInsets.all(12),
+            decoration: BoxDecoration(
+              color: Colors.black38,
+              borderRadius: BorderRadius.circular(12),
+              border: Border.all(color: Colors.white10),
+            ),
+            child: const Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Text('☀️ 09:30 • Sabah Günün Transit & Yükselen Enerjisi',
+                    style: TextStyle(fontSize: 11, color: AppColors.starlightGold)),
+                SizedBox(height: 4),
+                Text('🌙 14:30 • Gün Ortası Ay Fazı & Ay Boşlukta Uyarısı',
+                    style: TextStyle(fontSize: 11, color: AppColors.pastelMint)),
+                SizedBox(height: 4),
+                Text('✨ 20:30 • Akşam Gece Gökyüzü & Yıldız Rehberi',
+                    style: TextStyle(fontSize: 11, color: AppColors.pastelLavender)),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+          SizedBox(
+            width: double.infinity,
+            child: ElevatedButton.icon(
+              onPressed: () async {
+                if (!_notificationsEnabled) {
+                  final granted =
+                      await NotificationService.requestPermissionAndEnable(
+                    widget.profile,
+                    sendImmediateConfirmation: true,
+                  );
+                  if (mounted) {
+                    setState(() => _notificationsEnabled = granted);
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      SnackBar(
+                        content: Text(granted
+                            ? '🔔 Bildirim izni alındı ve test bildirimi iletildi!'
+                            : '⚠️ Cihaz ayarlarından bildirimlere izin vermeniz gerekiyor.'),
+                        backgroundColor: granted
+                            ? const Color(0xFF6C5CE7)
+                            : Colors.redAccent,
+                      ),
+                    );
+                  }
+                } else {
+                  await NotificationService.sendTestOrDailyNotification(
+                    widget.profile,
+                    isWelcome: false,
+                  );
+                  if (mounted) {
+                    ScaffoldMessenger.of(context).showSnackBar(
+                      const SnackBar(
+                        content: Text('🔔 Canlı test bildirimi telefonunuza gönderildi!'),
+                        backgroundColor: Color(0xFF6C5CE7),
+                      ),
+                    );
+                  }
+                }
+              },
+              icon: Icon(
+                _notificationsEnabled
+                    ? Icons.send_rounded
+                    : Icons.notifications_active_rounded,
+                size: 16,
+                color: Colors.black87,
+              ),
+              label: Text(
+                _notificationsEnabled
+                    ? 'Hemen Test Bildirimi Gönder 🔔'
+                    : 'Bildirimlere İzin Ver & Aç 🔔',
+                style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
+              ),
+              style: ElevatedButton.styleFrom(
+                backgroundColor: const Color(0xFF00E5FF),
+                foregroundColor: Colors.black87,
+                shape: RoundedRectangleBorder(
+                  borderRadius: BorderRadius.circular(12),
+                ),
+                padding: const EdgeInsets.symmetric(vertical: 11),
+              ),
+            ),
+          ),
+        ],
       ),
     );
   }
