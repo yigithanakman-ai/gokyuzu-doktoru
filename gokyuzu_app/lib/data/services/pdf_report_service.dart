@@ -1,8 +1,11 @@
 import 'dart:io';
+import 'package:flutter/foundation.dart';
 import 'package:flutter/services.dart';
+import 'package:open_filex/open_filex.dart';
 import 'package:path_provider/path_provider.dart';
 import 'package:pdf/pdf.dart';
 import 'package:pdf/widgets.dart' as pw;
+import 'package:share_plus/share_plus.dart';
 import 'storage_service.dart';
 import 'predictive_astrology_service.dart';
 import 'eclipses_service.dart';
@@ -835,19 +838,48 @@ class PdfReportService {
       ),
     );
 
-    // Save PDF to Documents Directory or Desktop
+    // Save PDF to Documents Directory or Android Downloads
     Directory outputDir;
     try {
-      outputDir = await getApplicationDocumentsDirectory();
+      if (Platform.isAndroid) {
+        // Android için önce doğrudan telefonun genel İndirilenler (Download) klasörünü hedefle
+        final publicDownloadDir = Directory('/storage/emulated/0/Download');
+        if (publicDownloadDir.existsSync()) {
+          outputDir = publicDownloadDir;
+        } else {
+          final extDirs = await getExternalStorageDirectories(type: StorageDirectory.downloads);
+          if (extDirs != null && extDirs.isNotEmpty) {
+            outputDir = extDirs.first;
+          } else {
+            outputDir = await getApplicationDocumentsDirectory();
+          }
+        }
+      } else {
+        outputDir = await getApplicationDocumentsDirectory();
+      }
     } catch (_) {
       outputDir = Directory('${Platform.environment['HOME'] ?? '.'}/Desktop');
     }
-    final fileName = 'Gokyuzu_Doktoru_${name.replaceAll(RegExp(r'\s+'), '_')}_10_Sayfalik_Rapor.pdf';
+
+    final safeName = name.replaceAll(RegExp(r'[^\w\sğüşıöçĞÜŞİÖÇ]+'), '').replaceAll(RegExp(r'\s+'), '_');
+    final fileName = 'Gokyuzu_Doktoru_${safeName.isEmpty ? "Danisan" : safeName}_10_Sayfalik_Rapor.pdf';
     final file = File('${outputDir.path}/$fileName');
     final bytes = await pdf.save();
     await file.writeAsBytes(bytes);
 
-    // Also copy to user Desktop and Downloads for easy access
+    // Android için yedek kopya: Eğer app-specific alana yazıldıysa, genel Download'a da kopyala
+    if (Platform.isAndroid) {
+      try {
+        final publicFile = File('/storage/emulated/0/Download/$fileName');
+        if (publicFile.path != file.path) {
+          await publicFile.writeAsBytes(bytes);
+        }
+      } catch (e) {
+        debugPrint('Android public download kopyalama hatası: $e');
+      }
+    }
+
+    // Masaüstü sistemler (macOS / Windows / Linux) için Masaüstü ve İndirilenler kopyası
     try {
       final homeDir = Platform.environment['HOME'];
       if (homeDir != null) {
@@ -856,7 +888,7 @@ class PdfReportService {
         final downloadsFile = File('$homeDir/Downloads/$fileName');
         await downloadsFile.writeAsBytes(bytes);
 
-        // Open only if explicitly requested by user interaction
+        // Kullanıcı isteğine göre otomatik aç
         if (autoOpen && Platform.isMacOS) {
           Process.run('open', [desktopFile.path]);
         }
@@ -864,6 +896,46 @@ class PdfReportService {
     } catch (_) {}
 
     return file;
+  }
+
+  /// PDF raporunu sistem varsayılan PDF görüntüleyicisinde açar (Android/iOS/macOS)
+  static Future<bool> openPdf(File file) async {
+    try {
+      if (Platform.isMacOS) {
+        final res = await Process.run('open', [file.path]);
+        return res.exitCode == 0;
+      } else {
+        final result = await OpenFilex.open(file.path);
+        if (result.type == ResultType.done) {
+          return true;
+        } else {
+          debugPrint('OpenFilex sonucu: ${result.message}, Paylaşım sayfasına yönlendiriliyor');
+          await sharePdf(file);
+          return true;
+        }
+      }
+    } catch (e) {
+      debugPrint('PDF açma hatası: $e, Paylaşım sayfasına yönlendiriliyor');
+      try {
+        await sharePdf(file);
+        return true;
+      } catch (_) {
+        return false;
+      }
+    }
+  }
+
+  /// PDF raporunu dışa aktarır / paylaşır (WhatsApp, Google Drive, Dosyalar vb.)
+  static Future<void> sharePdf(File file) async {
+    try {
+      // ignore: deprecated_member_use
+      await Share.shareXFiles(
+        [XFile(file.path, mimeType: 'application/pdf')],
+        text: 'Gökyüzü Doktoru 10 Sayfalık Doğum Haritası ve Yaşam Rehberi Raporu',
+      );
+    } catch (e) {
+      debugPrint('PDF paylaşma hatası: $e');
+    }
   }
 }
 

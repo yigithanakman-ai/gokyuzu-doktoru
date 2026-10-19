@@ -3476,68 +3476,118 @@ class _HomeScreenState extends State<HomeScreen> {
           builder: (ctx) => AlertDialog(
             backgroundColor: const Color(0xFF1E1B2E),
             shape: RoundedRectangleBorder(
-              borderRadius: BorderRadius.circular(20),
+              borderRadius: BorderRadius.circular(22),
               side: const BorderSide(color: AppColors.pastelMint, width: 1.2),
             ),
-            title: const Row(
+            title: Row(
               children: [
-                Icon(Icons.check_circle_rounded, color: AppColors.pastelMint),
-                SizedBox(width: 8),
-                Text('PDF Raporunuz Hazır! 📜', style: TextStyle(color: Colors.white, fontSize: 16)),
+                const Icon(Icons.check_circle_rounded, color: AppColors.pastelMint, size: 24),
+                const SizedBox(width: 8),
+                Expanded(
+                  child: Text(
+                    Platform.isAndroid || Platform.isIOS
+                        ? 'PDF Raporunuz İndirildi! 📜'
+                        : 'PDF Raporunuz Hazır! 📜',
+                    style: const TextStyle(color: Colors.white, fontSize: 16, fontWeight: FontWeight.bold),
+                  ),
+                ),
               ],
             ),
             content: Column(
               mainAxisSize: MainAxisSize.min,
               crossAxisAlignment: CrossAxisAlignment.start,
               children: [
-                const Text(
-                  '10 sayfalık kapsamlı kişiselleştirilmiş doğum haritası kitapçığınız başarıyla oluşturuldu, Masaüstünüze ve Belgeler klasörünüze kaydedildi.',
-                  style: TextStyle(color: Colors.white70, fontSize: 12.5, height: 1.4),
+                Text(
+                  Platform.isAndroid || Platform.isIOS
+                      ? '10 sayfalık kapsamlı kişiselleştirilmiş doğum haritası kitapçığınız başarıyla oluşturuldu ve telefonunuzun İndirilenler klasörüne kaydedildi.'
+                      : '10 sayfalık kapsamlı kişiselleştirilmiş doğum haritası kitapçığınız başarıyla oluşturuldu, Masaüstünüze ve Belgeler klasörünüze kaydedildi.',
+                  style: const TextStyle(color: Colors.white70, fontSize: 12.5, height: 1.4),
                 ),
                 const SizedBox(height: 12),
                 Container(
-                  padding: const EdgeInsets.all(10),
+                  padding: const EdgeInsets.all(12),
                   decoration: BoxDecoration(
                     color: Colors.black38,
-                    borderRadius: BorderRadius.circular(10),
+                    borderRadius: BorderRadius.circular(12),
+                    border: Border.all(color: Colors.white12),
                   ),
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      const Text(
-                        '🖥️ Masaüstünüzde açıldı: ~/Desktop/Gokyuzu_Doktoru_...pdf',
-                        style: TextStyle(color: AppColors.starlightGold, fontSize: 11, fontWeight: FontWeight.bold),
+                      Row(
+                        children: [
+                          Icon(
+                            Platform.isAndroid || Platform.isIOS
+                                ? Icons.download_done_rounded
+                                : Icons.laptop_mac_rounded,
+                            size: 15,
+                            color: AppColors.starlightGold,
+                          ),
+                          const SizedBox(width: 6),
+                          Expanded(
+                            child: Text(
+                              Platform.isAndroid || Platform.isIOS
+                                  ? '📥 Telefon İndirilenler Klasörüne Kaydedildi'
+                                  : '🖥️ Masaüstünüzde Açıldı',
+                              style: const TextStyle(
+                                color: AppColors.starlightGold,
+                                fontSize: 11.5,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                          ),
+                        ],
                       ),
                       const SizedBox(height: 4),
                       Text(
-                        '📁 ${file.path}',
-                        style: const TextStyle(color: AppColors.pastelMint, fontSize: 10, fontFamily: 'monospace'),
+                        file.path.startsWith('/storage/emulated/0/Download')
+                            ? '📁 İndirilenler / ${file.path.split('/').last}'
+                            : (Platform.isAndroid || Platform.isIOS
+                                ? '📁 Telefon Hafızası / ${file.path.split('/').last}'
+                                : '📁 ${file.path}'),
+                        style: const TextStyle(color: AppColors.pastelMint, fontSize: 10.5, fontFamily: 'monospace'),
                       ),
                     ],
                   ),
                 ),
-                const SizedBox(height: 8),
+                const SizedBox(height: 10),
                 Text(
                   'Kalan Kota: ${maxQuota - (usedCount + 1)} indirme hakkı',
                   style: const TextStyle(color: AppColors.starlightGold, fontSize: 11.5, fontWeight: FontWeight.bold),
                 ),
               ],
             ),
+            actionsAlignment: MainAxisAlignment.end,
             actions: [
-              TextButton(
+              TextButton.icon(
                 onPressed: () {
-                  Navigator.of(ctx).pop();
-                  try {
-                    if (Platform.isMacOS) {
-                      Process.run('open', [file.path]);
-                    }
-                  } catch (_) {}
+                  PdfReportService.sharePdf(file);
                 },
-                child: const Text('Raporu Aç 📄', style: TextStyle(color: AppColors.starlightGold, fontWeight: FontWeight.bold)),
+                icon: const Icon(Icons.share_rounded, size: 16, color: AppColors.pastelMint),
+                label: const Text(
+                  'Paylaş / Dışa Aktar 📤',
+                  style: TextStyle(color: AppColors.pastelMint, fontWeight: FontWeight.bold, fontSize: 12),
+                ),
+              ),
+              ElevatedButton.icon(
+                onPressed: () async {
+                  await PdfReportService.openPdf(file);
+                },
+                icon: const Icon(Icons.menu_book_rounded, size: 16, color: Colors.black),
+                label: const Text(
+                  'Raporu Aç 📄',
+                  style: TextStyle(color: Colors.black, fontWeight: FontWeight.bold, fontSize: 12),
+                ),
+                style: ElevatedButton.styleFrom(
+                  backgroundColor: AppColors.starlightGold,
+                  foregroundColor: Colors.black,
+                  padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
+                  shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+                ),
               ),
               TextButton(
                 onPressed: () => Navigator.of(ctx).pop(),
-                child: const Text('Tamam', style: TextStyle(color: AppColors.pastelMint, fontWeight: FontWeight.bold)),
+                child: const Text('Kapat', style: TextStyle(color: Colors.white60, fontSize: 12)),
               ),
             ],
           ),

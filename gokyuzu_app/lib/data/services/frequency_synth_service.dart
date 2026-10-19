@@ -18,18 +18,23 @@ class FrequencySynthService {
   /// Belirli bir frekansta (Hz) saf sinüs dalgası içeren kesintisiz döngülü Stereo WAV üretir
   static Uint8List generateSineWavBytes({
     required double frequencyHz,
-    double targetDurationSeconds = 12.0,
+    double durationSeconds = 12.0,
     int sampleRate = 44100,
     double volume = 0.88,
+    bool seamlessLoop = false,
   }) {
     const numChannels = 2; // Stereo
     const bitsPerSample = 16;
     const blockAlign = numChannels * (bitsPerSample ~/ 8); // 4 bytes
 
-    // Dikişsiz ve çıtlamasız döngü için tam dalga periyodu sayısına yuvarla
-    final numCycles = (targetDurationSeconds * frequencyHz).round();
-    final actualDuration = numCycles / frequencyHz;
-    final numSamples = (sampleRate * actualDuration).toInt();
+    final int numSamples;
+    if (seamlessLoop) {
+      final numCycles = (durationSeconds * frequencyHz).round();
+      final actualDuration = numCycles / frequencyHz;
+      numSamples = (sampleRate * actualDuration).toInt();
+    } else {
+      numSamples = (sampleRate * durationSeconds).toInt();
+    }
 
     final byteRate = sampleRate * blockAlign; // 176400 bytes/sec
     final subChunk2Size = numSamples * blockAlign;
@@ -110,7 +115,7 @@ class FrequencySynthService {
       await stop();
       playingFrequencyNotifier.value = frequencyHz;
 
-      final wavBytes = generateSineWavBytes(frequencyHz: frequencyHz);
+      final wavBytes = generateSineWavBytes(frequencyHz: frequencyHz, seamlessLoop: true);
       
       String targetPath;
       try {
