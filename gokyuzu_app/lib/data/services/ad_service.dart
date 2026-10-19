@@ -7,10 +7,21 @@ class AdService {
   // Resmi AdMob Uygulama Kimliği
   static const String appId = 'ca-app-pub-1133172251227471~4078534665';
 
-  // Test ve Varsayılan Reklam Birim Kimlikleri (Kullanıcı yeni birim eklediğinde buraya bağlanır)
+  // Canlı Reklam Birim Kimlikleri (AdMob Üretim Ortamı)
+  static const String liveRewardedAdId = 'ca-app-pub-1133172251227471/1704268715';
+  static const String liveInterstitialAdId = 'ca-app-pub-1133172251227471/7656178404';
+
+  // Google Resmi Test Reklam Birim Kimlikleri
   static const String testInterstitialAdId = 'ca-app-pub-3940256099942544/1033173712';
   static const String testRewardedAdId = 'ca-app-pub-3940256099942544/5224354917';
   static const String testBannerAdId = 'ca-app-pub-3940256099942544/6300978111';
+
+  // Canlı/Test Akıllı Seçici (Canlı yayında gerçek reklam, geliştirmede test reklamı)
+  static String get rewardedAdUnitId =>
+      kReleaseMode ? liveRewardedAdId : testRewardedAdId;
+
+  static String get interstitialAdUnitId =>
+      kReleaseMode ? liveInterstitialAdId : testInterstitialAdId;
 
   static InterstitialAd? _interstitialAd;
   static bool _isInterstitialAdLoading = false;
@@ -28,7 +39,7 @@ class AdService {
     if (!_isMobile) return;
     if (_interstitialAd != null || _isInterstitialAdLoading) return;
     _isInterstitialAdLoading = true;
-    final unitId = adUnitId ?? testInterstitialAdId;
+    final unitId = adUnitId ?? interstitialAdUnitId;
 
     try {
       InterstitialAd.load(
@@ -127,7 +138,7 @@ class AdService {
     try {
       bool rewardEarned = false;
       await RewardedAd.load(
-        adUnitId: testRewardedAdId,
+        adUnitId: rewardedAdUnitId,
         request: const AdRequest(),
         rewardedAdLoadCallback: RewardedAdLoadCallback(
           onAdLoaded: (ad) {
