@@ -121,6 +121,15 @@ class WorldCitiesService {
     CityLocation(city: 'Yalova', country: 'Türkiye', latitude: 40.6500, longitude: 29.2667, timezoneOffset: 3.0),
     CityLocation(city: 'Yozgat', country: 'Türkiye', latitude: 39.8181, longitude: 34.8147, timezoneOffset: 3.0),
     CityLocation(city: 'Zonguldak', country: 'Türkiye', latitude: 41.4564, longitude: 31.7987, timezoneOffset: 3.0),
+    CityLocation(city: 'Datça', country: 'Türkiye', latitude: 36.7265, longitude: 27.6853, timezoneOffset: 3.0),
+    CityLocation(city: 'Bodrum', country: 'Türkiye', latitude: 37.0344, longitude: 27.4305, timezoneOffset: 3.0),
+    CityLocation(city: 'Marmaris', country: 'Türkiye', latitude: 36.8550, longitude: 28.2742, timezoneOffset: 3.0),
+    CityLocation(city: 'Fethiye', country: 'Türkiye', latitude: 36.6217, longitude: 29.1164, timezoneOffset: 3.0),
+    CityLocation(city: 'Kaş', country: 'Türkiye', latitude: 36.2003, longitude: 29.6377, timezoneOffset: 3.0),
+    CityLocation(city: 'Alanya', country: 'Türkiye', latitude: 36.5438, longitude: 31.9998, timezoneOffset: 3.0),
+    CityLocation(city: 'Çeşme', country: 'Türkiye', latitude: 38.3236, longitude: 26.3044, timezoneOffset: 3.0),
+    CityLocation(city: 'Kuşadası', country: 'Türkiye', latitude: 37.8579, longitude: 27.2610, timezoneOffset: 3.0),
+    CityLocation(city: 'Ayvalık', country: 'Türkiye', latitude: 39.3197, longitude: 26.6969, timezoneOffset: 3.0),
 
     // --- AZERBAYCAN (KAPSAMLI BÖLGE VE ŞEHİRLER) ---
     CityLocation(city: 'Yevlax (Yevlakh)', country: 'Azerbaycan', latitude: 40.6172, longitude: 47.1500, timezoneOffset: 4.0),

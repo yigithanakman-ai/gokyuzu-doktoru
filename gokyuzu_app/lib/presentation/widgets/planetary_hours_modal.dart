@@ -1,7 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../data/services/active_profile_service.dart';
 import '../../data/services/planetary_hours_service.dart';
 import '../../data/services/storage_service.dart';
+import '../../data/services/world_cities_service.dart';
 
 class PlanetaryHoursModal extends StatefulWidget {
   final UserProfile profile;
@@ -23,16 +25,164 @@ class PlanetaryHoursModal extends StatefulWidget {
 
 class _PlanetaryHoursModalState extends State<PlanetaryHoursModal> {
   late PlanetaryDayInfo _dayInfo;
+  late CityLocation _currentCity;
+  int _selectedTab = 0; // 0: Tümü (24), 1: Gündüz (12), 2: Gece (12)
+  int? _expandedIndex;
 
   @override
   void initState() {
     super.initState();
-    _dayInfo = PlanetaryHoursService.calculatePlanetaryHours();
+    final effectiveProfile = ActiveProfileService.getEffectiveProfile(widget.profile);
+    final place = effectiveProfile.birthCity.trim();
+    if (place.isNotEmpty) {
+      _currentCity = WorldCitiesService.findCity(place);
+    } else {
+      _currentCity = WorldCitiesService.findCity('Datça');
+    }
+    _recalculate();
+  }
+
+  void _recalculate() {
+    setState(() {
+      _dayInfo = PlanetaryHoursService.calculatePlanetaryHours(
+        latitude: _currentCity.latitude,
+        longitude: _currentCity.longitude,
+        timezoneOffset: _currentCity.timezoneOffset,
+        cityName: _currentCity.city,
+      );
+    });
+  }
+
+  void _selectCity() async {
+    final searchController = TextEditingController();
+    List<CityLocation> filtered = List.from(WorldCitiesService.allCities);
+
+    final selected = await showModalBottomSheet<CityLocation>(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) {
+        return StatefulBuilder(
+          builder: (context, setModalState) {
+            return Container(
+              height: MediaQuery.of(context).size.height * 0.75,
+              padding: const EdgeInsets.all(20),
+              decoration: BoxDecoration(
+                color: const Color(0xFF130F26),
+                borderRadius: const BorderRadius.vertical(top: Radius.circular(28)),
+                border: Border.all(color: AppColors.starlightGold.withValues(alpha: 0.3)),
+              ),
+              child: Column(
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      const Text(
+                        '📍 Konum / Şehir Seç',
+                        style: TextStyle(
+                          color: Colors.white,
+                          fontSize: 16,
+                          fontWeight: FontWeight.bold,
+                        ),
+                      ),
+                      IconButton(
+                        icon: const Icon(Icons.close_rounded, color: Colors.white70),
+                        onPressed: () => Navigator.of(context).pop(),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: searchController,
+                    style: const TextStyle(color: Colors.white),
+                    decoration: InputDecoration(
+                      hintText: 'Şehir veya ilçe ara (örn: Datça, İstanbul)...',
+                      hintStyle: const TextStyle(color: Colors.white38, fontSize: 13),
+                      prefixIcon: const Icon(Icons.search, color: AppColors.starlightGold),
+                      filled: true,
+                      fillColor: Colors.white.withValues(alpha: 0.06),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(16),
+                        borderSide: BorderSide.none,
+                      ),
+                    ),
+                    onChanged: (val) {
+                      setModalState(() {
+                        if (val.trim().isEmpty) {
+                          filtered = List.from(WorldCitiesService.allCities);
+                        } else {
+                          final query = val.toLowerCase();
+                          filtered = WorldCitiesService.allCities.where((c) {
+                            return c.city.toLowerCase().contains(query) ||
+                                c.country.toLowerCase().contains(query);
+                          }).toList();
+                        }
+                      });
+                    },
+                  ),
+                  const SizedBox(height: 12),
+                  Expanded(
+                    child: ListView.separated(
+                      itemCount: filtered.length,
+                      separatorBuilder: (context, index) => Divider(
+                        color: Colors.white.withValues(alpha: 0.05),
+                        height: 1,
+                      ),
+                      itemBuilder: (ctx, idx) {
+                        final city = filtered[idx];
+                        final isSel = city.city == _currentCity.city;
+                        return ListTile(
+                          contentPadding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
+                          title: Text(
+                            city.city,
+                            style: TextStyle(
+                              color: isSel ? AppColors.starlightGold : Colors.white,
+                              fontWeight: isSel ? FontWeight.bold : FontWeight.normal,
+                              fontSize: 14,
+                            ),
+                          ),
+                          subtitle: Text(
+                            '${city.country} • Lat: ${city.latitude.toStringAsFixed(2)}°, Lng: ${city.longitude.toStringAsFixed(2)}°',
+                            style: const TextStyle(color: Colors.white38, fontSize: 11),
+                          ),
+                          trailing: isSel
+                              ? const Icon(Icons.check_circle, color: AppColors.starlightGold)
+                              : null,
+                          onTap: () => Navigator.of(context).pop(city),
+                        );
+                      },
+                    ),
+                  ),
+                ],
+              ),
+            );
+          },
+        );
+      },
+    );
+
+    if (selected != null) {
+      setState(() {
+        _currentCity = selected;
+      });
+      _recalculate();
+    }
   }
 
   @override
   Widget build(BuildContext context) {
     final cur = _dayInfo.currentHour;
+    final prev = _dayInfo.previousHour;
+    final next = _dayInfo.nextHour;
+
+    List<PlanetaryHour> displayedHours;
+    if (_selectedTab == 1) {
+      displayedHours = _dayInfo.dayHours;
+    } else if (_selectedTab == 2) {
+      displayedHours = _dayInfo.nightHours;
+    } else {
+      displayedHours = _dayInfo.allHours;
+    }
 
     return Center(
       child: Container(
@@ -56,7 +206,7 @@ class _PlanetaryHoursModalState extends State<PlanetaryHoursModal> {
             mainAxisSize: MainAxisSize.min,
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
-              // Header Row
+              // Header Row with City & Close
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
@@ -82,9 +232,43 @@ class _PlanetaryHoursModalState extends State<PlanetaryHoursModal> {
                               fontWeight: FontWeight.bold,
                             ),
                           ),
-                          Text(
-                            '☀️ Doğuş: ${_dayInfo.sunriseFormatted} | 🌙 Batış: ${_dayInfo.sunsetFormatted}',
-                            style: const TextStyle(color: Colors.white54, fontSize: 11),
+                          Row(
+                            children: [
+                              Text(
+                                '☀️ ${_dayInfo.sunriseFormatted} | 🌙 ${_dayInfo.sunsetFormatted}',
+                                style: const TextStyle(color: Colors.white54, fontSize: 11),
+                              ),
+                              const SizedBox(width: 8),
+                              InkWell(
+                                onTap: _selectCity,
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.starlightGold.withValues(alpha: 0.18),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: AppColors.starlightGold.withValues(alpha: 0.4)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      const Icon(Icons.location_on, size: 10, color: AppColors.starlightGold),
+                                      const SizedBox(width: 2),
+                                      Text(
+                                        _dayInfo.cityName,
+                                        style: const TextStyle(
+                                          color: AppColors.starlightGold,
+                                          fontSize: 10.5,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
+                                      const SizedBox(width: 2),
+                                      const Icon(Icons.arrow_drop_down, size: 12, color: AppColors.starlightGold),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           ),
                         ],
                       ),
@@ -97,6 +281,129 @@ class _PlanetaryHoursModalState extends State<PlanetaryHoursModal> {
                 ],
               ),
               const SizedBox(height: 16),
+
+              // Önceki - ŞİMDİ - Sonraki Üçlü Hızlı Gezinme Çubuğu (Görsel 1 Tarzı)
+              Container(
+                width: double.infinity,
+                padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                decoration: BoxDecoration(
+                  color: Colors.white.withValues(alpha: 0.05),
+                  borderRadius: BorderRadius.circular(16),
+                  border: Border.all(color: Colors.white12),
+                ),
+                child: Row(
+                  children: [
+                    // Önceki
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: [
+                          const Text(
+                            'ÖNCEKİ',
+                            style: TextStyle(
+                              color: Colors.white38,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${prev.planetSymbol} ${prev.planetName}',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            '${prev.startFormatted}-${prev.endFormatted}',
+                            style: const TextStyle(color: Colors.white38, fontSize: 9.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                    Container(width: 1, height: 32, color: Colors.white12),
+                    // ŞİMDİ
+                    Expanded(
+                      flex: 2,
+                      child: Padding(
+                        padding: const EdgeInsets.symmetric(horizontal: 8),
+                        child: Column(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 1.5),
+                              decoration: BoxDecoration(
+                                color: AppColors.starlightGold,
+                                borderRadius: BorderRadius.circular(6),
+                              ),
+                              child: const Text(
+                                'ŞİMDİ AKTİF 🟢',
+                                style: TextStyle(
+                                  color: Colors.black,
+                                  fontSize: 8.5,
+                                  fontWeight: FontWeight.w900,
+                                ),
+                              ),
+                            ),
+                            const SizedBox(height: 3),
+                            Text(
+                              '${cur.planetSymbol} ${cur.planetName} Saati',
+                              style: const TextStyle(
+                                color: Colors.white,
+                                fontSize: 13,
+                                fontWeight: FontWeight.bold,
+                              ),
+                            ),
+                            Text(
+                              '${cur.startFormatted} - ${cur.endFormatted} • ${_dayInfo.minutesRemainingInCurrentHour} dk kaldı',
+                              style: const TextStyle(
+                                color: AppColors.starlightGold,
+                                fontSize: 10,
+                                fontWeight: FontWeight.w600,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                    Container(width: 1, height: 32, color: Colors.white12),
+                    // Sonraki
+                    Expanded(
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.end,
+                        children: [
+                          const Text(
+                            'SONRAKİ',
+                            style: TextStyle(
+                              color: Colors.white38,
+                              fontSize: 9,
+                              fontWeight: FontWeight.bold,
+                              letterSpacing: 0.5,
+                            ),
+                          ),
+                          const SizedBox(height: 2),
+                          Text(
+                            '${next.planetSymbol} ${next.planetName}',
+                            style: const TextStyle(
+                              color: Colors.white70,
+                              fontSize: 11,
+                              fontWeight: FontWeight.w600,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                          Text(
+                            '${next.startFormatted}-${next.endFormatted}',
+                            style: const TextStyle(color: Colors.white38, fontSize: 9.5),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                ),
+              ),
+              const SizedBox(height: 14),
 
               // Aktif Saat Canlı Kartı (Glowing Card)
               Container(
@@ -129,49 +436,28 @@ class _PlanetaryHoursModalState extends State<PlanetaryHoursModal> {
                   children: [
                     Row(
                       children: [
-                        Container(
-                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
-                          decoration: BoxDecoration(
-                            color: AppColors.starlightGold,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: const Text(
-                            'ŞU ANDA AKTİF SAAT 🟢',
-                            style: TextStyle(
-                              color: Colors.black,
-                              fontSize: 9.5,
-                              fontWeight: FontWeight.w900,
-                              letterSpacing: 0.5,
-                            ),
-                          ),
-                        ),
-                        const Spacer(),
-                        Text(
-                          '${cur.startFormatted} - ${cur.endFormatted}',
-                          style: const TextStyle(
-                            color: AppColors.starlightGold,
-                            fontSize: 13,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
-                    ),
-                    const SizedBox(height: 10),
-                    Row(
-                      children: [
                         Text(
                           cur.planetSymbol,
-                          style: const TextStyle(fontSize: 26),
+                          style: const TextStyle(fontSize: 28),
                         ),
-                        const SizedBox(width: 8),
+                        const SizedBox(width: 10),
                         Expanded(
-                          child: Text(
-                            '${cur.planetName} Saati • ${cur.title}',
-                            style: const TextStyle(
-                              color: Colors.white,
-                              fontSize: 15,
-                              fontWeight: FontWeight.bold,
-                            ),
+                          child: Column(
+                            crossAxisAlignment: CrossAxisAlignment.start,
+                            children: [
+                              Text(
+                                '${cur.planetName} Saati • ${cur.title}',
+                                style: const TextStyle(
+                                  color: Colors.white,
+                                  fontSize: 15,
+                                  fontWeight: FontWeight.bold,
+                                ),
+                              ),
+                              Text(
+                                '${cur.isDayHour ? "Gündüz" : "Gece"} ${cur.isDayHour ? cur.hourNumber : cur.hourNumber - 12}. Saati • ${cur.startFormatted} - ${cur.endFormatted}',
+                                style: const TextStyle(color: AppColors.starlightGold, fontSize: 11),
+                              ),
+                            ],
                           ),
                         ),
                       ],
@@ -214,119 +500,166 @@ class _PlanetaryHoursModalState extends State<PlanetaryHoursModal> {
                   ],
                 ),
               ),
-              const SizedBox(height: 20),
+              const SizedBox(height: 18),
 
-              // 24 Saatlik Akış Başlığı
-              const Text(
-                'Günün 24 Gezegen Saati Zaman Çizelgesi',
-                style: TextStyle(
-                  color: Colors.white,
-                  fontSize: 14,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 4),
-              const Text(
-                'Antik Keldani gökyüzü dizilimine göre gün doğumundan ertesi gün doğumuna kadar olan saatler',
-                style: TextStyle(color: Colors.white54, fontSize: 11),
+              // Sekme Seçici (Tümü 24, Gündüz 12, Gece 12)
+              Row(
+                children: [
+                  _buildTabButton(0, 'Tümü (24)'),
+                  const SizedBox(width: 8),
+                  _buildTabButton(1, 'Gündüz (12)'),
+                  const SizedBox(width: 8),
+                  _buildTabButton(2, 'Gece (12)'),
+                ],
               ),
               const SizedBox(height: 12),
 
-              // Saat Listesi (Gündüz & Gece)
+              // Saat Listesi
               ListView.separated(
                 shrinkWrap: true,
                 physics: const NeverScrollableScrollPhysics(),
-                itemCount: _dayInfo.allHours.length,
+                itemCount: displayedHours.length,
                 separatorBuilder: (context, index) => const SizedBox(height: 6),
                 itemBuilder: (context, index) {
-                  final h = _dayInfo.allHours[index];
+                  final h = displayedHours[index];
                   final isCurrent = h.isCurrent;
+                  final isExpanded = _expandedIndex == index;
 
-                  return Container(
-                    padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
-                    decoration: BoxDecoration(
-                      color: isCurrent
-                          ? AppColors.starlightGold.withValues(alpha: 0.15)
-                          : Colors.white.withValues(alpha: 0.04),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
+                  return InkWell(
+                    onTap: () {
+                      setState(() {
+                        _expandedIndex = isExpanded ? null : index;
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(14),
+                    child: AnimatedContainer(
+                      duration: const Duration(milliseconds: 200),
+                      padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 10),
+                      decoration: BoxDecoration(
                         color: isCurrent
-                            ? AppColors.starlightGold
-                            : Colors.white.withValues(alpha: 0.08),
-                        width: isCurrent ? 1.4 : 1.0,
-                      ),
-                    ),
-                    child: Row(
-                      children: [
-                        Container(
-                          width: 32,
-                          alignment: Alignment.center,
-                          child: Text(
-                            h.planetSymbol,
-                            style: TextStyle(
-                              fontSize: 18,
-                              color: isCurrent ? AppColors.starlightGold : Colors.white70,
-                            ),
-                          ),
+                            ? AppColors.starlightGold.withValues(alpha: 0.15)
+                            : Colors.white.withValues(alpha: 0.04),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(
+                          color: isCurrent
+                              ? AppColors.starlightGold
+                              : (isExpanded ? AppColors.starlightGold.withValues(alpha: 0.4) : Colors.white.withValues(alpha: 0.08)),
+                          width: isCurrent ? 1.4 : 1.0,
                         ),
-                        const SizedBox(width: 8),
-                        Expanded(
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
+                      ),
+                      child: Column(
+                        children: [
+                          Row(
                             children: [
-                              Row(
-                                children: [
-                                  Text(
-                                    '${h.planetName} (${h.isDayHour ? 'Gündüz ${h.hourNumber}. Saat' : 'Gece ${h.hourNumber - 12}. Saat'})',
-                                    style: TextStyle(
-                                      color: isCurrent ? AppColors.starlightGold : Colors.white,
-                                      fontWeight: FontWeight.bold,
-                                      fontSize: 12.5,
-                                    ),
+                              Container(
+                                width: 32,
+                                alignment: Alignment.center,
+                                child: Text(
+                                  h.planetSymbol,
+                                  style: TextStyle(
+                                    fontSize: 18,
+                                    color: isCurrent ? AppColors.starlightGold : Colors.white70,
                                   ),
-                                  if (isCurrent) ...[
-                                    const SizedBox(width: 6),
-                                    Container(
-                                      padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
-                                      decoration: BoxDecoration(
-                                        color: AppColors.starlightGold,
-                                        borderRadius: BorderRadius.circular(4),
-                                      ),
-                                      child: const Text(
-                                        'AKTİF',
-                                        style: TextStyle(
-                                          fontSize: 8,
-                                          fontWeight: FontWeight.w900,
-                                          color: Colors.black,
+                                ),
+                              ),
+                              const SizedBox(width: 8),
+                              Expanded(
+                                child: Column(
+                                  crossAxisAlignment: CrossAxisAlignment.start,
+                                  children: [
+                                    Row(
+                                      children: [
+                                        Text(
+                                          '${h.planetName} (${h.isDayHour ? 'Gündüz ${h.hourNumber}. Saat' : 'Gece ${h.hourNumber - 12}. Saat'})',
+                                          style: TextStyle(
+                                            color: isCurrent ? AppColors.starlightGold : Colors.white,
+                                            fontWeight: FontWeight.bold,
+                                            fontSize: 12.5,
+                                          ),
                                         ),
-                                      ),
+                                        if (isCurrent) ...[
+                                          const SizedBox(width: 6),
+                                          Container(
+                                            padding: const EdgeInsets.symmetric(horizontal: 5, vertical: 1),
+                                            decoration: BoxDecoration(
+                                              color: AppColors.starlightGold,
+                                              borderRadius: BorderRadius.circular(4),
+                                            ),
+                                            child: const Text(
+                                              'AKTİF',
+                                              style: TextStyle(
+                                                fontSize: 8,
+                                                fontWeight: FontWeight.w900,
+                                                color: Colors.black,
+                                              ),
+                                            ),
+                                          ),
+                                        ],
+                                      ],
+                                    ),
+                                    const SizedBox(height: 2),
+                                    Text(
+                                      h.title,
+                                      style: const TextStyle(color: Colors.white54, fontSize: 10.5),
                                     ),
                                   ],
-                                ],
+                                ),
                               ),
-                              const SizedBox(height: 2),
                               Text(
-                                h.title,
-                                style: const TextStyle(color: Colors.white54, fontSize: 10.5),
+                                '${h.startFormatted} - ${h.endFormatted}',
+                                style: TextStyle(
+                                  color: isCurrent ? AppColors.starlightGold : Colors.white70,
+                                  fontSize: 11.5,
+                                  fontWeight: FontWeight.bold,
+                                ),
                               ),
                             ],
                           ),
-                        ),
-                        Text(
-                          '${h.startFormatted} - ${h.endFormatted}',
-                          style: TextStyle(
-                            color: isCurrent ? AppColors.starlightGold : Colors.white70,
-                            fontSize: 11.5,
-                            fontWeight: FontWeight.bold,
-                          ),
-                        ),
-                      ],
+                          if (isExpanded) ...[
+                            const SizedBox(height: 8),
+                            Divider(color: Colors.white.withValues(alpha: 0.1), height: 1),
+                            const SizedBox(height: 8),
+                            Text(
+                              h.energyDescription,
+                              style: const TextStyle(color: Colors.white70, fontSize: 11, height: 1.35),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              '🎯 En Uygun: ${h.suitableActivities}',
+                              style: const TextStyle(color: AppColors.pastelMint, fontSize: 11, fontWeight: FontWeight.w600),
+                            ),
+                          ],
+                        ],
+                      ),
                     ),
                   );
                 },
               ),
               const SizedBox(height: 16),
             ],
+          ),
+        ),
+      ),
+    );
+  }
+
+  Widget _buildTabButton(int index, String title) {
+    final isSelected = _selectedTab == index;
+    return InkWell(
+      onTap: () => setState(() => _selectedTab = index),
+      borderRadius: BorderRadius.circular(10),
+      child: Container(
+        padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 6),
+        decoration: BoxDecoration(
+          color: isSelected ? AppColors.starlightGold : Colors.white.withValues(alpha: 0.06),
+          borderRadius: BorderRadius.circular(10),
+        ),
+        child: Text(
+          title,
+          style: TextStyle(
+            color: isSelected ? Colors.black : Colors.white70,
+            fontSize: 11,
+            fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
           ),
         ),
       ),

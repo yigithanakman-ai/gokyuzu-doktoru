@@ -42,14 +42,14 @@ class CosmicFrequenciesModal extends StatelessWidget {
     PlanetaryFrequencyItem(
       planetName: 'Güneş',
       symbol: '☉',
-      frequencyHz: 126.22,
+      frequencyHz: 252.44,
       chakraName: 'Solar Pleksus (3. Çakra)',
       themeColor: Color(0xFFFFB703),
-      note: 'H (Si)',
-      title: 'Özgüven, Yaşam Sevinci & İrade Frekansı',
+      note: 'B3 (Si) • 252.44 Hz (33. Işıltılı Oktav)',
+      title: 'Özgüven, Canlılık & Yüksek Güneş Frekansı',
       description:
-          'Güneş frekansı, bedenin enerji santrali olan solar pleksus çakrasını aktive eder. Zihinsel yorgunluğu dağıtır, kişisel karizmayı ve liderlik kudretini besler.',
-      bestUseCases: 'Önemli toplantılar öncesi, motivasyon düşüklüğünde, sabah uyanırken dinleme veya tefekkür.',
+          'Hans Cousto Kozmik Oktav yasasına göre Güneş\'in 33. harmonik frekansıdır (252.44 Hz). Alt bas oktavı (126.22 Hz) ile akustik olarak zenginleştirilen bu ışıltılı ton; zihinsel yorgunluğu dağıtır, solar pleksusu aktive eder ve kişisel auranızı parlatır.',
+      bestUseCases: 'Önemli toplantılar öncesi, motivasyon düşüklüğünde, sabah uyanırken ve aura güçlendirmede.',
     ),
     PlanetaryFrequencyItem(
       planetName: 'Ay',
@@ -57,11 +57,11 @@ class CosmicFrequenciesModal extends StatelessWidget {
       frequencyHz: 210.42,
       chakraName: 'Sakral Çakra (2. Çakra)',
       themeColor: Color(0xFF90E0EF),
-      note: 'G# (Sol Diyez)',
+      note: 'G#3 (Sol Diyez) • 210.42 Hz (+5 Cent)',
       title: 'Bilinçaltı, Duygusal Denge & Sezgi',
       description:
-          'Sinodik Ay döngüsünün titreşimidir. Duygusal blokajları çözer, kadınsı şifa enerjisini dengeler ve derin rüyaları berraklaştırır.',
-      bestUseCases: 'Uykudan önce, su kenarında meditasyon, duygusal iniş çıkışlarda ve sezgisel çalışmalarda.',
+          'Sinodik Ay döngüsünün (29.53 gün) 29. oktav titreşimidir. Duygusal tıkanıklıkları çözer, kadınsı şifa enerjisini dengeler ve sezgileri berraklaştırır.',
+      bestUseCases: 'Uykudan önce, derin tefekkür, duygusal dalgalanmalarda ve su ritüellerinde.',
     ),
     PlanetaryFrequencyItem(
       planetName: 'Venüs',
@@ -69,11 +69,11 @@ class CosmicFrequenciesModal extends StatelessWidget {
       frequencyHz: 221.23,
       chakraName: 'Kalp Çakrası (4. Çakra)',
       themeColor: Color(0xFFFF758F),
-      note: 'A (La)',
+      note: 'A3 (La) • 221.23 Hz (-9 Cent)',
       title: 'Aşk, Cazibe, Estetik & Koşulsuz Sevgi',
       description:
-          'Venüs rotasyonunun oktav frekansı, kalbin elektromanyetik alanını genişleterek çekim yasasını ve şefkati aktive eder. Sanatsal ilhamı tetikler.',
-      bestUseCases: 'İlişkilerde uyum ararken, kalp kırıklıklarını onarırken, resim/müzik icra ederken.',
+          'Venüs rotasyonunun 32. oktav titreşimidir. Kalbin elektromanyetik rezonansını genişleterek çekim yasasını, şefkati ve estetik yaratıcılığı aktive eder.',
+      bestUseCases: 'İlişkilerde barış ve uyum ararken, kalp kırıklıklarını onarırken, sanat ve güzellik çalışmalarında.',
     ),
     PlanetaryFrequencyItem(
       planetName: 'Merkür',
@@ -81,11 +81,11 @@ class CosmicFrequenciesModal extends StatelessWidget {
       frequencyHz: 141.27,
       chakraName: 'Boğaz Çakrası (5. Çakra)',
       themeColor: Color(0xFF00B4D8),
-      note: 'C# (Do Diyez)',
+      note: 'C#3 (Do Diyez) • 141.27 Hz (+33 Cent Mikroton)',
       title: 'Zihinsel Berraklık, İletişim & Analiz',
       description:
-          'Merkür\'ün Güneş etrafındaki devrinin oktavıdır. İki beyin yarım küresini senkronize eder. Konuşma, yazma ve karmaşık sorunları çözme yeteneğini güçlendirir.',
-      bestUseCases: 'Ders çalışırken, sözleşme hazırlarken, hitabet ve sunum öncesi odaklanma için.',
+          'Merkür\'ün Güneş etrafındaki devrinin 30. oktavıdır. Standart Do# notasından +33 cent mikrotonal farkla titreşir. İki beyin yarım küresini senkronize eder; konuşma, hızlı kavrayış ve sözleşme gücünü keskinleştirir.',
+      bestUseCases: 'Ders çalışırken, önemli sözleşmeler hazırlarken, hitabet ve sunum öncesi odaklanmada.',
     ),
     PlanetaryFrequencyItem(
       planetName: 'Mars',
@@ -93,11 +93,11 @@ class CosmicFrequenciesModal extends StatelessWidget {
       frequencyHz: 144.72,
       chakraName: 'Kök Çakra (1. Çakra)',
       themeColor: Color(0xFFE63946),
-      note: 'D (Re)',
+      note: 'D3 (Re) • 144.72 Hz (-25 Cent Dinamik Güç)',
       title: 'Cesaret, Fiziksel Canlılık & Eylem Gücü',
       description:
-          'Mars döngüsünün frekansı, atalet ve tembelliği dağıtan dinamik bir yaşam enerjisidir. Korkuları aşmak ve kararlılıkla adım atmak için bedeni tetikler.',
-      bestUseCases: 'Fiziksel antrenman, spor, erteleme alışkanlığını kırmak ve cesaret gerektiren kararlar.',
+          'Mars döngüsünün 33. oktavıdır. Standart Re notasından 25 cent daha pes bir doğal frekanstır; atalet ve korkuyu dağıtarak kök çakrayı dinamik enerjiyle doldurur. Kararlılıkla adım atma motivasyonu verir.',
+      bestUseCases: 'Spor ve antrenman öncesi, erteleme alışkanlığını kırmak ve cesaret gerektiren yüzleşmelerde.',
     ),
     PlanetaryFrequencyItem(
       planetName: 'Jüpiter',
@@ -105,10 +105,10 @@ class CosmicFrequenciesModal extends StatelessWidget {
       frequencyHz: 183.58,
       chakraName: 'Üçüncü Göz (6. Çakra)',
       themeColor: Color(0xFF9D4EDD),
-      note: 'F# (Fa Diyez)',
+      note: 'F#3 (Fa Diyez) • 183.58 Hz (-32 Cent Genişleme)',
       title: 'Bolluk, Bereket, Vizyon & Ruhsal Genişleme',
       description:
-          'Güneş sisteminin en büyük koruyucusu Jüpiter\'in ilahi şans ve bilgelik titreşimidir. Kıtlık bilincini dönüştürür ve ufku genişletir.',
+          'Güneş sisteminin en büyük koruyucusu Jüpiter\'in 36. oktav ilahi frekansıdır. Kıtlık bilincini dönüştürür, manevi teslimiyeti ve şans bilincini yükseltir.',
       bestUseCases: 'Maddi/manevi niyet çalışmaları, dua ve şükür ritüelleri, uzun vadeli vizyon belirleme.',
     ),
     PlanetaryFrequencyItem(
@@ -117,11 +117,11 @@ class CosmicFrequenciesModal extends StatelessWidget {
       frequencyHz: 147.85,
       chakraName: 'Taç Çakra & Kök Denge',
       themeColor: Color(0xFF6C757D),
-      note: 'D (Re)',
+      note: 'D3 (Re) • 147.85 Hz (+12 Cent Kristal Yapı)',
       title: 'Disiplin, Karmik Denge, Sabır & Olgunluk',
       description:
-          'Zamanın efendisi Satürn\'ün titreşimi, sağlam yapılar inşa etmek, dağınık zihni toplamak ve ruhsal dersleri olgunlukla kabul etmek için zemin hazırlar.',
-      bestUseCases: 'Stratejik planlama, bütçe yönetimi, derin tefekkür ve sabır gerektiren süreçler.',
+          'Satürn döngüsünün 37. oktavıdır. Mars ile aynı ana nota havuzunda (Re) olmasına rağmen, 147.85 Hz (+12 cent) kristalize mikrotonuyla sağlam yapılar inşa etmek, dağınık zihni toparlamak ve disiplin kurmak için idealdir.',
+      bestUseCases: 'Stratejik planlama, bütçe yönetimi, derin tefekkür ve sabır gerektiren uzun vadeli işler.',
     ),
     PlanetaryFrequencyItem(
       planetName: 'OM / Dünya Yılı',
@@ -129,10 +129,10 @@ class CosmicFrequenciesModal extends StatelessWidget {
       frequencyHz: 136.10,
       chakraName: 'Kalp Çakrası (Anahata)',
       themeColor: Color(0xFF52B788),
-      note: 'C# (Do Diyez)',
+      note: 'C#3 (Do Diyez) • 136.10 Hz (-31 Cent Meditatif)',
       title: 'Evrensel Huzur, Zihin Dinginliği & Meditasyon',
       description:
-          'Dünyanın presesyon döngüsünün (Büyük Platonik Yıl) frekansıdır. Tibet çanaklarının ve kadim mantraların temelidir. Stresi sıfırlayarak huzur verir.',
+          'Dünyanın 25.920 yıllık Platonik presesyon döngüsünün 32. oktavıdır. Merkür ile aynı nota bölgesinde (Do#) yer alsa da -31 cent farkıyla Tibet çanaklarının ve kadim OM mantralarının temelidir; sinir sistemini gevşetir.',
       bestUseCases: 'Genel meditasyon, stres atma, yoga ve derin rahatlama.',
     ),
   ];
@@ -188,7 +188,7 @@ class CosmicFrequenciesModal extends StatelessWidget {
                             ),
                           ),
                           Text(
-                            'Hans Cousto • Kozmik Oktav Rehberi',
+                            'Hans Cousto • Kozmik Oktav & Mikrotonal Akort',
                             style: TextStyle(
                               color: AppColors.starlightGold.withValues(alpha: 0.8),
                               fontSize: 11,
@@ -225,22 +225,65 @@ class CosmicFrequenciesModal extends StatelessWidget {
                 ),
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
-                  children: const [
-                    Text(
-                      '🔬 Gezegen Frekansları Nedir?',
+                  children: [
+                    const Text(
+                      '🔬 Hans Cousto Kozmik Oktav & Mikrotonal Gerçekler',
                       style: TextStyle(
                         color: AppColors.starlightGold,
                         fontSize: 13,
                         fontWeight: FontWeight.bold,
                       ),
                     ),
-                    SizedBox(height: 6),
-                    Text(
-                      'İsviçreli matematikçi ve müzikolog Hans Cousto, 1978\'de gezegenlerin Güneş etrafındaki dönüş periyotlarını akustik oktav yasasına (f = 1/T × 2^n) göre ses dalgalarına (Hertz) dönüştürdü. Her gök cisminin titreşimi, insan bedenindeki belirli bir sinir düğümü ve çakrayla tam rezonansa girer.',
+                    const SizedBox(height: 6),
+                    const Text(
+                      'İsviçreli matematikçi ve müzikolog Hans Cousto (1978), gezegenlerin Güneş etrafındaki dönüş periyotlarını (T) akustik oktav yasasına (f = 1/T × 2^n) göre ses dalgalarına dönüştürdü. Evren piyanonun 12 eşit tuşuyla sınırlı değildir; gezegenler doğal mikrotonal Hertz (Hz) değerlerinde titreşir.',
                       style: TextStyle(
                         color: Colors.white70,
                         fontSize: 11.5,
                         height: 1.4,
+                      ),
+                    ),
+                    const SizedBox(height: 10),
+                    Container(
+                      padding: const EdgeInsets.all(10),
+                      decoration: BoxDecoration(
+                        color: Colors.black38,
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white12),
+                      ),
+                      child: Column(
+                        crossAxisAlignment: CrossAxisAlignment.start,
+                        children: const [
+                          Text(
+                            '♾️ Kesintisiz Meditasyon Döngüsü:',
+                            style: TextStyle(color: AppColors.starlightGold, fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Sesler siz "Durdur" butonuna basana kadar kesintisiz döngüde (loop) çalar.',
+                            style: TextStyle(color: Colors.white60, fontSize: 10.5),
+                          ),
+                          SizedBox(height: 6),
+                          Text(
+                            '🎼 Neden Bazı Gezegenler Aynı Notada?',
+                            style: TextStyle(color: AppColors.starlightGold, fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Örn: Mars (144.7 Hz) ve Satürn (147.8 Hz) ikisi de "Re" ses havuzundadır ancak aralarında 3.1 Hz (+37 cent) mikrotonal fark vardır. Merkür ve OM da "Do Diyez" havuzunun farklı frekanslarıdır.',
+                            style: TextStyle(color: Colors.white60, fontSize: 10.5),
+                          ),
+                          SizedBox(height: 6),
+                          Text(
+                            '☀️ Güneş (252.44 Hz - Si):',
+                            style: TextStyle(color: AppColors.starlightGold, fontSize: 11, fontWeight: FontWeight.bold),
+                          ),
+                          SizedBox(height: 2),
+                          Text(
+                            'Güneş\'in 32. oktavı (126.22 Hz) sub-bass bas tonudur. Mobil hoparlörlerde berrak duyulabilmesi için 33. ışıltılı oktavı olan 252.44 Hz (Si3) sentezlenmiştir.',
+                            style: TextStyle(color: Colors.white60, fontSize: 10.5),
+                          ),
+                        ],
                       ),
                     ),
                   ],
@@ -295,7 +338,7 @@ class CosmicFrequenciesModal extends StatelessWidget {
                                   ),
                                   Text(
                                     '${item.chakraName} | Nota: ${item.note}',
-                                    style: const TextStyle(color: Colors.white54, fontSize: 10.5),
+                                    style: const TextStyle(color: Colors.white70, fontSize: 10.5),
                                   ),
                                 ],
                               ),

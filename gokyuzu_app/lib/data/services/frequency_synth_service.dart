@@ -7,7 +7,7 @@ import 'package:path_provider/path_provider.dart';
 /// 100% On-Device (Cihaz Üzerinde) Kozmik Frekans Sentezleyici
 /// Sıfır Bulut Depolaması, Sıfır İnternet Trafiği, Sıfır Maliyet.
 /// Cihazın ses işlemcisini kullanarak tam matematiksel Hertz (Hz) değerinde
-/// zengin stereo sinüs ses dalgası üretir ve kusursuz oynatır.
+/// zengin stereo sinüs ses dalgası üretir ve kesintisiz (loop) meditasyon döngüsünde çalar.
 class FrequencySynthService {
   static final AudioPlayer _player = AudioPlayer();
   static final ValueNotifier<double?> playingFrequencyNotifier = ValueNotifier<double?>(null);
@@ -15,17 +15,22 @@ class FrequencySynthService {
 
   static bool get isPlaying => playingFrequencyNotifier.value != null;
 
-  /// Belirli bir frekansta (Hz) saf sinüs dalgası içeren Stereo WAV ses dosyası üretir
+  /// Belirli bir frekansta (Hz) saf sinüs dalgası içeren kesintisiz döngülü Stereo WAV üretir
   static Uint8List generateSineWavBytes({
     required double frequencyHz,
-    double durationSeconds = 20.0,
+    double targetDurationSeconds = 12.0,
     int sampleRate = 44100,
     double volume = 0.88,
   }) {
-    const numChannels = 2; // Stereo (Evrensel uyumluluk ve dolgun ses için)
+    const numChannels = 2; // Stereo
     const bitsPerSample = 16;
     const blockAlign = numChannels * (bitsPerSample ~/ 8); // 4 bytes
-    final numSamples = (sampleRate * durationSeconds).toInt();
+
+    // Dikişsiz ve çıtlamasız döngü için tam dalga periyodu sayısına yuvarla
+    final numCycles = (targetDurationSeconds * frequencyHz).round();
+    final actualDuration = numCycles / frequencyHz;
+    final numSamples = (sampleRate * actualDuration).toInt();
+
     final byteRate = sampleRate * blockAlign; // 176400 bytes/sec
     final subChunk2Size = numSamples * blockAlign;
     final chunkSize = 36 + subChunk2Size;
@@ -63,9 +68,8 @@ class FrequencySynthService {
     byteData.setUint8(39, 0x61); // 'a'
     byteData.setUint32(40, subChunk2Size, Endian.little);
 
-    // Yumuşak ses açılışı ve kapanışı (Fade-in / Fade-out) - Patlama / çıtlama olmaması için
-    final attackSamples = (sampleRate * 0.20).toInt();
-    final releaseSamples = (sampleRate * 0.40).toInt();
+    // Mikro taper: İlk ve son 10ms yumuşak geçiş
+    final taperSamples = (sampleRate * 0.015).toInt();
 
     int offset = 44;
     for (int i = 0; i < numSamples; i++) {
@@ -73,14 +77,14 @@ class FrequencySynthService {
       final angle = 2.0 * pi * frequencyHz * t;
 
       double envelope = 1.0;
-      if (i < attackSamples) {
-        envelope = i / attackSamples;
-      } else if (i > numSamples - releaseSamples) {
-        envelope = (numSamples - i) / releaseSamples;
+      if (i < taperSamples) {
+        envelope = i / taperSamples;
+      } else if (i > numSamples - taperSamples) {
+        envelope = (numSamples - i) / taperSamples;
       }
 
-      // Saf sinüs + akustik harmonikler (kulak ve küçük mobil/laptop hoparlörleri için dolgun derinlik)
-      final sample = (sin(angle) * 0.70 + sin(angle * 2.0) * 0.22 + sin(angle * 3.0) * 0.08) * envelope * volume;
+      // Saf sinüs + akustik harmonikler (kulak ve küçük mobil hoparlörler için zengin akustik derinlik)
+      final sample = (sin(angle) * 0.72 + sin(angle * 2.0) * 0.20 + sin(angle * 3.0) * 0.08) * envelope * volume;
       final sampleClamped = sample.clamp(-1.0, 1.0);
       final sample16 = (sampleClamped * 32767.0).toInt();
 
@@ -95,7 +99,7 @@ class FrequencySynthService {
     return byteData.buffer.asUint8List();
   }
 
-  /// Frekansı çalar (Eğer aynı frekans çalıyorsa durdurur)
+  /// Frekansı kesintisiz çalar (Eğer aynı frekans çalıyorsa durdurur)
   static Future<void> togglePlayFrequency(double frequencyHz) async {
     if (playingFrequencyNotifier.value == frequencyHz) {
       await stop();
@@ -120,32 +124,26 @@ class FrequencySynthService {
         targetPath = file.path;
       }
 
-      // macOS üzerinde doğrudan CoreAudio afplay kullanarak sıfır gecikmeli kusursuz oynatma
+      // macOS üzerinde sıfır gecikmeli kesintisiz sonsuz oynatma
       if (Platform.isMacOS) {
         final macFile = File('/tmp/cosmic_${frequencyHz.toStringAsFixed(2)}.wav');
         if (!macFile.existsSync()) {
           await macFile.writeAsBytes(wavBytes);
         }
         try {
-          _afplayProcess = await Process.start('/usr/bin/afplay', [macFile.path]);
-          _afplayProcess?.exitCode.then((code) {
-            if (playingFrequencyNotifier.value == frequencyHz) {
-              playingFrequencyNotifier.value = null;
-            }
-          });
+          _afplayProcess = await Process.start('/bin/sh', [
+            '-c',
+            'while true; do /usr/bin/afplay "${macFile.path}"; done'
+          ]);
           return;
         } catch (e) {
-          debugPrint('macOS afplay fallback: $e');
+          debugPrint('macOS afplay loop fallback: $e');
         }
       }
 
-      // Mobil (Android, iOS) ve diğer platformlar için audioplayers motoru
+      // Mobil (Android, iOS) için kesintisiz loop modunda audioplayers
+      await _player.setReleaseMode(ReleaseMode.loop);
       await _player.setVolume(1.0);
-      _player.onPlayerComplete.listen((event) {
-        if (playingFrequencyNotifier.value == frequencyHz) {
-          playingFrequencyNotifier.value = null;
-        }
-      });
       await _player.play(DeviceFileSource(targetPath, mimeType: 'audio/wav'));
     } catch (e) {
       debugPrint('Kozmik frekans sentezleme hatası: $e');
@@ -153,11 +151,18 @@ class FrequencySynthService {
     }
   }
 
-  /// Çalan sesi durdurur
+  /// Çalan sesi tamamen durdurur
   static Future<void> stop() async {
     try {
-      _afplayProcess?.kill();
-      _afplayProcess = null;
+      if (_afplayProcess != null) {
+        final pid = _afplayProcess!.pid;
+        _afplayProcess?.kill(ProcessSignal.sigkill);
+        _afplayProcess = null;
+        try {
+          Process.runSync('/usr/bin/pkill', ['-9', '-P', '$pid']);
+          Process.runSync('/usr/bin/killall', ['afplay']);
+        } catch (_) {}
+      }
       await _player.stop();
     } catch (_) {}
     playingFrequencyNotifier.value = null;

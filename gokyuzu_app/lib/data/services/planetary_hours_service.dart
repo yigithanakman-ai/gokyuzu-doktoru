@@ -31,26 +31,39 @@ class PlanetaryHour {
 }
 
 class PlanetaryDayInfo {
+  final String cityName;
   final String dayName;
   final String dayRulerPlanet;
   final String dayRulerSymbol;
   final String sunriseFormatted;
   final String sunsetFormatted;
   final PlanetaryHour currentHour;
+  final PlanetaryHour previousHour;
+  final PlanetaryHour nextHour;
+  final int minutesRemainingInCurrentHour;
   final List<PlanetaryHour> allHours;
+  final List<PlanetaryHour> dayHours;
+  final List<PlanetaryHour> nightHours;
 
   const PlanetaryDayInfo({
+    required this.cityName,
     required this.dayName,
     required this.dayRulerPlanet,
     required this.dayRulerSymbol,
     required this.sunriseFormatted,
     required this.sunsetFormatted,
     required this.currentHour,
+    required this.previousHour,
+    required this.nextHour,
+    required this.minutesRemainingInCurrentHour,
     required this.allHours,
+    required this.dayHours,
+    required this.nightHours,
   });
 }
 
 /// Babil & Klasik Helenistik Astroloji Gezegen Saatleri & Günleri Motoru
+/// NOAA Güneş Astronomi Algoritmaları ile %100 Gerçek ve Hassas Hesaplama
 class PlanetaryHoursService {
   // Klasik Keldani (Chaldean) Sıralaması: Satürn'den Ay'a doğru iniş
   static const List<String> chaldeanOrder = [
@@ -94,44 +107,88 @@ class PlanetaryHoursService {
     7: 'Pazar',
   };
 
-  /// Belirli bir enlem, boylam ve tarih için günün tüm 24 gezegen saatini hesaplar
+  /// Belirli bir enlem, boylam, saat dilimi ve tarih için günün tüm 24 gezegen saatini hesaplar
   static PlanetaryDayInfo calculatePlanetaryHours({
     DateTime? date,
     double latitude = 41.0082, // Varsayılan İstanbul
     double longitude = 28.9784,
+    double timezoneOffset = 3.0,
+    String cityName = 'İstanbul',
   }) {
     final now = date ?? DateTime.now();
-    final weekday = now.weekday;
+
+    // 1. Bugüne ait astronomik Güneş Doğuş & Batışını hesapla (NOAA Algoritması)
+    final todaySunTimes = _calculateSunriseSunset(
+      now.year,
+      now.month,
+      now.day,
+      latitude,
+      longitude,
+      timezoneOffset,
+    );
+    final todaySunrise = todaySunTimes['sunrise']!;
+
+    // Klasik astrolojide gezegen günü yerel gün doğumunda (Sunrise) başlar.
+    // Gece yarısı 00:00 - Sunrise arası, bir önceki günün gece saatleridir.
+    final bool isBeforeTodaySunrise = now.isBefore(todaySunrise);
+    final DateTime targetDate = isBeforeTodaySunrise
+        ? now.subtract(const Duration(days: 1))
+        : now;
+
+    final weekday = targetDate.weekday;
     final dayRuler = dayRulers[weekday] ?? 'Güneş';
     final dayName = dayNames[weekday] ?? 'Pazar';
 
-    // Güneş doğuş ve batış vakitlerini enlem ve yılın gününe göre hesapla
-    final dayOfYear = int.parse(
-      now.difference(DateTime(now.year, 1, 1)).inDays.toString(),
-    );
-    final sunTimes = _calculateSunriseSunset(now.year, now.month, now.day, latitude, longitude, dayOfYear);
-    final sunrise = sunTimes['sunrise']!;
-    final sunset = sunTimes['sunset']!;
+    final DateTime sunrise;
+    final DateTime sunset;
+    final DateTime nextDaySunrise;
 
-    // Gece süresi (Bugünün batışından yarının doğuşuna kadar)
-    final tomorrowSunrise = sunrise.add(const Duration(days: 1));
+    if (isBeforeTodaySunrise) {
+      final prevSunTimes = _calculateSunriseSunset(
+        targetDate.year,
+        targetDate.month,
+        targetDate.day,
+        latitude,
+        longitude,
+        timezoneOffset,
+      );
+      sunrise = prevSunTimes['sunrise']!;
+      sunset = prevSunTimes['sunset']!;
+      nextDaySunrise = todaySunrise;
+    } else {
+      sunrise = todaySunrise;
+      sunset = todaySunTimes['sunset']!;
+      final tomorrow = targetDate.add(const Duration(days: 1));
+      final nextSunTimes = _calculateSunriseSunset(
+        tomorrow.year,
+        tomorrow.month,
+        tomorrow.day,
+        latitude,
+        longitude,
+        timezoneOffset,
+      );
+      nextDaySunrise = nextSunTimes['sunrise']!;
+    }
+
+    // Gündüz ve Gece süreleri
     final dayDuration = sunset.difference(sunrise);
-    final nightDuration = tomorrowSunrise.difference(sunset);
+    final nightDuration = nextDaySunrise.difference(sunset);
 
     final dayHourDuration = Duration(milliseconds: (dayDuration.inMilliseconds / 12).round());
     final nightHourDuration = Duration(milliseconds: (nightDuration.inMilliseconds / 12).round());
 
-    // Keldani dizisindeki başlangıç indeksini bul
+    // Keldani dizisindeki başlangıç indeksi: Günün yöneticisi 1. saati yönetir
     int planetIndex = chaldeanOrder.indexOf(dayRuler);
-    final List<PlanetaryHour> hours = [];
-    PlanetaryHour? activeHour;
+    final List<PlanetaryHour> dayHoursList = [];
+    final List<PlanetaryHour> nightHoursList = [];
+    final List<PlanetaryHour> allHoursList = [];
 
     // 12 Gündüz Saati
     for (int i = 0; i < 12; i++) {
       final startTime = sunrise.add(dayHourDuration * i);
-      final endTime = sunrise.add(dayHourDuration * (i + 1));
+      final endTime = (i == 11) ? sunset : sunrise.add(dayHourDuration * (i + 1));
       final pName = chaldeanOrder[planetIndex % chaldeanOrder.length];
-      final isCurrent = now.isAfter(startTime) && now.isBefore(endTime);
+      final isCurrent = (now.isAfter(startTime) || now.isAtSameMomentAs(startTime)) && now.isBefore(endTime);
 
       final hour = PlanetaryHour(
         hourNumber: i + 1,
@@ -148,17 +205,17 @@ class PlanetaryHoursService {
         suitableActivities: _getPlanetActivities(pName),
       );
 
-      hours.add(hour);
-      if (isCurrent) activeHour = hour;
+      dayHoursList.add(hour);
+      allHoursList.add(hour);
       planetIndex++;
     }
 
     // 12 Gece Saati
     for (int i = 0; i < 12; i++) {
       final startTime = sunset.add(nightHourDuration * i);
-      final endTime = sunset.add(nightHourDuration * (i + 1));
+      final endTime = (i == 11) ? nextDaySunrise : sunset.add(nightHourDuration * (i + 1));
       final pName = chaldeanOrder[planetIndex % chaldeanOrder.length];
-      final isCurrent = now.isAfter(startTime) && now.isBefore(endTime);
+      final isCurrent = (now.isAfter(startTime) || now.isAtSameMomentAs(startTime)) && now.isBefore(endTime);
 
       final hour = PlanetaryHour(
         hourNumber: i + 13,
@@ -175,25 +232,40 @@ class PlanetaryHoursService {
         suitableActivities: _getPlanetActivities(pName),
       );
 
-      hours.add(hour);
-      if (isCurrent) activeHour = hour;
+      nightHoursList.add(hour);
+      allHoursList.add(hour);
       planetIndex++;
     }
 
-    // Aktif saat bulunamadıysa (örneğin gün doğumu öncesi) en yakın saati seç
-    activeHour ??= hours.firstWhere(
-      (h) => now.isBefore(h.endTime),
-      orElse: () => hours.first,
-    );
+    // Aktif saat
+    int activeIndex = allHoursList.indexWhere((h) => h.isCurrent);
+    if (activeIndex == -1) {
+      activeIndex = allHoursList.indexWhere((h) => now.isBefore(h.endTime));
+      if (activeIndex == -1) activeIndex = 0;
+    }
+
+    final currentHour = allHoursList[activeIndex];
+    final prevIndex = (activeIndex - 1 + allHoursList.length) % allHoursList.length;
+    final nextIndex = (activeIndex + 1) % allHoursList.length;
+    final previousHour = allHoursList[prevIndex];
+    final nextHour = allHoursList[nextIndex];
+
+    final minutesRemaining = currentHour.endTime.difference(now).inMinutes.clamp(0, 180);
 
     return PlanetaryDayInfo(
+      cityName: cityName,
       dayName: dayName,
       dayRulerPlanet: dayRuler,
       dayRulerSymbol: planetSymbols[dayRuler] ?? '✨',
       sunriseFormatted: _formatTime(sunrise),
       sunsetFormatted: _formatTime(sunset),
-      currentHour: activeHour,
-      allHours: hours,
+      currentHour: currentHour,
+      previousHour: previousHour,
+      nextHour: nextHour,
+      minutesRemainingInCurrentHour: minutesRemaining,
+      allHours: allHoursList,
+      dayHours: dayHoursList,
+      nightHours: nightHoursList,
     );
   }
 
@@ -203,40 +275,67 @@ class PlanetaryHoursService {
     return '$h:$m';
   }
 
+  /// NOAA Astronomi Algoritması: Doğuş, Batış, Güneş Öğleni ve Zaman Denklemi (Equation of Time)
   static Map<String, DateTime> _calculateSunriseSunset(
     int year,
     int month,
     int day,
     double lat,
     double lng,
-    int dayOfYear,
+    double timezoneOffset,
   ) {
-    // Güneş sapma açısı (Solar Declination)
-    final declination = 23.45 * sin((2 * pi / 365.0) * (dayOfYear - 81));
-    final latRad = lat * pi / 180.0;
-    final decRad = declination * pi / 180.0;
+    final a = (14 - month) ~/ 12;
+    final y = year + 4800 - a;
+    final m = month + 12 * a - 3;
+    final jdn = day + (153 * m + 2) ~/ 5 + 365 * y + y ~/ 4 - y ~/ 100 + y ~/ 400 - 32045;
+    final t = (jdn - 2451545.0) / 36525.0;
 
-    // Saat açısı (Hour Angle)
-    double cosHA = -tan(latRad) * tan(decRad);
+    final l0 = (280.46646 + t * (36000.76983 + 0.0003032 * t)) % 360.0;
+    final mAnom = 357.52911 + t * (35999.05029 - 0.0001537 * t);
+    final mRad = mAnom * pi / 180.0;
+
+    final c = sin(mRad) * (1.914602 - t * (0.004817 + 0.000014 * t)) +
+        sin(2 * mRad) * (0.019993 - 0.000101 * t) +
+        sin(3 * mRad) * 0.000289;
+
+    final sunTrueLong = l0 + c;
+    final omega = 125.04 - 1934.136 * t;
+    final sunAppLong = sunTrueLong - 0.00569 - 0.00478 * sin(omega * pi / 180.0);
+
+    final eps0 = 23.0 + (26.0 + (21.448 - t * (46.815 + t * (0.00059 - t * 0.001813))) / 60.0) / 60.0;
+    final eps = eps0 + 0.00256 * cos(omega * pi / 180.0);
+
+    final sinDec = sin(eps * pi / 180.0) * sin(sunAppLong * pi / 180.0);
+    final decRad = asin(sinDec);
+
+    final yVar = tan((eps * pi / 180.0) / 2.0) * tan((eps * pi / 180.0) / 2.0);
+    final eotRad = yVar * sin(2 * l0 * pi / 180.0) -
+        2 * 0.016708634 * sin(mRad) +
+        4 * 0.016708634 * yVar * sin(mRad) * cos(2 * l0 * pi / 180.0) -
+        0.5 * (yVar * yVar) * sin(4 * l0 * pi / 180.0) -
+        1.25 * (0.016708634 * 0.016708634) * sin(2 * mRad);
+    final eotMin = 4.0 * (eotRad * 180.0 / pi);
+
+    const zenith = 90.8333 * pi / 180.0;
+    final latRad = lat * pi / 180.0;
+
+    double cosHA = (cos(zenith) - sin(latRad) * sin(decRad)) / (cos(latRad) * cos(decRad));
     if (cosHA > 1.0) cosHA = 1.0;
     if (cosHA < -1.0) cosHA = -1.0;
     final haDeg = acos(cosHA) * 180.0 / pi;
-    final dayLengthHours = (haDeg * 2.0) / 15.0;
 
-    // Yerel Güneş Saati Düzeltmesi (Merkez 12:00)
-    final solarNoon = 12.0;
-    final riseHourDec = solarNoon - (dayLengthHours / 2.0);
-    final setHourDec = solarNoon + (dayLengthHours / 2.0);
+    final solarNoonMin = 720.0 - (4.0 * lng) - eotMin + (timezoneOffset * 60.0);
+    final sunriseMin = solarNoonMin - (haDeg * 4.0);
+    final sunsetMin = solarNoonMin + (haDeg * 4.0);
 
-    final riseHour = riseHourDec.floor();
-    final riseMinute = ((riseHourDec - riseHour) * 60).round();
-
-    final setHour = setHourDec.floor();
-    final setMinute = ((setHourDec - setHour) * 60).round();
+    DateTime minToDateTime(int yr, int mo, int d, double totalMin) {
+      final base = DateTime(yr, mo, d);
+      return base.add(Duration(seconds: (totalMin * 60).round()));
+    }
 
     return {
-      'sunrise': DateTime(year, month, day, riseHour, riseMinute),
-      'sunset': DateTime(year, month, day, setHour, setMinute),
+      'sunrise': minToDateTime(year, month, day, sunriseMin),
+      'sunset': minToDateTime(year, month, day, sunsetMin),
     };
   }
 
