@@ -86,13 +86,13 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.4
-          name: "📱 Gökyüzü Doktoru - v1.0.4 (Sürüm Kodu 5 & Play Store AAB)"
+          tag_name: v1.0.5
+          name: "📱 Gökyüzü Doktoru - v1.0.5 (Sürüm Kodu 6 & Canlı AdMob AAB)"
           body: |
-            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.4 / Sürüm Kodu 5)
+            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.5 / Sürüm Kodu 6)
 
             - **`gokyuzu-doktoru.apk`**: Kendi Android telefonunuzda doğrudan test edip kullanmak için yükleme dosyası (İmzalı).
-            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı).
+            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı - Canlı AdMob Entegrasyonlu).
 
             #### 📲 Telefona Nasıl Yüklenir (APK)?
             1. Aşağıdaki **Assets** bölümünden **`gokyuzu-doktoru.apk`** dosyasına dokunun ve telefonunuza indirin.
