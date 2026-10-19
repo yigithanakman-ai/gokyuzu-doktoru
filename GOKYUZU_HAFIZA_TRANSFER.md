@@ -103,25 +103,20 @@ Müşterimiz Nazlı Gizem Hanım'ın geri bildirimi doğrultusunda tasarlanan ve
 | **Çift Çark (Bi-Wheel / Synastry & Transit)** | Masaüstünde karmaşık menülerle açılır | İç çarkta Doğum Haritası, dış çarkta Anlık Transitler veya İlişki Haritası; altta zaman kaydırıcı (1 gün, 1 ay ileri sarma) | **Aşama 1 (Öncelikli)** |
 | **Asaletler Tablosu (Essential Dignities)** | Tablo halinde kuru metin | Ptolemaic Asaletler (Yöneticilik, Yücelim, Üçlü, Terim, Çehre, Zarar, Düşüş) tek ekranda renkli görsel rozetler | **Aşama 1 (Öncelikli)** |
 | **Sabian Sembolleri & Sabit Yıldızlar** | Ek menüde uzun listeler | Her gezegenin tam derecesine denk gelen Sabian Sembolü ve 36 kadim sabit yıldız kavuşumunun otomatik AI analizi | **Aşama 1** |
-| **Astrokartografi (AstroLocality Map)** | 90'lardan kalma piksel harita | Vektörel dünya haritası üzerinde gezegen hatları. *(⚠️ Patron'un haklı uyarısı: 200+ ülke koordinat/geocoding ve DST saat dilimi altyapısı kurulmadan yapılmayacak!)* | **Aşama 2 (Atlas Önkoşullu - Beklemede)** |
+| **Astrokartografi (AstroLocality Map)** | 90'lardan kalma piksel harita | **❌ İPTAL EDİLDİ (Patron'un Kararı):** Küresel koordinat, atlas ve DST gereksinimleri nedeniyle rafa kaldırıldı; kesinlikle eklenmeyecek. | **İPTAL / RAFA KALDIRILDI** |
 | **Astrolog İçin White-Label PDF** | Standart rapor şablonu | Astrologun kendi logosunu, adını ve Instagram hesabını 10 sayfalık rapora "Danışman" olarak ekleyebilmesi | **Aşama 2** |
 
 ---
 
-## 🗺️ 5.1. Patron'un Kritik Tespiti: Küresel Koordinasyon & Atlas Altyapısı (Gerçekler)
+## 🗺️ 5.1. Astrokartografi: İptal Kararı (Patron'un Kesin Talimatı)
 
-> **Patron'un Uyarısı (18 Ekim 2026):**  
-> *"Astrokartografi bölümü hiç inandırıcı gelmedi çünkü biz halen uygulamada tüm bölge-yer-ülke-coğrafi koordinasyonunu veremedik (!), 200 küsür ülkenin her yerine ulaşıyor muyuz? Google Maps'ten API çekmedik veya ücretsiz harita bağlamadık. Astrokartografiyi nasıl yapacağız bu durumda?"*
+> **Patron'un Kesin Talimatı (19 Ekim 2026):**  
+> *"Astrokartografi iptal ekleme, daha sonra düşüneceğim."*
 
-### Bu Tespit Neden %100 Doğru?
-1. Astrokartografi, bir gezegenin MC (Tepe Noktası) veya ASC (Yükselen) çizgilerinin dünya üzerindeki izdüşümüdür.
-2. Doğum saati UTC'ye çevrilirken yapılacak **1 saatlik bir yaz/kış saati (DST) veya saat dilimi hatası**, haritayı Dünya üzerinde **15 boylam derecesi (yaklaşık 1.600 kilometre)** kaydırır!
-3. Şu an `world_cities_service.dart` içinde Türkiye'nin 81 ili ve dünyanın belli başlı metropolleri kayıtlıdır. Dünyanın her köyü, ilçesi ve kasabası için küresel bir Geocoding API (Google Maps veya OpenStreetMap Nominatim) ve IANA Saat Dilimi Motoru entegre edilmeden astrokartografi sunulamaz; sunulursa profesyonel astroloji dünyasında güven kaybı yaşanır.
-
-### Geocoding & Atlas Çözüm Planı (Patron'un Kararı):
-* **Seçilen Yöntem: Seçenek 2 & 3 (Cihaz İçi Gömülü Atlas + OpenStreetMap / Photon Geocoding)**
-* **Kural:** Kesinlikle ücretsiz açık kaynaklı servisler ve yerel gömülü SQLite/JSON veritabanı kullanılacaktır. Sıfır ücretli servis, Google Maps veya üçüncü parti fatura kesinlikle kabul edilmeyecektir.
-* **Durum:** Ön altyapı `world_cities_service.dart` içinde offline veritabanı ve Photon arama motoruyla hazır beklemektedir.
+* **Durum:** Astrokartografi projesi tamamen iptal edilmiş, yol haritasından çıkarılmış ve rafa kaldırılmıştır. Uygulama koduna hiçbir şekilde astrokartografi eklenmeyecektir.
+* **Tüm Odak:** 
+  1. 360° Çark sayfası içine gömülen **İnteraktif Çift Çark (Solar Fire Bi-Wheel & Zaman Makinesi)**
+  2. **VIP Platinum Çoklu Profil & Danışan Yönetimi (ActiveProfileBar & 10 Sayfalık PDF Kitapçığı)**
 
 ---
 

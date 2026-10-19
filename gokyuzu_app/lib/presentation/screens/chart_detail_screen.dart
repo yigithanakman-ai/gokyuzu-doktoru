@@ -40,7 +40,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
   bool _isVip = false;
 
   // --- İnteraktif Çift Çark (Bi-Wheel) State ---
-  bool _isBiWheelActive = false;
+  bool _isBiWheelActive = true;
   DateTime _simulatedTransitDate = DateTime.now();
   TimeOfDay _simulatedTransitTime = TimeOfDay.fromDateTime(DateTime.now());
   BirthChartModel? _transitChart;
