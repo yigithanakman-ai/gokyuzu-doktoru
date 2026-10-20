@@ -65,7 +65,7 @@ class CosmicFrequenciesModal extends StatelessWidget {
     ),
     PlanetaryFrequencyItem(
       planetName: 'Venüs',
-      symbol: '♀',
+      symbol: '♀\uFE0E',
       frequencyHz: 221.23,
       chakraName: 'Kalp Çakrası (4. Çakra)',
       themeColor: Color(0xFFFF758F),
@@ -89,7 +89,7 @@ class CosmicFrequenciesModal extends StatelessWidget {
     ),
     PlanetaryFrequencyItem(
       planetName: 'Mars',
-      symbol: '♂',
+      symbol: '♂\uFE0E',
       frequencyHz: 144.72,
       chakraName: 'Kök Çakra (1. Çakra)',
       themeColor: Color(0xFFE63946),

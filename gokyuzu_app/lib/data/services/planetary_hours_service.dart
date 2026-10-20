@@ -79,9 +79,9 @@ class PlanetaryHoursService {
   static const Map<String, String> planetSymbols = {
     'Satürn': '♄',
     'Jüpiter': '♃',
-    'Mars': '♂',
+    'Mars': '♂\uFE0E',
     'Güneş': '☉',
-    'Venüs': '♀',
+    'Venüs': '♀\uFE0E',
     'Merkür': '☿',
     'Ay': '☽',
   };

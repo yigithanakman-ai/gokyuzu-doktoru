@@ -155,7 +155,7 @@ class _CosmicNotesScreenState extends State<CosmicNotesScreen>
                     const SizedBox(height: 6),
                     Wrap(
                       spacing: 8,
-                      children: ['Ay ☽', 'Güneş ☉', 'Venüs ♀', 'Mars ♂', 'Satürn ♄', 'Jüpiter ♃'].map((p) {
+                      children: ['Ay ☽', 'Güneş ☉', 'Venüs ♀\uFE0E', 'Mars ♂\uFE0E', 'Satürn ♄', 'Jüpiter ♃'].map((p) {
                         final isSel = selectedPlanet == p;
                         return ChoiceChip(
                           label: Text(p, style: TextStyle(fontSize: 11.5, color: isSel ? Colors.black : Colors.white70)),

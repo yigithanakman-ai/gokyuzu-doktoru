@@ -37,6 +37,7 @@ import '../widgets/referral_modal.dart';
 import '../widgets/birthday_solar_return_modal.dart';
 import '../widgets/cosmic_frequencies_modal.dart';
 import '../../data/services/active_profile_service.dart';
+import '../../data/services/ad_service.dart';
 import '../widgets/active_profile_bar.dart';
 
 class HomeScreen extends StatefulWidget {
@@ -2711,60 +2712,61 @@ class _HomeScreenState extends State<HomeScreen> {
             width: isHighlight ? 1.5 : 1.0,
           ),
         ),
-        child: Row(
-          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+        child: Column(
+          crossAxisAlignment: CrossAxisAlignment.start,
           children: [
-            Expanded(
-              child: Column(
-                crossAxisAlignment: CrossAxisAlignment.start,
-                children: [
-                  Row(
-                    children: [
-                      Flexible(
-                        child: Text(
-                          title,
-                          style: const TextStyle(
-                            fontSize: 14.5,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(
-                            horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: badgeColor.withValues(alpha: 0.2),
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          badge,
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.bold,
-                            color: badgeColor,
-                          ),
-                        ),
-                      ),
-                    ],
-                  ),
-                  const SizedBox(height: 4),
-                  Text(
-                    subtitle ?? 'Tüm VIP modüller, PDF raporlar ve analizler',
+            Row(
+              children: [
+                Expanded(
+                  child: Text(
+                    title,
                     style: const TextStyle(
-                      fontSize: 11.5,
-                      color: AppColors.textMuted,
+                      fontSize: 15,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+                if (badge.isNotEmpty) ...[
+                  const SizedBox(width: 8),
+                  Container(
+                    padding: const EdgeInsets.symmetric(
+                        horizontal: 8, vertical: 3),
+                    decoration: BoxDecoration(
+                      color: badgeColor.withValues(alpha: 0.2),
+                      borderRadius: BorderRadius.circular(6),
+                      border: Border.all(
+                        color: badgeColor.withValues(alpha: 0.5),
+                        width: 0.8,
+                      ),
+                    ),
+                    child: Text(
+                      badge,
+                      style: TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.bold,
+                        color: badgeColor,
+                      ),
                     ),
                   ),
                 ],
+              ],
+            ),
+            const SizedBox(height: 6),
+            Text(
+              subtitle ?? 'Tüm VIP modüller, PDF raporlar ve analizler',
+              style: const TextStyle(
+                fontSize: 11.5,
+                color: AppColors.textMuted,
+                height: 1.35,
               ),
             ),
-            const SizedBox(width: 10),
+            const SizedBox(height: 12),
             Row(
+              mainAxisAlignment: MainAxisAlignment.spaceBetween,
               children: [
                 Column(
-                  crossAxisAlignment: CrossAxisAlignment.end,
+                  crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
                     Text(
                       price,
@@ -2777,15 +2779,45 @@ class _HomeScreenState extends State<HomeScreen> {
                     Text(
                       period,
                       style: const TextStyle(
-                        fontSize: 10,
+                        fontSize: 10.5,
                         color: AppColors.textMuted,
                       ),
                     ),
                   ],
                 ),
-                const SizedBox(width: 8),
-                const Icon(Icons.arrow_forward_ios_rounded,
-                    size: 14, color: AppColors.starlightGold),
+                Container(
+                  padding:
+                      const EdgeInsets.symmetric(horizontal: 14, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: isHighlight
+                        ? AppColors.starlightGold
+                        : AppColors.starlightGold.withValues(alpha: 0.15),
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      Text(
+                        'Seç',
+                        style: TextStyle(
+                          fontSize: 12.5,
+                          fontWeight: FontWeight.bold,
+                          color: isHighlight
+                              ? Colors.black87
+                              : AppColors.starlightGold,
+                        ),
+                      ),
+                      const SizedBox(width: 4),
+                      Icon(
+                        Icons.arrow_forward_ios_rounded,
+                        size: 11,
+                        color: isHighlight
+                            ? Colors.black87
+                            : AppColors.starlightGold,
+                      ),
+                    ],
+                  ),
+                ),
               ],
             ),
           ],
@@ -4042,25 +4074,39 @@ class _HomeScreenState extends State<HomeScreen> {
     );
   }
 
-  void _showRewardedAdForMoonPhase(BuildContext context) {
-    showDialog(
-      context: context,
-      barrierDismissible: false,
-      builder: (ctx) {
-        return _RewardedAdDialog(
-          onRewardEarned: () {
-            setState(() {
-              _isMoonPhaseUnlocked = true;
-            });
-            ScaffoldMessenger.of(context).showSnackBar(
-              const SnackBar(
-                content: Text(
-                    '🎉 Tebrikler! Günlük Ay Burcu, Fazı ve Canlı Gökyüzü Geçişleri kilidi açıldı.'),
-                backgroundColor: Color(0xFF1D5A3A),
-                duration: Duration(seconds: 3),
-              ),
-            );
-          },
+  Future<void> _showRewardedAdForMoonPhase(BuildContext context) async {
+    ScaffoldMessenger.of(context).showSnackBar(
+      const SnackBar(
+        content: Row(
+          children: [
+            SizedBox(
+              width: 16,
+              height: 16,
+              child: CircularProgressIndicator(
+                  strokeWidth: 2, color: AppColors.starlightGold),
+            ),
+            SizedBox(width: 12),
+            Text('Sponsorlu video reklam hazırlanıyor...'),
+          ],
+        ),
+        backgroundColor: Color(0xFF1E1B2E),
+        duration: Duration(seconds: 2),
+      ),
+    );
+
+    await AdService.showRewardedAd(
+      onRewardGranted: () {
+        if (!mounted) return;
+        setState(() {
+          _isMoonPhaseUnlocked = true;
+        });
+        ScaffoldMessenger.of(context).showSnackBar(
+          const SnackBar(
+            content: Text(
+                '🎉 Tebrikler! Günlük Ay Burcu, Fazı ve Canlı Gökyüzü Geçişleri kilidi açıldı.'),
+            backgroundColor: Color(0xFF1D5A3A),
+            duration: Duration(seconds: 3),
+          ),
         );
       },
     );
@@ -5629,7 +5675,7 @@ class _HomeScreenState extends State<HomeScreen> {
       if (age < 10) {
         mainPlanet = 'Güneş ☉'; mainDuration = 10; mainStartAge = 0; subPlanet = 'Güneş'; nextSubPlanet = 'Venüs';
       } else if (age < 18) {
-        mainPlanet = 'Venüs ♀'; mainDuration = 8; mainStartAge = 10; subPlanet = 'Venüs'; nextSubPlanet = 'Merkür';
+        mainPlanet = 'Venüs ♀\uFE0E'; mainDuration = 8; mainStartAge = 10; subPlanet = 'Venüs'; nextSubPlanet = 'Merkür';
       } else if (age < 31) {
         mainPlanet = 'Merkür ☿'; mainDuration = 13; mainStartAge = 18; subPlanet = 'Merkür'; nextSubPlanet = 'Ay';
       } else if (age < 40) {
@@ -5651,7 +5697,7 @@ class _HomeScreenState extends State<HomeScreen> {
       } else if (age < 32) {
         mainPlanet = 'Jüpiter ♃'; mainDuration = 12; mainStartAge = 20; subPlanet = 'Jüpiter'; nextSubPlanet = 'Mars';
       } else if (age < 39) {
-        mainPlanet = 'Mars ♂'; mainDuration = 7; mainStartAge = 32; subPlanet = 'Mars'; nextSubPlanet = 'Güneş';
+        mainPlanet = 'Mars ♂\uFE0E'; mainDuration = 7; mainStartAge = 32; subPlanet = 'Mars'; nextSubPlanet = 'Güneş';
       } else {
         mainPlanet = 'Güneş ☉'; mainDuration = 10; mainStartAge = 39; subPlanet = 'Güneş'; nextSubPlanet = 'Venüs';
       }
@@ -5771,20 +5817,20 @@ class _HomeScreenState extends State<HomeScreen> {
     final String profSign = AstrologyEngine.zodiacSigns[profSignIdx];
 
     final Map<String, String> traditionalLords = {
-      'Koç': 'Mars ♂',
-      'Boğa': 'Venüs ♀',
+      'Koç': 'Mars ♂\uFE0E',
+      'Boğa': 'Venüs ♀\uFE0E',
       'İkizler': 'Merkür ☿',
       'Yengeç': 'Ay ☽',
       'Aslan': 'Güneş ☉',
       'Başak': 'Merkür ☿',
-      'Terazi': 'Venüs ♀',
-      'Akrep': 'Mars ♂ & Plüton ♇',
+      'Terazi': 'Venüs ♀\uFE0E',
+      'Akrep': 'Mars ♂\uFE0E & Plüton ♇',
       'Yay': 'Jüpiter ♃',
       'Oğlak': 'Satürn ♄',
       'Kova': 'Satürn ♄ & Uranüs ♅',
       'Balık': 'Jüpiter ♃ & Neptün ♆',
     };
-    final String lordOfTheYear = traditionalLords[profSign] ?? 'Venüs ♀';
+    final String lordOfTheYear = traditionalLords[profSign] ?? 'Venüs ♀\uFE0E';
 
     final Map<int, String> houseThemes = {
       1: 'Kişisel Kimlik, Beden Sağlığı & Yeni Başlangıçlar',

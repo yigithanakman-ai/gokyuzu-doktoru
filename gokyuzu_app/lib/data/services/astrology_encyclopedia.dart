@@ -101,7 +101,7 @@ class AstrologyEncyclopedia {
     'venus': PlanetEncyclopediaEntry(
       key: 'venus',
       name: 'Venüs',
-      symbol: '♀',
+      symbol: '♀\uFE0E',
       represents:
           'Sevgi, ilişkiler, estetik, uyum, çekim gücü, değer algısı, sanat, konfor ve dünyevi hazlar.',
       classical:
@@ -123,7 +123,7 @@ class AstrologyEncyclopedia {
     'mars': PlanetEncyclopediaEntry(
       key: 'mars',
       name: 'Mars',
-      symbol: '♂',
+      symbol: '♂\uFE0E',
       represents:
           'Arzu, eylem, mücadele gücü, tutku, cesaret, fiziksel dayanıklılık ve sınır koyma yeteneği.',
       classical:

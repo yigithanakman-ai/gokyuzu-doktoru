@@ -23,8 +23,8 @@ class ChartWheelPainter extends CustomPainter {
   ];
 
   static const List<String> zodiacSymbols = [
-    '♈', '♉', '♊', '♋', '♌', '♍',
-    '♎', '♏', '♐', '♑', '♒', '♓'
+    '♈\uFE0E', '♉\uFE0E', '♊\uFE0E', '♋\uFE0E', '♌\uFE0E', '♍\uFE0E',
+    '♎\uFE0E', '♏\uFE0E', '♐\uFE0E', '♑\uFE0E', '♒\uFE0E', '♓\uFE0E'
   ];
 
   static const List<Color> elementColors = [
@@ -211,8 +211,8 @@ class ChartWheelPainter extends CustomPainter {
     'Güneş': '☉',
     'Ay': '☽',
     'Merkür': '☿',
-    'Venüs': '♀',
-    'Mars': '♂',
+    'Venüs': '♀\uFE0E',
+    'Mars': '♂\uFE0E',
     'Jüpiter': '♃',
     'Satürn': '♄',
     'Uranüs': '♅',
@@ -226,8 +226,8 @@ class ChartWheelPainter extends CustomPainter {
     'sun': '☉',
     'moon': '☽',
     'mercury': '☿',
-    'venus': '♀',
-    'mars': '♂',
+    'venus': '♀\uFE0E',
+    'mars': '♂\uFE0E',
     'jupiter': '♃',
     'saturn': '♄',
     'uranus': '♅',

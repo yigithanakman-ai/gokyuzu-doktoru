@@ -456,7 +456,7 @@ class SkyTransitsService {
       ),
       makePlanet(
         name: 'Venüs',
-        symbol: '♀',
+        symbol: '♀\uFE0E',
         lon: planets['venus']!,
         isRetro: isRetro('venus'),
         theme: isRetro('venus')
@@ -465,7 +465,7 @@ class SkyTransitsService {
       ),
       makePlanet(
         name: 'Mars',
-        symbol: '♂',
+        symbol: '♂\uFE0E',
         lon: planets['mars']!,
         isRetro: isRetro('mars'),
         theme: isRetro('mars')

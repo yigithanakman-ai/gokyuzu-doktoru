@@ -504,8 +504,8 @@ class PredictiveAstrologyService {
       'isDayChart': isDay,
       'sectName': isDay ? 'Gündüz Haritası (Diurnal Sect)' : 'Gece Haritası (Nocturnal Sect)',
       'sectLight': isDay ? 'Güneş ☉' : 'Ay ☽',
-      'sectBenefic': isDay ? 'Jüpiter ♃ (Baş İyicil)' : 'Venüs ♀ (Baş İyicil)',
-      'sectMalefic': isDay ? 'Mars ♂ (Zorlayıcı / Gece Fıtratı)' : 'Satürn ♄ (Zorlayıcı / Gündüz Fıtratı)',
+      'sectBenefic': isDay ? 'Jüpiter ♃ (Baş İyicil)' : 'Venüs ♀\uFE0E (Baş İyicil)',
+      'sectMalefic': isDay ? 'Mars ♂\uFE0E (Zorlayıcı / Gece Fıtratı)' : 'Satürn ♄ (Zorlayıcı / Gündüz Fıtratı)',
       'sectDescription': isDay
           ? 'Güneş doğum anınızda ufkun üzerinde (Gündüz) parlamaktadır. Yaşamın ana motifi bilinçli irade, dış dünyada görünürlük, liderlik ve somut başarılar üzerine kuruludur. Haritanızın temel ışığı Güneş, en büyük koruyucu rehberi Jüpiter\'dir.'
           : 'Güneş doğum anınızda ufkun altında (Gece) dinlenmektedir. Yaşamın ana motifi sezgisel zeka, derin duygusal bağlar, içsel keşifler ve ruhsal derinlik üzerine kuruludur. Haritanızın temel ışığı Ay, en büyük koruyucu rehberi Venüs\'tür.',

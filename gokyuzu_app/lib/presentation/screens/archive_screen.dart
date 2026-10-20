@@ -748,7 +748,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                     ),
                     child: Center(
                       child: Text(
-                        profile.gender == 'Kadın' ? '♀' : (profile.gender == 'Erkek' ? '♂' : '⚕'),
+                        profile.gender == 'Kadın' ? '♀\uFE0E' : (profile.gender == 'Erkek' ? '♂\uFE0E' : '⚕'),
                         style: TextStyle(
                           fontSize: 18,
                           color: isPinnedSection ? AppColors.starlightGold : AppColors.pastelLavender,

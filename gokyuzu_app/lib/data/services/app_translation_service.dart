@@ -440,14 +440,24 @@ class AppTranslationService {
       'ja': '木星 ♃ (最大の吉星)',
     },
     'Venüs ♀ (Baş İyicil)': {
-      'tr': 'Venüs ♀ (Baş İyicil)',
-      'en': 'Venus ♀ (Greater Benefic)',
-      'ja': '金星 ♀ (最大の吉星)',
+      'tr': 'Venüs ♀\uFE0E (Baş İyicil)',
+      'en': 'Venus ♀\uFE0E (Greater Benefic)',
+      'ja': '金星 ♀\uFE0E (最大の吉星)',
+    },
+    'Venüs ♀\uFE0E (Baş İyicil)': {
+      'tr': 'Venüs ♀\uFE0E (Baş İyicil)',
+      'en': 'Venus ♀\uFE0E (Greater Benefic)',
+      'ja': '金星 ♀\uFE0E (最大の吉星)',
     },
     'Mars ♂ (Zorlayıcı / Gece Fıtratı)': {
-      'tr': 'Mars ♂ (Zorlayıcı / Gece Fıtratı)',
-      'en': 'Mars ♂ (Malefic / Nocturnal Favour)',
-      'ja': '火星 ♂ (夜の試練星)',
+      'tr': 'Mars ♂\uFE0E (Zorlayıcı / Gece Fıtratı)',
+      'en': 'Mars ♂\uFE0E (Malefic / Nocturnal Favour)',
+      'ja': '火星 ♂\uFE0E (夜の試練星)',
+    },
+    'Mars ♂\uFE0E (Zorlayıcı / Gece Fıtratı)': {
+      'tr': 'Mars ♂\uFE0E (Zorlayıcı / Gece Fıtratı)',
+      'en': 'Mars ♂\uFE0E (Malefic / Nocturnal Favour)',
+      'ja': '火星 ♂\uFE0E (夜の試練星)',
     },
     'Satürn ♄ (Zorlayıcı / Gündüz Fıtratı)': {
       'tr': 'Satürn ♄ (Zorlayıcı / Gündüz Fıtratı)',

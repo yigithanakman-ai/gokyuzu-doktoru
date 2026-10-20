@@ -5,6 +5,7 @@ import 'package:flutter_localizations/flutter_localizations.dart';
 import 'package:intl/date_symbol_data_local.dart';
 import 'package:google_mobile_ads/google_mobile_ads.dart';
 import 'core/theme/app_theme.dart';
+import 'data/services/ad_service.dart';
 import 'data/services/app_translation_service.dart';
 import 'data/services/notification_service.dart';
 import 'presentation/screens/splash_screen.dart';
@@ -20,6 +21,8 @@ void main() async {
           defaultTargetPlatform == TargetPlatform.iOS)) {
     try {
       await MobileAds.instance.initialize();
+      AdService.preloadInterstitial();
+      AdService.preloadRewarded();
     } catch (_) {}
   }
   try {

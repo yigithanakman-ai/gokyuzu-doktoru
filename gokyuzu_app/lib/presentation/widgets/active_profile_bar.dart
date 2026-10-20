@@ -160,7 +160,7 @@ class ActiveProfileBar extends StatelessWidget {
                             ? const Color(0xFFFF7675).withValues(alpha: 0.2)
                             : const Color(0xFF74B9FF).withValues(alpha: 0.2),
                         child: Text(
-                          p.gender == 'Kadın' ? '♀' : '♂',
+                          p.gender == 'Kadın' ? '♀\uFE0E' : '♂\uFE0E',
                           style: TextStyle(
                             color: p.gender == 'Kadın' ? const Color(0xFFFF7675) : const Color(0xFF74B9FF),
                             fontWeight: FontWeight.bold,

@@ -328,8 +328,8 @@ class _InteractiveBiWheelModalState extends State<InteractiveBiWheelModal> {
       {'key': 'sun', 'name': 'Güneş', 'sym': '☉'},
       {'key': 'moon', 'name': 'Ay', 'sym': '☽'},
       {'key': 'mercury', 'name': 'Merkür', 'sym': '☿'},
-      {'key': 'venus', 'name': 'Venüs', 'sym': '♀'},
-      {'key': 'mars', 'name': 'Mars', 'sym': '♂'},
+      {'key': 'venus', 'name': 'Venüs', 'sym': '♀\uFE0E'},
+      {'key': 'mars', 'name': 'Mars', 'sym': '♂\uFE0E'},
       {'key': 'jupiter', 'name': 'Jüpiter', 'sym': '♃'},
       {'key': 'saturn', 'name': 'Satürn', 'sym': '♄'},
       {'key': 'uranus', 'name': 'Uranüs', 'sym': '♅'},
@@ -517,16 +517,16 @@ class BiWheelPainter extends CustomPainter {
   ];
 
   static const List<String> zodiacSymbols = [
-    '♈', '♉', '♊', '♋', '♌', '♍',
-    '♎', '♏', '♐', '♑', '♒', '♓'
+    '♈\uFE0E', '♉\uFE0E', '♊\uFE0E', '♋\uFE0E', '♌\uFE0E', '♍\uFE0E',
+    '♎\uFE0E', '♏\uFE0E', '♐\uFE0E', '♑\uFE0E', '♒\uFE0E', '♓\uFE0E'
   ];
 
   static const Map<String, String> planetSymbols = {
     'sun': '☉',
     'moon': '☽',
     'mercury': '☿',
-    'venus': '♀',
-    'mars': '♂',
+    'venus': '♀\uFE0E',
+    'mars': '♂\uFE0E',
     'jupiter': '♃',
     'saturn': '♄',
     'uranus': '♅',

@@ -438,7 +438,10 @@ class _PlanetaryHoursModalState extends State<PlanetaryHoursModal> {
                       children: [
                         Text(
                           cur.planetSymbol,
-                          style: const TextStyle(fontSize: 28),
+                          style: const TextStyle(
+                            fontSize: 26,
+                            fontFamilyFallback: ['sans-serif', 'Roboto'],
+                          ),
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -558,6 +561,7 @@ class _PlanetaryHoursModalState extends State<PlanetaryHoursModal> {
                                   h.planetSymbol,
                                   style: TextStyle(
                                     fontSize: 18,
+                                    fontFamilyFallback: const ['sans-serif', 'Roboto'],
                                     color: isCurrent ? AppColors.starlightGold : Colors.white70,
                                   ),
                                 ),
@@ -569,12 +573,16 @@ class _PlanetaryHoursModalState extends State<PlanetaryHoursModal> {
                                   children: [
                                     Row(
                                       children: [
-                                        Text(
-                                          '${h.planetName} (${h.isDayHour ? 'Gündüz ${h.hourNumber}. Saat' : 'Gece ${h.hourNumber - 12}. Saat'})',
-                                          style: TextStyle(
-                                            color: isCurrent ? AppColors.starlightGold : Colors.white,
-                                            fontWeight: FontWeight.bold,
-                                            fontSize: 12.5,
+                                        Flexible(
+                                          child: Text(
+                                            '${h.planetName} (${h.isDayHour ? 'Gündüz ${h.hourNumber}. Saat' : 'Gece ${h.hourNumber - 12}. Saat'})',
+                                            style: TextStyle(
+                                              color: isCurrent ? AppColors.starlightGold : Colors.white,
+                                              fontWeight: FontWeight.bold,
+                                              fontSize: 12.5,
+                                            ),
+                                            maxLines: 1,
+                                            overflow: TextOverflow.ellipsis,
                                           ),
                                         ),
                                         if (isCurrent) ...[
@@ -601,10 +609,13 @@ class _PlanetaryHoursModalState extends State<PlanetaryHoursModal> {
                                     Text(
                                       h.title,
                                       style: const TextStyle(color: Colors.white54, fontSize: 10.5),
+                                      maxLines: 1,
+                                      overflow: TextOverflow.ellipsis,
                                     ),
                                   ],
                                 ),
                               ),
+                              const SizedBox(width: 8),
                               Text(
                                 '${h.startFormatted} - ${h.endFormatted}',
                                 style: TextStyle(

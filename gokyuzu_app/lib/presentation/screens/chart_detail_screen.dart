@@ -2067,14 +2067,14 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
     ];
 
     const Map<String, String> classicalRulers = {
-      'Koç': 'Mars ♂',
-      'Boğa': 'Venüs ♀',
+      'Koç': 'Mars ♂\uFE0E',
+      'Boğa': 'Venüs ♀\uFE0E',
       'İkizler': 'Merkür ☿',
       'Yengeç': 'Ay ☽',
       'Aslan': 'Güneş ☉',
       'Başak': 'Merkür ☿',
-      'Terazi': 'Venüs ♀',
-      'Akrep': 'Mars ♂',
+      'Terazi': 'Venüs ♀\uFE0E',
+      'Akrep': 'Mars ♂\uFE0E',
       'Yay': 'Jüpiter ♃',
       'Oğlak': 'Satürn ♄',
       'Kova': 'Satürn ♄',
@@ -2082,13 +2082,13 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
     };
 
     const Map<String, String> modernRulers = {
-      'Koç': 'Mars ♂',
-      'Boğa': 'Venüs ♀',
+      'Koç': 'Mars ♂\uFE0E',
+      'Boğa': 'Venüs ♀\uFE0E',
       'İkizler': 'Merkür ☿',
       'Yengeç': 'Ay ☽',
       'Aslan': 'Güneş ☉',
       'Başak': 'Merkür ☿',
-      'Terazi': 'Venüs ♀',
+      'Terazi': 'Venüs ♀\uFE0E',
       'Akrep': 'Plüton ♇',
       'Yay': 'Jüpiter ♃',
       'Oğlak': 'Satürn ♄',
@@ -5091,9 +5091,9 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
         return '☿';
       case 'venus':
       case 'venüs':
-        return '♀';
+        return '♀\uFE0E';
       case 'mars':
-        return '♂';
+        return '♂\uFE0E';
       case 'jupiter':
       case 'jüpiter':
         return '♃';

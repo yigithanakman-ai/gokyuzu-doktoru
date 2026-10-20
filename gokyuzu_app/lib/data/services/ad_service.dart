@@ -25,6 +25,8 @@ class AdService {
 
   static InterstitialAd? _interstitialAd;
   static bool _isInterstitialAdLoading = false;
+  static RewardedAd? _rewardedAd;
+  static bool _isRewardedAdLoading = false;
   static int _tabSwitchCounter = 0;
   static DateTime? _lastAdShownTime;
   static DateTime? get lastAdShownTime => _lastAdShownTime;
@@ -70,6 +72,33 @@ class AdService {
       );
     } catch (_) {
       _isInterstitialAdLoading = false;
+    }
+  }
+
+  /// Ödüllü video reklamı arka planda önceden yükle (Kullanıcı tıkladığı an hazır olsun)
+  static void preloadRewarded({String? adUnitId}) {
+    if (!_isMobile) return;
+    if (_rewardedAd != null || _isRewardedAdLoading) return;
+    _isRewardedAdLoading = true;
+    final unitId = adUnitId ?? rewardedAdUnitId;
+
+    try {
+      RewardedAd.load(
+        adUnitId: unitId,
+        request: const AdRequest(),
+        rewardedAdLoadCallback: RewardedAdLoadCallback(
+          onAdLoaded: (ad) {
+            _rewardedAd = ad;
+            _isRewardedAdLoading = false;
+          },
+          onAdFailedToLoad: (error) {
+            _isRewardedAdLoading = false;
+            _rewardedAd = null;
+          },
+        ),
+      );
+    } catch (_) {
+      _isRewardedAdLoading = false;
     }
   }
 
@@ -128,13 +157,49 @@ class AdService {
     }
   }
 
-  /// Ödüllü reklam gösterimi (Kozmik Karar Pusulası +1 Hak vb. için)
+  /// Ödüllü reklam gösterimi (Kozmik Karar Pusulası, Ay Fazı & Canlı Geçişler vb. için)
   static Future<bool> showRewardedAd({required VoidCallback onRewardGranted}) async {
     if (!_isMobile) {
       onRewardGranted();
       return true;
     }
 
+    // 1. Eğer hazır önbellekte reklam varsa hemen göster
+    if (_rewardedAd != null) {
+      final adToShow = _rewardedAd!;
+      _rewardedAd = null; // Tüketildi
+      bool rewardEarned = false;
+
+      adToShow.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (ad) {
+          ad.dispose();
+          preloadRewarded(); // Bir sonraki reklam için hazırla
+          if (rewardEarned) {
+            onRewardGranted();
+          }
+        },
+        onAdFailedToShowFullScreenContent: (ad, error) {
+          ad.dispose();
+          preloadRewarded();
+          onRewardGranted(); // Kullanıcı mağdur olmasın
+        },
+      );
+
+      try {
+        await adToShow.show(
+          onUserEarnedReward: (AdWithoutView ad, RewardItem reward) {
+            rewardEarned = true;
+          },
+        );
+        return true;
+      } catch (_) {
+        preloadRewarded();
+        onRewardGranted();
+        return true;
+      }
+    }
+
+    // 2. Önbellekte yoksa anlık yükle ve göster
     try {
       bool rewardEarned = false;
       await RewardedAd.load(
@@ -145,12 +210,14 @@ class AdService {
             ad.fullScreenContentCallback = FullScreenContentCallback(
               onAdDismissedFullScreenContent: (ad) {
                 ad.dispose();
+                preloadRewarded();
                 if (rewardEarned) {
                   onRewardGranted();
                 }
               },
               onAdFailedToShowFullScreenContent: (ad, error) {
                 ad.dispose();
+                preloadRewarded();
                 onRewardGranted();
               },
             );
@@ -161,12 +228,14 @@ class AdService {
             );
           },
           onAdFailedToLoad: (LoadAdError error) {
-            onRewardGranted();
+            preloadRewarded();
+            onRewardGranted(); // Ağ hatası durumunda ödülü aç
           },
         ),
       );
       return true;
     } catch (_) {
+      preloadRewarded();
       onRewardGranted();
       return true;
     }
