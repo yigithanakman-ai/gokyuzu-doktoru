@@ -121,6 +121,12 @@ class _HomeScreenState extends State<HomeScreen> {
     super.dispose();
   }
 
+  void _safeAction(VoidCallback action) {
+    AdService.registerActionAndShowInterstitial(onDone: () {
+      if (mounted) action();
+    });
+  }
+
   void _onActiveProfileChanged() {
     if (mounted) {
       setState(() {});
@@ -1215,7 +1221,7 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                       const SizedBox(width: 8),
                       ElevatedButton(
-                        onPressed: () => BirthdaySolarReturnModal.show(context, widget.profile),
+                        onPressed: () => _safeAction(() => BirthdaySolarReturnModal.show(context, widget.profile)),
                         style: ElevatedButton.styleFrom(
                           backgroundColor: AppColors.starlightGold,
                           foregroundColor: Colors.black,
@@ -1269,7 +1275,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const Color(0xFF6B4EE8).withValues(alpha: 0.14),
                             ],
                             borderColor: AppColors.starlightGold.withValues(alpha: 0.4),
-                            onTap: () => PlanetaryHoursModal.show(context, widget.profile),
+                            onTap: () => _safeAction(() => PlanetaryHoursModal.show(context, widget.profile)),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -1285,7 +1291,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const Color(0xFF1E3A8A).withValues(alpha: 0.14),
                             ],
                             borderColor: AppColors.pastelMint.withValues(alpha: 0.4),
-                            onTap: () => CosmicCompassModal.show(context, widget.profile),
+                            onTap: () => _safeAction(() => CosmicCompassModal.show(context, widget.profile)),
                           ),
                         ),
                       ],
@@ -1305,7 +1311,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const Color(0xFF7209B7).withValues(alpha: 0.14),
                             ],
                             borderColor: const Color(0xFFFF758F).withValues(alpha: 0.4),
-                            onTap: () => ReferralModal.show(context, widget.profile),
+                            onTap: () => _safeAction(() => ReferralModal.show(context, widget.profile)),
                           ),
                         ),
                         const SizedBox(width: 10),
@@ -1321,7 +1327,7 @@ class _HomeScreenState extends State<HomeScreen> {
                               const Color(0xFF3A0CA3).withValues(alpha: 0.14),
                             ],
                             borderColor: const Color(0xFF9D4EDD).withValues(alpha: 0.4),
-                            onTap: () => CosmicFrequenciesModal.show(context),
+                            onTap: () => _safeAction(() => CosmicFrequenciesModal.show(context)),
                           ),
                         ),
                       ],
@@ -1335,9 +1341,9 @@ class _HomeScreenState extends State<HomeScreen> {
                 children: [
                   Expanded(
                     child: InkWell(
-                      onTap: () => Navigator.of(context).push(
+                      onTap: () => _safeAction(() => Navigator.of(context).push(
                         MaterialPageRoute(builder: (_) => const ArchiveScreen()),
-                      ),
+                      )),
                       borderRadius: BorderRadius.circular(14),
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
@@ -1382,9 +1388,9 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: InkWell(
-                      onTap: () => Navigator.of(context).push(
+                      onTap: () => _safeAction(() => Navigator.of(context).push(
                         MaterialPageRoute(builder: (_) => const CosmicNotesScreen()),
-                      ),
+                      )),
                       borderRadius: BorderRadius.circular(14),
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
@@ -1576,12 +1582,14 @@ class _HomeScreenState extends State<HomeScreen> {
 
               InkWell(
                 onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) =>
-                          ChartDetailScreen(profile: _effectiveProfile),
-                    ),
-                  );
+                  _safeAction(() {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) =>
+                            ChartDetailScreen(profile: _effectiveProfile),
+                      ),
+                    );
+                  });
                 },
                 borderRadius: BorderRadius.circular(20),
                 child: GlassCard(
@@ -1736,11 +1744,13 @@ class _HomeScreenState extends State<HomeScreen> {
               // KOZMİK NUMEROLOJİ & YAŞAM YOLU MATRİSİ KARTI (HERKESE AÇIK ✨)
               InkWell(
                 onTap: () {
-                  Navigator.of(context).push(
-                    MaterialPageRoute(
-                      builder: (_) => NumerologyScreen(profile: _effectiveProfile),
-                    ),
-                  );
+                  _safeAction(() {
+                    Navigator.of(context).push(
+                      MaterialPageRoute(
+                        builder: (_) => NumerologyScreen(profile: _effectiveProfile),
+                      ),
+                    );
+                  });
                 },
                 borderRadius: BorderRadius.circular(20),
                 child: GlassCard(
@@ -6793,278 +6803,4 @@ class _BenefitRow extends StatelessWidget {
   }
 }
 
-
-class _RewardedAdDialog extends StatefulWidget {
-  final VoidCallback onRewardEarned;
-
-  const _RewardedAdDialog({required this.onRewardEarned});
-
-  @override
-  State<_RewardedAdDialog> createState() => _RewardedAdDialogState();
-}
-
-class _RewardedAdDialogState extends State<_RewardedAdDialog> {
-  static const int _totalSeconds = 15;
-  int _secondsLeft = _totalSeconds;
-  bool _isFinished = false;
-
-  @override
-  void initState() {
-    super.initState();
-    _startCountdown();
-  }
-
-  void _startCountdown() async {
-    while (_secondsLeft > 0) {
-      await Future.delayed(const Duration(seconds: 1));
-      if (!mounted) return;
-      setState(() {
-        _secondsLeft--;
-      });
-    }
-    if (mounted) {
-      setState(() {
-        _isFinished = true;
-      });
-    }
-  }
-
-  @override
-  Widget build(BuildContext context) {
-    final progress = (_totalSeconds - _secondsLeft) / _totalSeconds;
-
-    return AlertDialog(
-      backgroundColor: const Color(0xFF161226),
-      shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(22)),
-      titlePadding: const EdgeInsets.fromLTRB(20, 20, 20, 10),
-      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 10),
-      title: Row(
-        children: [
-          Container(
-            padding: const EdgeInsets.all(8),
-            decoration: BoxDecoration(
-              color: _isFinished
-                  ? AppColors.pastelMint.withAlpha(40)
-                  : AppColors.starlightGold.withAlpha(40),
-              shape: BoxShape.circle,
-            ),
-            child: Icon(
-              _isFinished
-                  ? Icons.check_circle_rounded
-                  : Icons.ondemand_video_rounded,
-              color: _isFinished ? AppColors.pastelMint : AppColors.starlightGold,
-              size: 22,
-            ),
-          ),
-          const SizedBox(width: 12),
-          Expanded(
-            child: Column(
-              crossAxisAlignment: CrossAxisAlignment.start,
-              children: [
-                Text(
-                  _isFinished ? 'Tebrikler! Ödül Hazır 🎉' : 'Sponsorlu Premium Video',
-                  style: const TextStyle(
-                    fontSize: 15,
-                    fontWeight: FontWeight.bold,
-                    color: Colors.white,
-                  ),
-                ),
-                Text(
-                  _isFinished
-                      ? 'Erişim hakkınız hesabınıza tanımlandı'
-                      : 'Yüksek Getirili Kozmik Reklam Yayında',
-                  style: const TextStyle(
-                    fontSize: 10.5,
-                    color: AppColors.textSecondary,
-                  ),
-                ),
-              ],
-            ),
-          ),
-        ],
-      ),
-      content: Column(
-        mainAxisSize: MainAxisSize.min,
-        children: [
-          // Sponsor Simulator Banner
-          Container(
-            padding: const EdgeInsets.all(12),
-            decoration: BoxDecoration(
-              gradient: LinearGradient(
-                colors: [
-                  const Color(0xFF2C1E4A),
-                  Colors.black.withAlpha(180),
-                ],
-              ),
-              borderRadius: BorderRadius.circular(16),
-              border: Border.all(
-                color: _isFinished
-                    ? AppColors.pastelMint.withAlpha(120)
-                    : AppColors.starlightGold.withAlpha(100),
-              ),
-            ),
-            child: Column(
-              children: [
-                Row(
-                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
-                  children: [
-                    Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                      decoration: BoxDecoration(
-                        color: Colors.white12,
-                        borderRadius: BorderRadius.circular(6),
-                      ),
-                      child: const Text(
-                        'SPONSORLU YAYIN',
-                        style: TextStyle(
-                          fontSize: 9.5,
-                          fontWeight: FontWeight.bold,
-                          color: AppColors.starlightGold,
-                          letterSpacing: 0.5,
-                        ),
-                      ),
-                    ),
-                    if (!_isFinished)
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: Colors.black45,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: Text(
-                          '$_secondsLeft sn',
-                          style: const TextStyle(
-                            fontSize: 11,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
-                          ),
-                        ),
-                      ),
-                  ],
-                ),
-                const SizedBox(height: 12),
-                if (!_isFinished) ...[
-                  ClipRRect(
-                    borderRadius: BorderRadius.circular(6),
-                    child: LinearProgressIndicator(
-                      value: progress,
-                      backgroundColor: Colors.white12,
-                      valueColor: const AlwaysStoppedAnimation<Color>(
-                        AppColors.starlightGold,
-                      ),
-                      minHeight: 6,
-                    ),
-                  ),
-                  const SizedBox(height: 14),
-                  const Icon(
-                    Icons.play_circle_fill_rounded,
-                    color: AppColors.starlightGold,
-                    size: 38,
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    '🌟 Cosmic Pro & Artificial Intelligence',
-                    style: TextStyle(
-                      fontSize: 12,
-                      fontWeight: FontWeight.bold,
-                      color: Colors.white,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Reklam tamamlandığında tam harita ve canlı geçişler ücretsiz açılır.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 10.5,
-                      color: AppColors.textSecondary,
-                    ),
-                  ),
-                ] else ...[
-                  const Icon(
-                    Icons.stars_rounded,
-                    color: AppColors.starlightGold,
-                    size: 42,
-                  ),
-                  const SizedBox(height: 8),
-                  const Text(
-                    'Tebrikler! Günlük Erişim Hakkı Kazandınız 💎',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.pastelMint,
-                    ),
-                  ),
-                  const SizedBox(height: 4),
-                  const Text(
-                    'Canlı gezegen geçişleri, sabit yıldızlar ve çark özellikleri kilidi açıldı.',
-                    textAlign: TextAlign.center,
-                    style: TextStyle(
-                      fontSize: 10.5,
-                      color: Colors.white70,
-                    ),
-                  ),
-                ],
-              ],
-            ),
-          ),
-          const SizedBox(height: 10),
-          // Encouragement Note
-          Text(
-            _isFinished
-                ? 'İçeriği keşfetmeye hazırsınız!'
-                : '💡 Reklamı sonuna kadar izleyerek uygulamamızı desteklediğiniz için teşekkür ederiz.',
-            textAlign: TextAlign.center,
-            style: const TextStyle(
-              fontSize: 10,
-              color: Colors.white54,
-            ),
-          ),
-        ],
-      ),
-      actionsPadding: const EdgeInsets.fromLTRB(16, 0, 16, 16),
-      actions: [
-        if (_isFinished)
-          SizedBox(
-            width: double.infinity,
-            child: ElevatedButton.icon(
-              onPressed: () {
-                Navigator.of(context).pop();
-                widget.onRewardEarned();
-              },
-              icon: const Icon(Icons.lock_open_rounded, size: 16),
-              label: const Text(
-                'Kilidi Aç & İçeriğe Dön ✨',
-                style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13),
-              ),
-              style: ElevatedButton.styleFrom(
-                backgroundColor: AppColors.starlightGold,
-                foregroundColor: Colors.black87,
-                padding: const EdgeInsets.symmetric(vertical: 12),
-                shape: RoundedRectangleBorder(
-                  borderRadius: BorderRadius.circular(12),
-                ),
-              ),
-            ),
-          )
-        else
-          TextButton(
-            onPressed: () {
-              ScaffoldMessenger.of(context).showSnackBar(
-                const SnackBar(
-                  content: Text('⚠️ Ödülü kazanmak için lütfen reklamı sonuna kadar bekleyiniz.'),
-                  duration: Duration(seconds: 2),
-                  backgroundColor: Colors.amber,
-                ),
-              );
-            },
-            child: const Text(
-              'Ödülü İptal Etmek İçin Bekleyin',
-              style: TextStyle(fontSize: 11, color: Colors.white30),
-            ),
-          ),
-      ],
-    );
-  }
-}
 

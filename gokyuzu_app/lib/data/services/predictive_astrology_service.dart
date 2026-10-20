@@ -317,7 +317,7 @@ class PredictiveAstrologyService {
   static bool isDayChart(UserProfile profile) {
     final birthDate = parseBirthDate(profile.birthDate);
     final timeParts = parseBirthTime(profile.birthTime);
-    final birthCity = profile.birthCity.isNotEmpty ? profile.birthCity : 'Bolu';
+    final birthCity = profile.birthCity.isNotEmpty ? profile.birthCity : 'Datça';
     final cityLoc = WorldCitiesService.findCity(birthCity, profile.birthCountry);
     final birthOffset = getHistoricalUtcOffset(cityLoc: cityLoc, dt: birthDate);
     
@@ -341,7 +341,7 @@ class PredictiveAstrologyService {
   static Map<String, dynamic> calculatePlacidusHouses({required UserProfile profile}) {
     final birthDate = parseBirthDate(profile.birthDate);
     final timeParts = parseBirthTime(profile.birthTime);
-    final birthCity = profile.birthCity.isNotEmpty ? profile.birthCity : 'Bolu';
+    final birthCity = profile.birthCity.isNotEmpty ? profile.birthCity : 'Datça';
     final cityLoc = WorldCitiesService.findCity(birthCity, profile.birthCountry);
     final birthOffset = getHistoricalUtcOffset(cityLoc: cityLoc, dt: birthDate);
 
@@ -693,7 +693,7 @@ class PredictiveAstrologyService {
   }) {
     final birthDate = parseBirthDate(profile.birthDate);
     final birthTimeMap = parseBirthTime(profile.birthTime);
-    final birthCity = profile.birthCity.isNotEmpty ? profile.birthCity : 'Bolu';
+    final birthCity = profile.birthCity.isNotEmpty ? profile.birthCity : 'Datça';
     final cityLoc = WorldCitiesService.findCity(birthCity, profile.birthCountry);
 
     // 1. Doğum UTC Zamanı (Tarihsel Yaz/Kış Saati Hassasiyeti):

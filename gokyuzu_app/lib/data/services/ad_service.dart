@@ -27,7 +27,7 @@ class AdService {
   static bool _isInterstitialAdLoading = false;
   static RewardedAd? _rewardedAd;
   static bool _isRewardedAdLoading = false;
-  static int _tabSwitchCounter = 0;
+  static int _globalActionCounter = 0;
   static DateTime? _lastAdShownTime;
   static DateTime? get lastAdShownTime => _lastAdShownTime;
 
@@ -36,7 +36,100 @@ class AdService {
       (defaultTargetPlatform == TargetPlatform.android ||
           defaultTargetPlatform == TargetPlatform.iOS);
 
-  /// Geçiş reklamını arka planda önceden yükle (Hazır tut)
+  /// Her 4 tıklama veya eylemde (Astro Bülten, Gezegen Saatleri, Pusula, Frekanslar, Arşiv vb.)
+  /// geçiş reklamı gösterir. VIP kullanıcılara %100 Reklamsızdır.
+  static Future<void> registerActionAndShowInterstitial({VoidCallback? onDone}) async {
+    void finish() {
+      final cb = onDone;
+      if (cb != null) {
+        onDone = null;
+        cb();
+      }
+    }
+
+    if (!_isMobile) {
+      finish();
+      return;
+    }
+    final isVip = await StorageService.isVipUnlocked();
+    if (isVip) {
+      finish();
+      return;
+    }
+
+    _globalActionCounter++;
+    if (_globalActionCounter >= 4) {
+      _globalActionCounter = 0;
+      _lastAdShownTime = DateTime.now();
+      await showInterstitialIfReady(onDone: finish);
+    } else {
+      finish();
+    }
+  }
+
+  /// Müşteriyi boğmadan, her 4 sekme geçişinde 1 kez reklam gösterme kuralı
+  static Future<bool> shouldShowTabInterstitial() async {
+    if (!_isMobile) return false;
+    final isVip = await StorageService.isVipUnlocked();
+    if (isVip) return false; // VIP kullanıcılara %100 Reklamsız!
+
+    _globalActionCounter++;
+    
+    // Her 4 sekme/aksiyon geçişinde bir tetiklenir (0, 1, 2, 3 serbest; 4'te reklam)
+    if (_globalActionCounter >= 4) {
+      _globalActionCounter = 0;
+      _lastAdShownTime = DateTime.now();
+      return true;
+    }
+    return false;
+  }
+
+  /// Hazır reklam varsa göster, bittiğinde devam et
+  static Future<void> showInterstitialIfReady({VoidCallback? onDone}) async {
+    void finish() {
+      final cb = onDone;
+      if (cb != null) {
+        onDone = null;
+        cb();
+      }
+    }
+
+    if (!_isMobile) {
+      finish();
+      return;
+    }
+    final isVip = await StorageService.isVipUnlocked();
+    if (isVip) {
+      finish();
+      return;
+    }
+
+    if (_interstitialAd != null) {
+      final ad = _interstitialAd!;
+      _interstitialAd = null; // Tüketildi
+      ad.fullScreenContentCallback = FullScreenContentCallback(
+        onAdDismissedFullScreenContent: (adInstance) {
+          adInstance.dispose();
+          preloadInterstitial();
+          finish();
+        },
+        onAdFailedToShowFullScreenContent: (adInstance, error) {
+          adInstance.dispose();
+          preloadInterstitial();
+          finish();
+        },
+      );
+      try {
+        await ad.show();
+      } catch (_) {
+        preloadInterstitial();
+        finish();
+      }
+    } else {
+      preloadInterstitial();
+      finish();
+    }
+  }
   static void preloadInterstitial({String? adUnitId}) {
     if (!_isMobile) return;
     if (_interstitialAd != null || _isInterstitialAdLoading) return;
@@ -102,60 +195,7 @@ class AdService {
     }
   }
 
-  /// Müşteriyi boğmadan, her 4 sekme geçişinde 1 kez reklam gösterme kuralı
-  static Future<bool> shouldShowTabInterstitial() async {
-    if (!_isMobile) return false;
-    final isVip = await StorageService.isVipUnlocked();
-    if (isVip) return false; // VIP kullanıcılara %100 Reklamsız!
 
-    _tabSwitchCounter++;
-    
-    // Her 4 sekme geçişinde bir tetiklenir (0, 1, 2, 3 serbest; 4'te reklam)
-    if (_tabSwitchCounter >= 4) {
-      _tabSwitchCounter = 0;
-      _lastAdShownTime = DateTime.now();
-      return true;
-    }
-    return false;
-  }
-
-  /// Hazır reklam varsa göster, bittiğinde devam et
-  static Future<void> showInterstitialIfReady({VoidCallback? onDone}) async {
-    if (!_isMobile) {
-      onDone?.call();
-      return;
-    }
-    final isVip = await StorageService.isVipUnlocked();
-    if (isVip) {
-      onDone?.call();
-      return;
-    }
-
-    if (_interstitialAd != null) {
-      _interstitialAd!.fullScreenContentCallback = FullScreenContentCallback(
-        onAdDismissedFullScreenContent: (ad) {
-          ad.dispose();
-          _interstitialAd = null;
-          preloadInterstitial();
-          onDone?.call();
-        },
-        onAdFailedToShowFullScreenContent: (ad, error) {
-          ad.dispose();
-          _interstitialAd = null;
-          preloadInterstitial();
-          onDone?.call();
-        },
-      );
-      try {
-        await _interstitialAd!.show();
-      } catch (_) {
-        onDone?.call();
-      }
-    } else {
-      preloadInterstitial();
-      onDone?.call();
-    }
-  }
 
   /// Ödüllü reklam gösterimi (Kozmik Karar Pusulası, Ay Fazı & Canlı Geçişler vb. için)
   static Future<bool> showRewardedAd({required VoidCallback onRewardGranted}) async {
@@ -243,6 +283,6 @@ class AdService {
 
   /// Reklam sayacını sıfırla
   static void resetCounter() {
-    _tabSwitchCounter = 0;
+    _globalActionCounter = 0;
   }
 }

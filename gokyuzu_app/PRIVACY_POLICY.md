@@ -32,6 +32,9 @@ Gökyüzü Doktoru, kullanıcılara kişiselleştirilmiş derin astrolojik anali
 4. **Teknik ve Cihaz Verileri:**
    - **Cihaz Modeli ve İşletim Sistemi Sürümü:** Uygulamanın kararlı çalışması ve ekran optimizasyonu için.
    - **Anonim Hata / Çökme Günlükleri:** Olası uygulama çökmelerini gidermek amacıyla Firebase Crashlytics / Google Play Console üzerinden anonim olarak toplanır.
+5. **Anlık Coğrafi Konum Verisi (GPS / Konum İzni):**
+   - **Kullanım Amacı:** Kullanıcının o an bulunduğu coğrafi konuma (enlem, boylam ve saat dilimi) göre **Keldani Gezegen Saatleri (Planetary Hours)** ile **NOAA standartlarında kesin gün doğumu ve gün batımı** anlarını saniye-saniyesine hesaplamak.
+   - **Gizlilik ve Güvenlik Güvencesi:** Konum verisi **kesinlikle arka planda izlenmez**, hiçbir uzak sunucuya **aktarılmaz, saklanmaz ve satılmaz**. Konum yalnızca uygulama ön plandayken ve kullanıcının açık rızasıyla cihaz üzerinde yerel olarak (`SharedPreferences`) işlenir.
 
 ---
 
@@ -45,9 +48,13 @@ Gökyüzü Doktoru, kullanıcılara kişiselleştirilmiş derin astrolojik anali
 
 ## 4. İzinler (Permissions)
 
-Gökyüzü Doktoru uygulaması cihazınızda gizlilik ihlali oluşturacak gereksiz hiçbir izne (Kamera, Mikrofon, Rehber, SMS, Hassas Konum GPS arka plan takibi vb.) **erişmez**. Yalnızca aşağıdaki standart izinler kullanılır:
+Gökyüzü Doktoru uygulaması cihazınızda yalnızca işlevsel zorunluluğu olan asgari izinleri talep eder:
+- `android.permission.ACCESS_FINE_LOCATION` ve `android.permission.ACCESS_COARSE_LOCATION`: Kullanıcının anlık koordinatlarına göre yerel astronomik gezegen saatlerini ve gün doğumu/batımı döngülerini hesaplamak için (Yalnızca ön planda ve kullanıcı onayıyla).
 - `android.permission.INTERNET`: Güncel efemeris ve transit gezegen verilerini almak ve VIP üyelik durumunu doğrulamak için.
 - `android.permission.ACCESS_NETWORK_STATE`: Ağ bağlantısının aktif olup olmadığını kontrol etmek için.
+- `com.android.vending.BILLING`: Google Play Store üzerinden VIP abonelik ve uygulama içi satın alımların güvenle işlenmesi için.
+- `android.permission.POST_NOTIFICATIONS`: Kullanıcının izniyle günlük kozmik transit ve gökyüzü bildirimlerini iletmek için.
+- `com.google.android.gms.permission.AD_ID`: Google AdMob reklam monetizasyonu ve sahtekarlık önleme için.
 
 ---
 

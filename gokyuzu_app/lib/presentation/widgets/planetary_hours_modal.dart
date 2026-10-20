@@ -1,9 +1,9 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
-import '../../data/services/active_profile_service.dart';
 import '../../data/services/planetary_hours_service.dart';
 import '../../data/services/storage_service.dart';
 import '../../data/services/world_cities_service.dart';
+import '../../data/services/app_location_service.dart';
 
 class PlanetaryHoursModal extends StatefulWidget {
   final UserProfile profile;
@@ -28,18 +28,87 @@ class _PlanetaryHoursModalState extends State<PlanetaryHoursModal> {
   late CityLocation _currentCity;
   int _selectedTab = 0; // 0: Tümü (24), 1: Gündüz (12), 2: Gece (12)
   int? _expandedIndex;
+  bool _isLocating = false;
 
   @override
   void initState() {
     super.initState();
-    final effectiveProfile = ActiveProfileService.getEffectiveProfile(widget.profile);
-    final place = effectiveProfile.birthCity.trim();
-    if (place.isNotEmpty) {
-      _currentCity = WorldCitiesService.findCity(place);
-    } else {
-      _currentCity = WorldCitiesService.findCity('Datça');
-    }
+    // Güvenli varsayılan olarak Datça ile başlat
+    _currentCity = WorldCitiesService.findCity('Datça');
     _recalculate();
+    _initLocation();
+  }
+
+  Future<void> _initLocation() async {
+    // 1. Önbellekte kayıtlı gerçek GPS konumu varsa hemen uygula
+    final cached = await AppLocationService.getCachedLocation();
+    if (cached != null && mounted) {
+      setState(() {
+        _currentCity = cached;
+        _recalculate();
+      });
+      return;
+    }
+    // 2. İzin zaten verilmişse güncel GPS koordinatını al
+    if (await AppLocationService.hasLocationPermission()) {
+      final gpsLoc = await AppLocationService.getCurrentLocation(requestPermission: false);
+      if (gpsLoc != null && mounted) {
+        setState(() {
+          _currentCity = gpsLoc;
+          _recalculate();
+        });
+      }
+    }
+  }
+
+  Future<void> _getCurrentLocationGps() async {
+    if (_isLocating) return;
+    setState(() => _isLocating = true);
+    final messenger = ScaffoldMessenger.of(context);
+    try {
+      final loc = await AppLocationService.getCurrentLocation(requestPermission: true);
+      if (loc != null) {
+        if (mounted) {
+          setState(() {
+            _currentCity = loc;
+            _recalculate();
+            _isLocating = false;
+          });
+          messenger.showSnackBar(
+            SnackBar(
+              content: Row(
+                children: [
+                  const Icon(Icons.check_circle, color: AppColors.starlightGold, size: 18),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '📍 GPS Konumu Ayarlandı: ${loc.city} (${loc.latitude.toStringAsFixed(2)}°, ${loc.longitude.toStringAsFixed(2)}°)',
+                      style: const TextStyle(fontWeight: FontWeight.bold, fontSize: 12.5),
+                    ),
+                  ),
+                ],
+              ),
+              backgroundColor: const Color(0xFF1D5A3A),
+              duration: const Duration(seconds: 3),
+            ),
+          );
+        }
+      } else {
+        if (mounted) {
+          setState(() => _isLocating = false);
+          messenger.showSnackBar(
+            const SnackBar(
+              content: Text('⚠️ Konum bilgisi alınamadı. Lütfen cihazınızın GPS servisini ve izinlerini kontrol ediniz.'),
+              backgroundColor: AppColors.savageRed,
+            ),
+          );
+        }
+      }
+    } catch (e) {
+      if (mounted) {
+        setState(() => _isLocating = false);
+      }
+    }
   }
 
   void _recalculate() {
@@ -92,6 +161,44 @@ class _PlanetaryHoursModalState extends State<PlanetaryHoursModal> {
                     ],
                   ),
                   const SizedBox(height: 12),
+                  // GPS Hızlı Algılama Butonu
+                  InkWell(
+                    onTap: () async {
+                      Navigator.of(context).pop();
+                      await _getCurrentLocationGps();
+                    },
+                    borderRadius: BorderRadius.circular(14),
+                    child: Container(
+                      width: double.infinity,
+                      padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 11),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: [
+                            AppColors.starlightGold.withValues(alpha: 0.22),
+                            const Color(0xFF6B4EE8).withValues(alpha: 0.25),
+                          ],
+                        ),
+                        borderRadius: BorderRadius.circular(14),
+                        border: Border.all(color: AppColors.starlightGold.withValues(alpha: 0.5)),
+                      ),
+                      child: const Row(
+                        mainAxisAlignment: MainAxisAlignment.center,
+                        children: [
+                          Icon(Icons.my_location_rounded, color: AppColors.starlightGold, size: 18),
+                          SizedBox(width: 8),
+                          Text(
+                            '📍 Anlık GPS Konumumu Algıla (Otomatik)',
+                            style: TextStyle(
+                              color: Colors.white,
+                              fontWeight: FontWeight.bold,
+                              fontSize: 13,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
                   TextField(
                     controller: searchController,
                     style: const TextStyle(color: Colors.white),
@@ -264,6 +371,43 @@ class _PlanetaryHoursModalState extends State<PlanetaryHoursModal> {
                                       ),
                                       const SizedBox(width: 2),
                                       const Icon(Icons.arrow_drop_down, size: 12, color: AppColors.starlightGold),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                              const SizedBox(width: 6),
+                              InkWell(
+                                onTap: _isLocating ? null : _getCurrentLocationGps,
+                                borderRadius: BorderRadius.circular(8),
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: AppColors.pastelMint.withValues(alpha: 0.18),
+                                    borderRadius: BorderRadius.circular(8),
+                                    border: Border.all(color: AppColors.pastelMint.withValues(alpha: 0.4)),
+                                  ),
+                                  child: Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      _isLocating
+                                          ? const SizedBox(
+                                              width: 10,
+                                              height: 10,
+                                              child: CircularProgressIndicator(
+                                                strokeWidth: 1.5,
+                                                color: AppColors.pastelMint,
+                                              ),
+                                            )
+                                          : const Icon(Icons.my_location_rounded, size: 10, color: AppColors.pastelMint),
+                                      const SizedBox(width: 3),
+                                      const Text(
+                                        'GPS',
+                                        style: TextStyle(
+                                          color: AppColors.pastelMint,
+                                          fontSize: 10,
+                                          fontWeight: FontWeight.bold,
+                                        ),
+                                      ),
                                     ],
                                   ),
                                 ),

@@ -16,6 +16,7 @@ Gökyüzü Doktoru ("Uygulama") olarak kullanıcılarımızın mahremiyetine en 
 ### 1. Hangi Verileri Topluyoruz?
 * **Hesap Bilgileri:** E-posta adresi ve şifre (şifreler şifrelenerek saklanır, bize dahi görünmez).
 * **Profil ve Doğum Verileri:** Adınız (veya rumuzunuz), cinsiyetiniz, doğum tarihiniz (gün/ay/yıl), kesin doğum saatiniz (saat/dakika), doğum şehri ve ülkesi, coğrafi enlem/boylam koordinatları. Bu veriler Placidus doğum haritası ve efemeris hesaplamaları için zorunludur.
+* **Anlık Coğrafi Konum (GPS):** Keldani Gezegen Saatleri ve NOAA gün doğumu/batımı döngülerini saniyesi saniyesine hesaplayabilmek amacıyla yalnızca kullanıcının talebi ve izniyle ön planda cihaz koordinatları kullanılır (asla arka planda izlenmez, sunuculara yüklenmez veya satılmaz).
 * **Yazdığınız İçerik:** Rektifikasyon geçmiş yaşam olay notları, doğum haritası soru ve niyet metinleri.
 * **Kullanım Verileri (Cihazınızda):** Kayıtlı harita profilleri (arşiv), günlük astrolojik notlar, ayarlarınız ve VIP üyelik durumu.
 * **Reklam ve Cihaz Verileri:** İsteğe bağlı ödüllü sponsorlu reklam izlediğinizde Google AdMob; reklam kimliği, IP adresi, cihaz modeli ve işletim sistemi sürümü gibi teknik verileri işleyebilir.

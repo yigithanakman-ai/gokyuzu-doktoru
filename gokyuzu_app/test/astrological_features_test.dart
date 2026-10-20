@@ -38,7 +38,7 @@ void main() {
       expect(tokyo.latitude, closeTo(35.6762, 0.01));
 
       final fallback = WorldCitiesService.findCity('BilinmeyenYer123');
-      expect(fallback.city, equals('Bolu'));
+      expect(fallback.city, equals('Datça'));
     });
   });
 

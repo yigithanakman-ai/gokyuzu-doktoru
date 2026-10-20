@@ -14,6 +14,7 @@ Uygulamamızın çalışması, astrolojik hesaplamaların yapılması ve hizmetl
 * **Kimlik Verileri:** Ad, soyad, kullanıcı adı/rumuz, cinsiyet.
 * **İletişim Verileri:** E-posta adresi (hesap oluşturma, güvenlik bildirimleri ve arşiv eşleme amacıyla).
 * **Kozmik & Doğum Verileri:** Doğum tarihi (gün/ay/yıl), kesin doğum saati (saat/dakika), doğum yeri şehri ve ülkesi, coğrafi koordinatlar (enlem ve boylam).
+* **Anlık Konum Verisi (GPS):** Keldani Gezegen Saatleri ve NOAA gün doğumu/batımı hesaplamaları amacıyla kullanıcının açık rızasıyla cihaz üzerinden alınan anlık enlem/boylam koordinatları (kesinlikle sunuculara aktarılmaz veya saklanmaz, yerel olarak işlenir).
 * **Kullanım & Arşiv Verileri:** Kaydedilen profil listeleri, harita notları, rektifikasyon olay kayıtları ve uygulama içi tercihler.
 * **Cihaz ve Güvenlik Verileri:** Cihaz modeli, işletim sistemi sürümü, IP adresi ve uygulama hata günlükleri (yalnızca sistem kararlılığı için).
 

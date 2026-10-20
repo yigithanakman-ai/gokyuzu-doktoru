@@ -18,7 +18,7 @@ class CityLocation {
     required this.timezoneOffset,
   });
 
-  String get displayName => ', ';
+  String get displayName => '$city, $country';
 
   Map<String, dynamic> toJson() => {
     'city': city,
@@ -621,12 +621,12 @@ class WorldCitiesService {
       }
     }
 
-    // Default fallback to Bolu, Türkiye
+    // Default fallback to Datça, Türkiye
     return const CityLocation(
-      city: 'Bolu',
+      city: 'Datça',
       country: 'Türkiye',
-      latitude: 40.7392,
-      longitude: 31.6089,
+      latitude: 36.7265,
+      longitude: 27.6853,
       timezoneOffset: 3.0,
     );
   }

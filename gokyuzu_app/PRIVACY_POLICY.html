@@ -73,7 +73,7 @@
 </head>
 <body>
   <div class="card">
-    <div class="badge">Son Güncelleme: 15 Ekim 2026 • v1.0.0</div>
+    <div class="badge">Son Güncelleme: 20 Ekim 2026 • v1.0.9</div>
     <h1>Gökyüzü Doktoru — Gizlilik Politikası ve KVKK Aydınlatma Metni</h1>
     
     <p>Bu Gizlilik Politikası, <strong>Gökyüzü Doktoru</strong> mobil uygulamasını ("Uygulama") kullanan tüm kullanıcılarımızın kişisel verilerinin 6698 sayılı Kişisel Verilerin Korunması Kanunu ("KVKK"), Avrupa Birliği Genel Veri Koruma Tüzüğü ("GDPR") ve Google Play Geliştirici Programı Politikaları uyarınca nasıl toplandığını, işlendiğini ve korunduğunu açıklar.</p>
@@ -87,16 +87,20 @@
     <p>Uygulama, size kişiselleştirilmiş astrolojik ve gökyüzü analizleri sunabilmek amacıyla yalnızca gerekli olan şu verileri işler:</p>
     <ul>
       <li><strong>Kozmik Doğum Verileri:</strong> Doğum tarihi, kesin doğum saati, doğum şehri ve ülkesi (enlem ve boylam koordinatları). Bu veriler geocentric ve tropikal Batı astrolojisi efemeris algoritmalarıyla doğum haritanızı (Natal Chart), ev konumlarını ve transit açılarını hesaplamak için kullanılır.</li>
+      <li><strong>Anlık Coğrafi Konum Verisi (GPS):</strong> Kullanıcının o an bulunduğu konuma göre Keldani Gezegen Saatleri ve NOAA astronomik gün doğumu/gün batımı saatlerini saniye-saniyesine hesaplamak amacıyla cihazın yerel GPS koordinatları kullanılır. Bu veri KESİNLİKLE arka planda izlenmez, hiçbir sunucuya iletilmez ve yalnızca cihaz hafızasında anlık olarak işlenir.</li>
       <li><strong>Kimlik ve Profil Bilgisi:</strong> Ad, rumuz ve cinsiyet bilgisi. Haritanızı kişiselleştirmek ve kayıtlı profillerinizi yönetmek için kullanılır.</li>
       <li><strong>İletişim Bilgileri:</strong> E-posta adresi (hesap eşleme, satın alınan VIP üyeliklerin doğrulanması ve harita arşivi güvenliği için).</li>
       <li><strong>Teknik Cihaz Verileri:</strong> İşletim sistemi sürümü ve genel çökme hata raporları (yalnızca uygulamanın kararlılığını sağlamak amacıyla).</li>
     </ul>
 
-    <h2>3. Veri Güvenliği ve Üçüncü Taraflara Aktarım</h2>
-    <p>Kişisel doğum verileriniz ve koordinatlarınız yüksek standartlarda şifrelenerek cihazınızda ve güvenli altyapılarda saklanır.</p>
+    <h2>3. İzinler ve Veri Güvenliği</h2>
+    <p>Uygulama yalnızca işlevsel olarak gerekli olan asgari izinleri talep eder:</p>
     <ul>
+      <li><strong>Konum İzni (ACCESS_FINE_LOCATION / ACCESS_COARSE_LOCATION):</strong> Anlık astronomik gezegen saatleri ve gün doğumu/batımı hesaplamaları için kullanıcı onayıyla ön planda kullanılır.</li>
+      <li><strong>Abonelik ve Faturalandırma (BILLING):</strong> Google Play Store üzerinden VIP üyelik işlemlerinin güvenle gerçekleştirilmesi için kullanılır. Kredi kartı bilgileri asla sunucularımızda saklanmaz.</li>
+      <li><strong>Bildirim İzni (POST_NOTIFICATIONS):</strong> Günlük gezegen hareketleri ve gökyüzü bültenlerini iletmek için kullanılır (isteğe bağlı).</li>
+      <li><strong>Reklam Kimliği (AD_ID):</strong> Google AdMob reklam monetizasyonu ve sahtekarlık önleme için kullanılır.</li>
       <li>Verileriniz yasal zorunluluklar haricinde <strong>hiçbir üçüncü taraf reklam şirketine veya veri simsarına ticari amaçla SATILMAZ, KİRALANMAZ ve PAYLAŞILMAZ</strong>.</li>
-      <li>Ödeme işlemleri (VIP abonelikler) doğrudan Google Play Store'un kendi güvenli faturalandırma altyapısı (Google Play In-App Billing) üzerinden gerçekleşir; kredi kartı bilgileriniz Gökyüzü Doktoru tarafından asla görülmez ve saklanmaz.</li>
     </ul>
 
     <h2>4. Çocukların Gizliliği (16 Yaş Kuralı)</h2>

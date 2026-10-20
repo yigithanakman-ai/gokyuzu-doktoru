@@ -3,6 +3,7 @@ import '../../core/constants/app_colors.dart';
 import '../../data/services/astro_bulletin_service.dart';
 import '../../data/services/storage_service.dart';
 import '../../data/services/app_translation_service.dart';
+import '../../data/services/ad_service.dart';
 import 'glass_card.dart';
 
 /// Ana Sayfa Astro Bülten Bölümü ve Detay Modalı
@@ -38,16 +39,19 @@ class _AstroBulletinSectionState extends State<AstroBulletinSection> {
   }
 
   void _openFullBulletinModal(BuildContext context) {
-    showModalBottomSheet(
-      context: context,
-      isScrollControlled: true,
-      backgroundColor: Colors.transparent,
-      builder: (ctx) => _AstroBulletinModalContent(
-        profile: widget.profile,
-        weeklySummary: _weeklySummary,
-        monthlyEvents: _monthlyEvents,
-      ),
-    );
+    AdService.registerActionAndShowInterstitial(onDone: () {
+      if (!context.mounted) return;
+      showModalBottomSheet(
+        context: context,
+        isScrollControlled: true,
+        backgroundColor: Colors.transparent,
+        builder: (ctx) => _AstroBulletinModalContent(
+          profile: widget.profile,
+          weeklySummary: _weeklySummary,
+          monthlyEvents: _monthlyEvents,
+        ),
+      );
+    });
   }
 
   @override
