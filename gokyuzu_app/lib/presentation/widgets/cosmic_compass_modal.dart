@@ -460,6 +460,25 @@ class _CosmicCompassModalState extends State<CosmicCompassModal>
                       AnimatedBuilder(
                         animation: _needleAnimation,
                         builder: (context, child) {
+                          Color needleTipColor = AppColors.starlightGold;
+                          Color needleGlowColor = AppColors.starlightGold;
+                          if (_result != null) {
+                            switch (_result!.answerType) {
+                              case CompassAnswerType.affirmative:
+                                needleTipColor = Colors.greenAccent;
+                                needleGlowColor = Colors.greenAccent;
+                                break;
+                              case CompassAnswerType.neutral:
+                                needleTipColor = Colors.amberAccent;
+                                needleGlowColor = Colors.amberAccent;
+                                break;
+                              case CompassAnswerType.cautious:
+                                needleTipColor = Colors.redAccent;
+                                needleGlowColor = Colors.redAccent;
+                                break;
+                            }
+                          }
+
                           return Transform.rotate(
                             angle: _needleAnimation.value,
                             child: SizedBox(
@@ -475,16 +494,17 @@ class _CosmicCompassModalState extends State<CosmicCompassModal>
                                       width: 4,
                                       height: 60,
                                       decoration: BoxDecoration(
-                                        gradient: const LinearGradient(
-                                          colors: [Colors.redAccent, AppColors.starlightGold],
+                                        gradient: LinearGradient(
+                                          colors: [needleTipColor, AppColors.starlightGold],
                                           begin: Alignment.topCenter,
                                           end: Alignment.bottomCenter,
                                         ),
                                         borderRadius: BorderRadius.circular(4),
                                         boxShadow: [
                                           BoxShadow(
-                                            color: Colors.redAccent.withValues(alpha: 0.6),
-                                            blurRadius: 8,
+                                            color: needleGlowColor.withValues(alpha: 0.7),
+                                            blurRadius: 10,
+                                            spreadRadius: 1,
                                           ),
                                         ],
                                       ),

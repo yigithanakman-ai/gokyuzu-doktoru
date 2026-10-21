@@ -5,6 +5,7 @@ import '../../data/services/planetary_hours_service.dart';
 import '../../data/services/storage_service.dart';
 import '../../data/services/world_cities_service.dart';
 import '../../data/services/app_location_service.dart';
+import 'astrological_glyph.dart';
 
 class PlanetaryHoursModal extends StatefulWidget {
   final UserProfile profile;
@@ -458,14 +459,23 @@ class _PlanetaryHoursModalState extends State<PlanetaryHoursModal> {
                             ),
                           ),
                           const SizedBox(height: 2),
-                          Text(
-                            '${prev.planetSymbol} ${prev.planetName}',
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              AstrologicalGlyphWidget(planetKeyOrName: prev.planetName, size: 12, color: Colors.white70),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  prev.planetName,
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                           Text(
                             '${prev.startFormatted}-${prev.endFormatted}',
@@ -498,13 +508,24 @@ class _PlanetaryHoursModalState extends State<PlanetaryHoursModal> {
                               ),
                             ),
                             const SizedBox(height: 3),
-                            Text(
-                              '${cur.planetSymbol} ${cur.planetName} Saati',
-                              style: const TextStyle(
-                                color: Colors.white,
-                                fontSize: 13,
-                                fontWeight: FontWeight.bold,
-                              ),
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.center,
+                              mainAxisSize: MainAxisSize.min,
+                              children: [
+                                AstrologicalGlyphWidget(planetKeyOrName: cur.planetName, size: 15, color: AppColors.starlightGold),
+                                const SizedBox(width: 5),
+                                Flexible(
+                                  child: Text(
+                                    '${cur.planetName} Saati',
+                                    style: const TextStyle(
+                                      color: Colors.white,
+                                      fontSize: 13,
+                                      fontWeight: FontWeight.bold,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
                             ),
                             Text(
                               '${cur.startFormatted} - ${cur.endFormatted} • ${_dayInfo.minutesRemainingInCurrentHour} dk kaldı',
@@ -534,14 +555,24 @@ class _PlanetaryHoursModalState extends State<PlanetaryHoursModal> {
                             ),
                           ),
                           const SizedBox(height: 2),
-                          Text(
-                            '${next.planetSymbol} ${next.planetName}',
-                            style: const TextStyle(
-                              color: Colors.white70,
-                              fontSize: 11,
-                              fontWeight: FontWeight.w600,
-                            ),
-                            overflow: TextOverflow.ellipsis,
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            mainAxisAlignment: MainAxisAlignment.end,
+                            children: [
+                              AstrologicalGlyphWidget(planetKeyOrName: next.planetName, size: 12, color: Colors.white70),
+                              const SizedBox(width: 4),
+                              Flexible(
+                                child: Text(
+                                  next.planetName,
+                                  style: const TextStyle(
+                                    color: Colors.white70,
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.w600,
+                                  ),
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ],
                           ),
                           Text(
                             '${next.startFormatted}-${next.endFormatted}',
@@ -586,12 +617,10 @@ class _PlanetaryHoursModalState extends State<PlanetaryHoursModal> {
                   children: [
                     Row(
                       children: [
-                        Text(
-                          cur.planetSymbol,
-                          style: const TextStyle(
-                            fontSize: 26,
-                            fontFamilyFallback: ['sans-serif', 'Roboto'],
-                          ),
+                        AstrologicalGlyphWidget(
+                          planetKeyOrName: cur.planetName,
+                          size: 26,
+                          color: AppColors.starlightGold,
                         ),
                         const SizedBox(width: 10),
                         Expanded(
@@ -707,13 +736,10 @@ class _PlanetaryHoursModalState extends State<PlanetaryHoursModal> {
                               Container(
                                 width: 32,
                                 alignment: Alignment.center,
-                                child: Text(
-                                  h.planetSymbol,
-                                  style: TextStyle(
-                                    fontSize: 18,
-                                    fontFamilyFallback: const ['sans-serif', 'Roboto'],
-                                    color: isCurrent ? AppColors.starlightGold : Colors.white70,
-                                  ),
+                                child: AstrologicalGlyphWidget(
+                                  planetKeyOrName: h.planetName,
+                                  size: 19,
+                                  color: isCurrent ? AppColors.starlightGold : Colors.white70,
                                 ),
                               ),
                               const SizedBox(width: 8),

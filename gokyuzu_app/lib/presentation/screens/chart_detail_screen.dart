@@ -21,6 +21,7 @@ import 'aspects_screen.dart';
 import '../widgets/eclipses_academy_view.dart';
 import '../../data/services/app_translation_service.dart';
 import '../widgets/interactive_bi_wheel_modal.dart';
+import '../widgets/astrological_glyph.dart';
 
 class ChartDetailScreen extends StatefulWidget {
   final UserProfile profile;
@@ -46,6 +47,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
   BirthChartModel? _transitChart;
   String? _selectedBiWheelPlanet;
   double _biWheelRotationAngle = 0.0;
+  BiWheelDisplayMode _wheelDisplayMode = BiWheelDisplayMode.dual;
 
   @override
   void initState() {
@@ -458,12 +460,10 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                                             borderRadius: BorderRadius.circular(10),
                                           ),
                                           child: Center(
-                                            child: Text(
-                                              _getPlanetSymbol(entry.key),
-                                              style: const TextStyle(
-                                                fontSize: 18,
-                                                color: AppColors.pastelLavender,
-                                              ),
+                                            child: AstrologicalGlyphWidget(
+                                              planetKeyOrName: entry.key,
+                                              size: 20,
+                                              color: AppColors.pastelLavender,
                                             ),
                                           ),
                                         ),
@@ -782,70 +782,152 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
       return (sDeg + deg) % 360.0;
     }
 
-    for (final tKey in planetKeys) {
-      final tDeg = getAbsoluteDegree(_transitChart!, tKey);
-      final tPlanet = _transitChart!.planets[tKey];
-      if (tPlanet == null) continue;
+    void evaluateAspect(
+      String k1,
+      String k2,
+      double deg1,
+      double deg2,
+      String p1Name,
+      String p2Name,
+      String p1Sign,
+      String p2Sign,
+      bool isP1Transit,
+      bool isP2Transit,
+    ) {
+      if (_selectedBiWheelPlanet != null && _selectedBiWheelPlanet != k1 && _selectedBiWheelPlanet != k2) {
+        return;
+      }
 
-      for (final nKey in planetKeys) {
-        if (_selectedBiWheelPlanet != null && _selectedBiWheelPlanet != tKey && _selectedBiWheelPlanet != nKey) {
-          continue;
+      double diff = (deg1 - deg2).abs() % 360.0;
+      if (diff > 180.0) diff = 360.0 - diff;
+
+      String? aspectType;
+      String? aspectSymbol;
+      Color? aspectColor;
+      double orb = 0.0;
+
+      if (diff <= 5.0) {
+        aspectType = 'Kavuşum (0°)';
+        aspectSymbol = '☌';
+        aspectColor = const Color(0xFFFFD700);
+        orb = diff;
+      } else if ((diff - 60.0).abs() <= 4.0) {
+        aspectType = 'Sekstil (60°)';
+        aspectSymbol = '✶';
+        aspectColor = const Color(0xFF74B9FF);
+        orb = (diff - 60.0).abs();
+      } else if ((diff - 90.0).abs() <= 5.0) {
+        aspectType = 'Kare (90°)';
+        aspectSymbol = '■';
+        aspectColor = const Color(0xFFFF5252);
+        orb = (diff - 90.0).abs();
+      } else if ((diff - 120.0).abs() <= 5.0) {
+        aspectType = 'Üçgen (120°)';
+        aspectSymbol = '▲';
+        aspectColor = const Color(0xFF55EFC4);
+        orb = (diff - 120.0).abs();
+      } else if ((diff - 180.0).abs() <= 5.0) {
+        aspectType = 'Karşıt (180°)';
+        aspectSymbol = '☍';
+        aspectColor = const Color(0xFFA29BFE);
+        orb = (diff - 180.0).abs();
+      }
+
+      if (aspectType != null) {
+        aspects.add({
+          'p1Key': k1,
+          'p2Key': k2,
+          'p1Name': p1Name,
+          'p2Name': p2Name,
+          'p1Sign': p1Sign,
+          'p2Sign': p2Sign,
+          'isP1Transit': isP1Transit,
+          'isP2Transit': isP2Transit,
+          'transitName': isP1Transit ? p1Name : p2Name,
+          'natalName': !isP1Transit ? p1Name : p2Name,
+          'transitSign': isP1Transit ? p1Sign : p2Sign,
+          'natalSign': !isP1Transit ? p1Sign : p2Sign,
+          'aspectType': aspectType,
+          'aspectSymbol': aspectSymbol,
+          'aspectColor': aspectColor,
+          'orb': orb.toStringAsFixed(1),
+        });
+      }
+    }
+
+    if (_wheelDisplayMode == BiWheelDisplayMode.dual) {
+      for (final tKey in planetKeys) {
+        final tDeg = getAbsoluteDegree(_transitChart!, tKey);
+        final tPlanet = _transitChart!.planets[tKey];
+        if (tPlanet == null) continue;
+
+        for (final nKey in planetKeys) {
+          final nDeg = getAbsoluteDegree(_chart!, nKey);
+          final nPlanet = _chart!.planets[nKey];
+          if (nPlanet == null) continue;
+
+          evaluateAspect(
+            tKey,
+            nKey,
+            tDeg,
+            nDeg,
+            _getTurkishPlanetName(tKey),
+            _getTurkishPlanetName(nKey),
+            tPlanet.sign,
+            nPlanet.sign,
+            true,
+            false,
+          );
         }
+      }
+    } else if (_wheelDisplayMode == BiWheelDisplayMode.transitOnly) {
+      for (int i = 0; i < planetKeys.length; i++) {
+        for (int j = i + 1; j < planetKeys.length; j++) {
+          final k1 = planetKeys[i];
+          final k2 = planetKeys[j];
+          final deg1 = getAbsoluteDegree(_transitChart!, k1);
+          final deg2 = getAbsoluteDegree(_transitChart!, k2);
+          final p1 = _transitChart!.planets[k1];
+          final p2 = _transitChart!.planets[k2];
+          if (p1 == null || p2 == null) continue;
 
-        final nDeg = getAbsoluteDegree(_chart!, nKey);
-        final nPlanet = _chart!.planets[nKey];
-        if (nPlanet == null) continue;
-
-        double diff = (tDeg - nDeg).abs() % 360.0;
-        if (diff > 180.0) diff = 360.0 - diff;
-
-        String? aspectType;
-        String? aspectSymbol;
-        Color? aspectColor;
-        double orb = 0.0;
-
-        if (diff <= 5.0) {
-          aspectType = 'Kavuşum (0°)';
-          aspectSymbol = '☌';
-          aspectColor = const Color(0xFFFFD700);
-          orb = diff;
-        } else if ((diff - 60.0).abs() <= 4.0) {
-          aspectType = 'Sekstil (60°)';
-          aspectSymbol = '✶';
-          aspectColor = const Color(0xFF74B9FF);
-          orb = (diff - 60.0).abs();
-        } else if ((diff - 90.0).abs() <= 5.0) {
-          aspectType = 'Kare (90°)';
-          aspectSymbol = '■';
-          aspectColor = const Color(0xFFFF5252);
-          orb = (diff - 90.0).abs();
-        } else if ((diff - 120.0).abs() <= 5.0) {
-          aspectType = 'Üçgen (120°)';
-          aspectSymbol = '▲';
-          aspectColor = const Color(0xFF55EFC4);
-          orb = (diff - 120.0).abs();
-        } else if ((diff - 180.0).abs() <= 5.0) {
-          aspectType = 'Karşıt (180°)';
-          aspectSymbol = '☍';
-          aspectColor = const Color(0xFFA29BFE);
-          orb = (diff - 180.0).abs();
+          evaluateAspect(
+            k1,
+            k2,
+            deg1,
+            deg2,
+            _getTurkishPlanetName(k1),
+            _getTurkishPlanetName(k2),
+            p1.sign,
+            p2.sign,
+            true,
+            true,
+          );
         }
+      }
+    } else if (_wheelDisplayMode == BiWheelDisplayMode.natalOnly) {
+      for (int i = 0; i < planetKeys.length; i++) {
+        for (int j = i + 1; j < planetKeys.length; j++) {
+          final k1 = planetKeys[i];
+          final k2 = planetKeys[j];
+          final deg1 = getAbsoluteDegree(_chart!, k1);
+          final deg2 = getAbsoluteDegree(_chart!, k2);
+          final p1 = _chart!.planets[k1];
+          final p2 = _chart!.planets[k2];
+          if (p1 == null || p2 == null) continue;
 
-        if (aspectType != null) {
-          aspects.add({
-            'transitKey': tKey,
-            'natalKey': nKey,
-            'transitName': _getTurkishPlanetName(tKey),
-            'natalName': _getTurkishPlanetName(nKey),
-            'transitSymbol': _getPlanetSymbol(tKey),
-            'natalSymbol': _getPlanetSymbol(nKey),
-            'transitSign': tPlanet.sign,
-            'natalSign': nPlanet.sign,
-            'aspectType': aspectType,
-            'aspectSymbol': aspectSymbol,
-            'aspectColor': aspectColor,
-            'orb': orb.toStringAsFixed(1),
-          });
+          evaluateAspect(
+            k1,
+            k2,
+            deg1,
+            deg2,
+            _getTurkishPlanetName(k1),
+            _getTurkishPlanetName(k2),
+            p1.sign,
+            p2.sign,
+            false,
+            false,
+          );
         }
       }
     }
@@ -1081,12 +1163,10 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                     Expanded(
                       child: Row(
                         children: [
-                          Text(
-                            _getPlanetSymbol(entry.key),
-                            style: const TextStyle(
-                              fontSize: 16,
-                              color: AppColors.starlightGold,
-                            ),
+                          AstrologicalGlyphWidget(
+                            planetKeyOrName: entry.key,
+                            size: 16,
+                            color: AppColors.starlightGold,
                           ),
                           const SizedBox(width: 8),
                           Flexible(
@@ -1150,16 +1230,77 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
     );
   }
 
+  Widget _buildBiWheelModeTab(BiWheelDisplayMode mode, String label) {
+    final isSelected = _wheelDisplayMode == mode;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _wheelDisplayMode = mode),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 7),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.starlightGold : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              color: isSelected ? Colors.black : Colors.white70,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ),
+    );
+  }
+
   Widget _buildBiWheelContent() {
     if (_transitChart == null) {
       _calculateTransitChart();
     }
     final activeAspects = _getBiWheelActiveAspects();
 
+    String listTitle;
+    if (_wheelDisplayMode == BiWheelDisplayMode.dual) {
+      listTitle = _selectedBiWheelPlanet != null
+          ? '${_getTurkishPlanetName(_selectedBiWheelPlanet!)} Transit - Doğum Açıları'
+          : 'Aktif Transit - Doğum Açıları';
+    } else if (_wheelDisplayMode == BiWheelDisplayMode.transitOnly) {
+      listTitle = _selectedBiWheelPlanet != null
+          ? '${_getTurkishPlanetName(_selectedBiWheelPlanet!)} Canlı Transit Açıları'
+          : 'Aktif Canlı Transit - Transit Açıları';
+    } else {
+      listTitle = _selectedBiWheelPlanet != null
+          ? '${_getTurkishPlanetName(_selectedBiWheelPlanet!)} Doğum Haritası Açıları'
+          : 'Doğum Haritası Kök Açıları';
+    }
+
     return Column(
       crossAxisAlignment: CrossAxisAlignment.stretch,
       children: [
-        // 1. Dual Wheel Info Badge
+        // 0. Segmented Mode Selector: İkili Çark, Sadece Transitler, Sadece Doğum Haritası
+        Container(
+          margin: const EdgeInsets.only(bottom: 12),
+          padding: const EdgeInsets.all(4),
+          decoration: BoxDecoration(
+            color: const Color(0xFF141022),
+            borderRadius: BorderRadius.circular(12),
+            border: Border.all(color: Colors.white12),
+          ),
+          child: Row(
+            children: [
+              _buildBiWheelModeTab(BiWheelDisplayMode.dual, '🌓 İkili Çark'),
+              _buildBiWheelModeTab(BiWheelDisplayMode.transitOnly, '⚡ Sadece Transit'),
+              _buildBiWheelModeTab(BiWheelDisplayMode.natalOnly, '🌟 Sadece Doğum'),
+            ],
+          ),
+        ),
+
+        // 1. Wheel Info Badge
         Container(
           padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
           decoration: BoxDecoration(
@@ -1182,25 +1323,33 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                   children: [
                     Row(
                       children: [
-                        Container(
-                          width: 8, height: 8,
-                          decoration: const BoxDecoration(color: Color(0xFF00CEC9), shape: BoxShape.circle),
-                        ),
-                        const SizedBox(width: 5),
-                        const Text('Dış Çark: Canlı Transitler', style: TextStyle(color: Color(0xFF00CEC9), fontWeight: FontWeight.bold, fontSize: 11)),
-                        const SizedBox(width: 12),
-                        Container(
-                          width: 8, height: 8,
-                          decoration: const BoxDecoration(color: AppColors.starlightGold, shape: BoxShape.circle),
-                        ),
-                        const SizedBox(width: 5),
-                        const Text('İç Çark: Doğum (Natal)', style: TextStyle(color: AppColors.starlightGold, fontWeight: FontWeight.bold, fontSize: 11)),
+                        if (_wheelDisplayMode != BiWheelDisplayMode.natalOnly) ...[
+                          Container(
+                            width: 8, height: 8,
+                            decoration: const BoxDecoration(color: Color(0xFF00CEC9), shape: BoxShape.circle),
+                          ),
+                          const SizedBox(width: 5),
+                          const Text('Dış Çark: Canlı Transitler', style: TextStyle(color: Color(0xFF00CEC9), fontWeight: FontWeight.bold, fontSize: 11)),
+                          const SizedBox(width: 12),
+                        ],
+                        if (_wheelDisplayMode != BiWheelDisplayMode.transitOnly) ...[
+                          Container(
+                            width: 8, height: 8,
+                            decoration: const BoxDecoration(color: AppColors.starlightGold, shape: BoxShape.circle),
+                          ),
+                          const SizedBox(width: 5),
+                          const Text('İç Çark: Doğum (Natal)', style: TextStyle(color: AppColors.starlightGold, fontWeight: FontWeight.bold, fontSize: 11)),
+                        ],
                       ],
                     ),
                     const SizedBox(height: 3),
-                    const Text(
-                      'Solar Fire standardında çift katmanlı efemeris çarkı. Zaman makinesiyle gökyüzünü ileri/geri yürütün.',
-                      style: TextStyle(fontSize: 10.5, color: Colors.white70),
+                    Text(
+                      _wheelDisplayMode == BiWheelDisplayMode.transitOnly
+                          ? 'Gökyüzündeki güncel canlı gezegen konumları ve birbirleriyle kurdukları aktif transit açılar.'
+                          : (_wheelDisplayMode == BiWheelDisplayMode.natalOnly
+                              ? 'Doğum anınızdaki kök gökyüzü haritanız ve gezegenlerinizin kendi aralarındaki temel açılar.'
+                              : 'Solar Fire standardında çift katmanlı efemeris çarkı. Zaman makinesiyle gökyüzünü ileri/geri yürütün.'),
+                      style: const TextStyle(fontSize: 10.5, color: Colors.white70),
                     ),
                   ],
                 ),
@@ -1337,6 +1486,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                       outerChart: _transitChart!,
                       selectedPlanet: _selectedBiWheelPlanet,
                       rotationOffsetRad: _biWheelRotationAngle,
+                      displayMode: _wheelDisplayMode,
                       onAspectFound: (_) {},
                     ),
                   ),
@@ -1373,6 +1523,43 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
             ],
           ],
         ),
+        if (_wheelDisplayMode == BiWheelDisplayMode.transitOnly) ...[
+          const SizedBox(height: 10),
+          InkWell(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (_) => InteractiveBiWheelModal(natalProfile: widget.profile),
+                ),
+              );
+            },
+            borderRadius: BorderRadius.circular(12),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 10),
+              decoration: BoxDecoration(
+                gradient: LinearGradient(
+                  colors: [
+                    const Color(0xFF00CEC9).withValues(alpha: 0.25),
+                    const Color(0xFF0984E3).withValues(alpha: 0.25),
+                  ],
+                ),
+                borderRadius: BorderRadius.circular(12),
+                border: Border.all(color: const Color(0xFF00CEC9).withValues(alpha: 0.5)),
+              ),
+              child: const Row(
+                mainAxisAlignment: MainAxisAlignment.center,
+                children: [
+                  Icon(Icons.open_in_new_rounded, size: 16, color: Color(0xFF00CEC9)),
+                  SizedBox(width: 8),
+                  Text(
+                    'Canlı Transit Haritasını Ayrı Sayfada Aç ➔',
+                    style: TextStyle(color: Color(0xFF00CEC9), fontWeight: FontWeight.bold, fontSize: 12),
+                  ),
+                ],
+              ),
+            ),
+          ),
+        ],
         const SizedBox(height: 14),
 
         // 4. Aspect Ray Filter Chips
@@ -1397,7 +1584,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                   ...['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'].map((k) {
                     return _buildBiWheelFilterChip(
                       k,
-                      '${_getPlanetSymbol(k)} ${_getTurkishPlanetName(k)}',
+                      _getTurkishPlanetName(k),
                     );
                   }),
                 ],
@@ -1407,7 +1594,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
         ),
         const SizedBox(height: 14),
 
-        // 5. Active Transit-to-Natal Aspects Feed
+        // 5. Active Aspects Feed
         Container(
           padding: const EdgeInsets.all(14),
           decoration: BoxDecoration(
@@ -1421,14 +1608,15 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceBetween,
                 children: [
-                  Text(
-                    _selectedBiWheelPlanet != null
-                        ? '${_getTurkishPlanetName(_selectedBiWheelPlanet!)} Transit Açıları'
-                        : 'Aktif Transit - Doğum Açıları',
-                    style: const TextStyle(
-                      fontSize: 12.5,
-                      fontWeight: FontWeight.bold,
-                      color: AppColors.starlightGold,
+                  Expanded(
+                    child: Text(
+                      listTitle,
+                      style: const TextStyle(
+                        fontSize: 12.5,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.starlightGold,
+                      ),
+                      overflow: TextOverflow.ellipsis,
                     ),
                   ),
                   Container(
@@ -1454,7 +1642,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                   padding: EdgeInsets.symmetric(vertical: 8),
                   child: Center(
                     child: Text(
-                      'Seçilen kriterde 5° orp aralığında majör transit açı bulunamadı.',
+                      'Seçilen kriterde 5° orp aralığında majör açı bulunamadı.',
                       style: TextStyle(fontSize: 11.5, color: Colors.white54),
                     ),
                   ),
@@ -1462,6 +1650,15 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
               ] else ...[
                 ...activeAspects.map((asp) {
                   final Color aColor = asp['aspectColor'] as Color? ?? Colors.cyan;
+                  final isP1Transit = asp['isP1Transit'] == true;
+                  final isP2Transit = asp['isP2Transit'] == true;
+                  final p1Prefix = isP1Transit ? 'Transit' : 'Doğum';
+                  final p2Prefix = isP2Transit ? 'Transit' : 'Doğum';
+                  final p1Name = asp['p1Name'] as String? ?? asp['transitName'] as String? ?? '';
+                  final p2Name = asp['p2Name'] as String? ?? asp['natalName'] as String? ?? '';
+                  final p1Sign = asp['p1Sign'] as String? ?? asp['transitSign'] as String? ?? '';
+                  final p2Sign = asp['p2Sign'] as String? ?? asp['natalSign'] as String? ?? '';
+
                   return Container(
                     margin: const EdgeInsets.only(bottom: 8),
                     padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 8),
@@ -1494,13 +1691,26 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                           child: Column(
                             crossAxisAlignment: CrossAxisAlignment.start,
                             children: [
-                              Text(
-                                'Transit ${asp['transitSymbol']} ${asp['transitName']} (${asp['transitSign']}) ${asp['aspectSymbol']} Doğum ${asp['natalSymbol']} ${asp['natalName']} (${asp['natalSign']})',
-                                style: const TextStyle(
-                                  color: Colors.white,
-                                  fontSize: 11.5,
-                                  fontWeight: FontWeight.bold,
-                                ),
+                              Row(
+                                children: [
+                                  AstrologicalGlyphWidget(
+                                    planetKeyOrName: p1Name,
+                                    size: 13,
+                                    color: isP1Transit ? const Color(0xFF00CEC9) : AppColors.starlightGold,
+                                  ),
+                                  const SizedBox(width: 4),
+                                  Expanded(
+                                    child: Text(
+                                      '$p1Prefix $p1Name ($p1Sign) ${asp['aspectSymbol']} $p2Prefix $p2Name ($p2Sign)',
+                                      style: const TextStyle(
+                                        color: Colors.white,
+                                        fontSize: 11.5,
+                                        fontWeight: FontWeight.bold,
+                                      ),
+                                      overflow: TextOverflow.ellipsis,
+                                    ),
+                                  ),
+                                ],
                               ),
                               const SizedBox(height: 2),
                               Text(
@@ -1562,7 +1772,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                     children: [
                       Row(
                         children: [
-                          Text(_getPlanetSymbol(k), style: const TextStyle(color: Colors.white, fontSize: 13)),
+                          AstrologicalGlyphWidget(planetKeyOrName: k, size: 13, color: Colors.white),
                           const SizedBox(width: 6),
                           Text(_getTurkishPlanetName(k), style: const TextStyle(color: Colors.white, fontSize: 11.5)),
                         ],
@@ -1629,13 +1839,26 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
               color: isSelected ? const Color(0xFF00CEC9) : Colors.white12,
             ),
           ),
-          child: Text(
-            label,
-            style: TextStyle(
-              color: isSelected ? Colors.black : Colors.white70,
-              fontSize: 11,
-              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
-            ),
+          child: Row(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              if (planetKey != null) ...[
+                AstrologicalGlyphWidget(
+                  planetKeyOrName: planetKey,
+                  size: 13,
+                  color: isSelected ? Colors.black : Colors.white70,
+                ),
+                const SizedBox(width: 5),
+              ],
+              Text(
+                label,
+                style: TextStyle(
+                  color: isSelected ? Colors.black : Colors.white70,
+                  fontSize: 11,
+                  fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                ),
+              ),
+            ],
           ),
         ),
       ),
@@ -1814,13 +2037,10 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                             color: AppColors.starlightGold.withValues(alpha: 0.15),
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: Text(
-                            _getPlanetSymbol(hit['planet'] as String),
-                            style: const TextStyle(
-                              fontSize: 13,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.starlightGold,
-                            ),
+                          child: AstrologicalGlyphWidget(
+                            planetKeyOrName: hit['planet'] as String,
+                            size: 13,
+                            color: AppColors.starlightGold,
                           ),
                         ),
                         const SizedBox(width: 8),
@@ -4448,9 +4668,10 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                         border: Border.all(color: AppColors.pastelLavender.withValues(alpha: 0.4)),
                       ),
                       child: Center(
-                        child: Text(
-                          _getPlanetSymbol(key),
-                          style: const TextStyle(fontSize: 24, color: AppColors.starlightGold),
+                        child: AstrologicalGlyphWidget(
+                          planetKeyOrName: key,
+                          size: 24,
+                          color: AppColors.starlightGold,
                         ),
                       ),
                     ),
@@ -5076,63 +5297,6 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
         name = _chart?.planets[key]?.name ?? key;
     }
     return AppTranslationService.planetName(name);
-  }
-
-  String _getPlanetSymbol(String key) {
-    switch (key.toLowerCase()) {
-      case 'sun':
-      case 'güneş':
-        return '☉';
-      case 'moon':
-      case 'ay':
-        return '☽';
-      case 'mercury':
-      case 'merkür':
-        return '☿';
-      case 'venus':
-      case 'venüs':
-        return '♀\uFE0E';
-      case 'mars':
-        return '♂\uFE0E';
-      case 'jupiter':
-      case 'jüpiter':
-        return '♃';
-      case 'saturn':
-      case 'satürn':
-        return '♄';
-      case 'uranus':
-      case 'uranüs':
-        return '♅';
-      case 'neptune':
-      case 'neptün':
-        return '♆';
-      case 'pluto':
-      case 'plüton':
-        return '♇';
-      case 'chiron':
-      case 'kiron':
-        return '⚷';
-      case 'north_node':
-      case 'kuzey ay düğümü':
-        return '☊';
-      case 'south_node':
-      case 'güney ay düğümü':
-        return '☋';
-      case 'ascendant':
-      case 'yükselen':
-        return 'ASC';
-      case 'mc':
-      case 'tepe noktası':
-        return 'MC';
-      case 'ic':
-      case 'dip noktası':
-        return 'IC';
-      case 'descendant':
-      case 'alçalan':
-        return 'DSC';
-      default:
-        return '✧';
-    }
   }
 
   // ==========================================

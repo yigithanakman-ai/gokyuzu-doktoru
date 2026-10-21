@@ -6,6 +6,13 @@ import '../../data/services/storage_service.dart';
 import '../../data/models/birth_chart_model.dart';
 import '../../data/models/saved_profile_model.dart';
 import '../../data/services/profile_archive_service.dart';
+import 'astrological_glyph.dart';
+
+enum BiWheelDisplayMode {
+  dual, // Dış Çark: Canlı Transitler, İç Çark: Doğum (Natal)
+  transitOnly, // Sadece Transit Haritası (Transitlerin kendi arasındaki açıları)
+  natalOnly, // Sadece Doğum Haritası (Natal haritanın kendi arasındaki açıları)
+}
 
 /// Gökyüzü Doktoru — İnteraktif Çift Çark (Interactive Bi-Wheel) & Zaman Makinesi
 /// Solar Fire ve Astro Gold düzeyinde:
@@ -40,6 +47,7 @@ class _InteractiveBiWheelModalState extends State<InteractiveBiWheelModal> {
 
   // Wheel rotation angle in radians for gesture rotation
   double _rotationAngle = 0.0;
+  BiWheelDisplayMode _displayMode = BiWheelDisplayMode.dual;
 
   @override
   void initState() {
@@ -235,6 +243,9 @@ class _InteractiveBiWheelModalState extends State<InteractiveBiWheelModal> {
             )
           : Column(
               children: [
+                // 3-Way Mode Selector (İkili, Sadece Transit, Sadece Doğum)
+                _buildModeSelector(),
+
                 // Mode & Time Status Banner
                 _buildTimeBanner(),
 
@@ -261,6 +272,7 @@ class _InteractiveBiWheelModalState extends State<InteractiveBiWheelModal> {
                                 selectedPlanet: _selectedPlanetKey,
                                 isTransitSelected: _isTransitPlanetSelected,
                                 rotationOffsetRad: _rotationAngle,
+                                displayMode: _displayMode,
                                 onAspectFound: (aspects) {},
                               ),
                             ),
@@ -278,6 +290,53 @@ class _InteractiveBiWheelModalState extends State<InteractiveBiWheelModal> {
                 if (!_isSynastryMode) _buildTimeStepperBar(),
               ],
             ),
+    );
+  }
+
+  Widget _buildModeSelector() {
+    return Container(
+      margin: const EdgeInsets.symmetric(horizontal: 16, vertical: 4),
+      padding: const EdgeInsets.all(4),
+      decoration: BoxDecoration(
+        color: Colors.white.withValues(alpha: 0.05),
+        borderRadius: BorderRadius.circular(12),
+        border: Border.all(color: Colors.white12),
+      ),
+      child: Row(
+        children: [
+          _buildModeTab(BiWheelDisplayMode.dual, '🌓 İkili Çark'),
+          _buildModeTab(BiWheelDisplayMode.transitOnly, '⚡ Sadece Transitler'),
+          _buildModeTab(BiWheelDisplayMode.natalOnly, '🌟 Sadece Doğum'),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildModeTab(BiWheelDisplayMode mode, String label) {
+    final isSelected = _displayMode == mode;
+    return Expanded(
+      child: InkWell(
+        onTap: () => setState(() => _displayMode = mode),
+        borderRadius: BorderRadius.circular(8),
+        child: Container(
+          padding: const EdgeInsets.symmetric(vertical: 6),
+          alignment: Alignment.center,
+          decoration: BoxDecoration(
+            color: isSelected ? AppColors.starlightGold : Colors.transparent,
+            borderRadius: BorderRadius.circular(8),
+          ),
+          child: Text(
+            label,
+            style: TextStyle(
+              fontSize: 10.5,
+              fontWeight: isSelected ? FontWeight.bold : FontWeight.w500,
+              color: isSelected ? Colors.black : Colors.white70,
+            ),
+            maxLines: 1,
+            overflow: TextOverflow.ellipsis,
+          ),
+        ),
+      ),
     );
   }
 
@@ -377,7 +436,18 @@ class _InteractiveBiWheelModalState extends State<InteractiveBiWheelModal> {
                 return Padding(
                   padding: const EdgeInsets.only(right: 6),
                   child: ChoiceChip(
-                    label: Text('${p['sym']} ${p['name']}'),
+                    label: Row(
+                      mainAxisSize: MainAxisSize.min,
+                      children: [
+                        AstrologicalGlyphWidget(
+                          planetKeyOrName: p['key']!,
+                          size: 13,
+                          color: isSel ? Colors.black : Colors.white70,
+                        ),
+                        const SizedBox(width: 5),
+                        Text(p['name']!),
+                      ],
+                    ),
                     selected: isSel,
                     selectedColor: AppColors.starlightGold,
                     backgroundColor: Colors.white.withValues(alpha: 0.06),
@@ -499,6 +569,7 @@ class BiWheelPainter extends CustomPainter {
   final String? selectedPlanet;
   final bool isTransitSelected;
   final double rotationOffsetRad;
+  final BiWheelDisplayMode displayMode;
   final Function(List<Map<String, dynamic>>) onAspectFound;
 
   BiWheelPainter({
@@ -508,6 +579,7 @@ class BiWheelPainter extends CustomPainter {
     this.selectedPlanet,
     this.isTransitSelected = false,
     this.rotationOffsetRad = 0.0,
+    this.displayMode = BiWheelDisplayMode.dual,
     required this.onAspectFound,
   });
 
@@ -525,8 +597,8 @@ class BiWheelPainter extends CustomPainter {
     'sun': '☉',
     'moon': '☽',
     'mercury': '☿',
-    'venus': '♀\uFE0E',
-    'mars': '♂\uFE0E',
+    'venus': '♀',
+    'mars': '♂',
     'jupiter': '♃',
     'saturn': '♄',
     'uranus': '♅',
@@ -590,16 +662,24 @@ class BiWheelPainter extends CustomPainter {
       ).createShader(Rect.fromCircle(center: center, radius: radius));
     canvas.drawCircle(center, radius, bgPaint);
 
+    final showNatal = (displayMode == BiWheelDisplayMode.dual || displayMode == BiWheelDisplayMode.natalOnly);
+    final showTransit = (displayMode == BiWheelDisplayMode.dual || displayMode == BiWheelDisplayMode.transitOnly);
+
     // Draw boundary circles
     canvas.drawCircle(center, rZodiacOuter, boundaryPaint);
     canvas.drawCircle(center, rZodiacInner, boundaryPaint);
-    canvas.drawCircle(center, rTransitInner, boundaryPaint..color = Colors.cyan.withValues(alpha: 0.25));
-    canvas.drawCircle(center, rNatalInner, boundaryPaint..color = AppColors.starlightGold.withValues(alpha: 0.25));
+    if (showTransit) {
+      canvas.drawCircle(center, rTransitInner, boundaryPaint..color = Colors.cyan.withValues(alpha: 0.25));
+    }
+    if (showNatal) {
+      canvas.drawCircle(center, rNatalInner, boundaryPaint..color = AppColors.starlightGold.withValues(alpha: 0.25));
+    }
     canvas.drawCircle(center, rAspectCenter, boundaryPaint..color = Colors.white12);
 
     // ASC degree offset
-    final ascSignIdx = zodiacSigns.indexOf(natalChart.risingSign);
-    final ascDegVal = _parseDegreeFromFormatted(natalChart.risingFormatted);
+    final baseChart = (displayMode == BiWheelDisplayMode.transitOnly) ? outerChart : natalChart;
+    final ascSignIdx = zodiacSigns.indexOf(baseChart.risingSign);
+    final ascDegVal = _parseDegreeFromFormatted(baseChart.risingFormatted);
     final totalAscDeg = (ascSignIdx >= 0 ? ascSignIdx * 30.0 : 0.0) + ascDegVal;
 
     // 1. ZODIAC SIGNS (OUTER RING)
@@ -638,140 +718,168 @@ class BiWheelPainter extends CustomPainter {
     final Map<String, Offset> outerPositions = {};
     final Map<String, double> outerDegrees = {};
 
-    // 2. INNER WHEEL: NATAL PLANETS
-    natalChart.planets.forEach((key, p) {
-      if (!planetSymbols.containsKey(key)) return;
-      final absDeg = _getSignStartAbsolute(p.sign) + _parseDegreeFromFormatted(p.formatted);
-      double wheelDeg = (absDeg - totalAscDeg) % 360.0;
-      if (wheelDeg < 0) wheelDeg += 360.0;
+    // 2. INNER WHEEL: NATAL PLANETS (if visible)
+    if (showNatal) {
+      final double pR = (displayMode == BiWheelDisplayMode.natalOnly)
+          ? (rTransitOuter + rTransitInner) / 2
+          : (rNatalOuter + rNatalInner) / 2;
 
-      final pR = (rNatalOuter + rNatalInner) / 2;
-      final pos = _getPoint(center, pR, wheelDeg);
-      natalPositions[key] = pos;
-      natalDegrees[key] = absDeg;
+      natalChart.planets.forEach((key, p) {
+        if (!planetSymbols.containsKey(key)) return;
+        final absDeg = _getSignStartAbsolute(p.sign) + _parseDegreeFromFormatted(p.formatted);
+        double wheelDeg = (absDeg - totalAscDeg) % 360.0;
+        if (wheelDeg < 0) wheelDeg += 360.0;
 
-      final isHighlight = (selectedPlanet == key);
+        final pos = _getPoint(center, pR, wheelDeg);
+        natalPositions[key] = pos;
+        natalDegrees[key] = absDeg;
 
-      // Glow behind selected planet
-      if (isHighlight) {
-        final glowPaint = Paint()
-          ..color = AppColors.starlightGold.withValues(alpha: 0.5)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-        canvas.drawCircle(pos, 12, glowPaint);
-      }
+        final isHighlight = (selectedPlanet == key);
 
-      final symPainter = TextPainter(
-        text: TextSpan(
-          text: planetSymbols[key] ?? '•',
-          style: TextStyle(
-            color: isHighlight ? AppColors.starlightGold : const Color(0xFFFFEAA7),
-            fontSize: 13,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      symPainter.paint(canvas, Offset(pos.dx - symPainter.width / 2, pos.dy - symPainter.height / 2));
-    });
+        // Glow behind selected planet
+        if (isHighlight) {
+          final glowPaint = Paint()
+            ..color = AppColors.starlightGold.withValues(alpha: 0.5)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+          canvas.drawCircle(pos, 12, glowPaint);
+        }
 
-    // 3. OUTER WHEEL: TRANSIT / SYNASTRY PLANETS
-    outerChart.planets.forEach((key, p) {
-      if (!planetSymbols.containsKey(key)) return;
-      final absDeg = _getSignStartAbsolute(p.sign) + _parseDegreeFromFormatted(p.formatted);
-      double wheelDeg = (absDeg - totalAscDeg) % 360.0;
-      if (wheelDeg < 0) wheelDeg += 360.0;
+        AstrologicalGlyphPainter.drawPlanet(
+          canvas,
+          planetKeyOrName: key,
+          center: pos,
+          size: 13.5,
+          color: isHighlight ? AppColors.starlightGold : const Color(0xFFFFEAA7),
+          strokeWidth: 1.5,
+        );
+      });
+    }
 
+    // 3. OUTER WHEEL: TRANSIT / SYNASTRY PLANETS (if visible)
+    if (showTransit) {
       final pR = (rTransitOuter + rTransitInner) / 2;
-      final pos = _getPoint(center, pR, wheelDeg);
-      outerPositions[key] = pos;
-      outerDegrees[key] = absDeg;
 
-      final isHighlight = (selectedPlanet == key);
+      outerChart.planets.forEach((key, p) {
+        if (!planetSymbols.containsKey(key)) return;
+        final absDeg = _getSignStartAbsolute(p.sign) + _parseDegreeFromFormatted(p.formatted);
+        double wheelDeg = (absDeg - totalAscDeg) % 360.0;
+        if (wheelDeg < 0) wheelDeg += 360.0;
 
-      if (isHighlight) {
-        final glowPaint = Paint()
-          ..color = (isSynastry ? const Color(0xFFFF7675) : Colors.cyan).withValues(alpha: 0.5)
-          ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
-        canvas.drawCircle(pos, 12, glowPaint);
+        final pos = _getPoint(center, pR, wheelDeg);
+        outerPositions[key] = pos;
+        outerDegrees[key] = absDeg;
+
+        final isHighlight = (selectedPlanet == key);
+
+        if (isHighlight) {
+          final glowPaint = Paint()
+            ..color = (isSynastry ? const Color(0xFFFF7675) : Colors.cyan).withValues(alpha: 0.5)
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 8);
+          canvas.drawCircle(pos, 12, glowPaint);
+        }
+
+        AstrologicalGlyphPainter.drawPlanet(
+          canvas,
+          planetKeyOrName: key,
+          center: pos,
+          size: 13.0,
+          color: isSynastry ? const Color(0xFFFF7675) : const Color(0xFF00CEC9),
+          strokeWidth: 1.5,
+        );
+      });
+    }
+
+    // 4. CENTRAL ASPECT RAYS
+    void drawAspectBetween(String k1, double deg1, Offset p1, String k2, double deg2, Offset p2) {
+      if (selectedPlanet != null && selectedPlanet != k1 && selectedPlanet != k2) {
+        return;
       }
 
-      final symPainter = TextPainter(
-        text: TextSpan(
-          text: planetSymbols[key] ?? '•',
-          style: TextStyle(
-            color: isSynastry ? const Color(0xFFFF7675) : const Color(0xFF00CEC9),
-            fontSize: 12.5,
-            fontWeight: FontWeight.bold,
-          ),
-        ),
-        textDirection: TextDirection.ltr,
-      )..layout();
-      symPainter.paint(canvas, Offset(pos.dx - symPainter.width / 2, pos.dy - symPainter.height / 2));
-    });
+      double diff = (deg1 - deg2).abs() % 360.0;
+      if (diff > 180.0) diff = 360.0 - diff;
 
-    // 4. CENTRAL ASPECT RAYS (NATAL <-> TRANSIT OR NATAL <-> NATAL)
-    // Draw Ptolemaic aspects:
-    // Conjunction: 0° (orb 5°)
-    // Sextile: 60° (orb 4°)
-    // Square: 90° (orb 5°)
-    // Trine: 120° (orb 5°)
-    // Opposition: 180° (orb 5°)
-    outerDegrees.forEach((oKey, oDeg) {
-      natalDegrees.forEach((nKey, nDeg) {
-        // If a planet is selected, only draw aspects connecting to that planet
-        if (selectedPlanet != null && selectedPlanet != oKey && selectedPlanet != nKey) {
-          return;
+      Color? aspectColor;
+      double strokeW = 0.8;
+
+      if (diff <= 5.0) {
+        // Conjunction
+        aspectColor = const Color(0xFFFFD700);
+        strokeW = 1.6;
+      } else if ((diff - 60.0).abs() <= 4.0) {
+        // Sextile
+        aspectColor = const Color(0xFF74B9FF);
+      } else if ((diff - 90.0).abs() <= 5.0) {
+        // Square
+        aspectColor = const Color(0xFFFF5252);
+        strokeW = 1.4;
+      } else if ((diff - 120.0).abs() <= 5.0) {
+        // Trine
+        aspectColor = const Color(0xFF55EFC4);
+        strokeW = 1.4;
+      } else if ((diff - 180.0).abs() <= 5.0) {
+        // Opposition
+        aspectColor = const Color(0xFFA29BFE);
+        strokeW = 1.6;
+      }
+
+      if (aspectColor != null) {
+        final isFocused = (selectedPlanet == k1 || selectedPlanet == k2);
+        final linePaint = Paint()
+          ..color = isFocused ? aspectColor : aspectColor.withValues(alpha: 0.35)
+          ..strokeWidth = isFocused ? (strokeW + 1.0) : strokeW;
+
+        if (isFocused) {
+          final glowRay = Paint()
+            ..color = aspectColor.withValues(alpha: 0.6)
+            ..strokeWidth = strokeW + 3.0
+            ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
+          canvas.drawLine(p1, p2, glowRay);
         }
 
-        double diff = (oDeg - nDeg).abs() % 360.0;
-        if (diff > 180.0) diff = 360.0 - diff;
+        canvas.drawLine(p1, p2, linePaint);
+      }
+    }
 
-        Color? aspectColor;
-        double strokeW = 0.8;
-
-        if (diff <= 5.0) {
-          // Conjunction
-          aspectColor = const Color(0xFFFFD700);
-          strokeW = 1.6;
-        } else if ((diff - 60.0).abs() <= 4.0) {
-          // Sextile
-          aspectColor = const Color(0xFF74B9FF);
-        } else if ((diff - 90.0).abs() <= 5.0) {
-          // Square
-          aspectColor = const Color(0xFFFF5252);
-          strokeW = 1.4;
-        } else if ((diff - 120.0).abs() <= 5.0) {
-          // Trine
-          aspectColor = const Color(0xFF55EFC4);
-          strokeW = 1.4;
-        } else if ((diff - 180.0).abs() <= 5.0) {
-          // Opposition
-          aspectColor = const Color(0xFFA29BFE);
-          strokeW = 1.6;
-        }
-
-        if (aspectColor != null) {
+    if (displayMode == BiWheelDisplayMode.dual) {
+      // Transit <-> Natal Aspects
+      outerDegrees.forEach((oKey, oDeg) {
+        natalDegrees.forEach((nKey, nDeg) {
           final p1 = natalPositions[nKey];
           final p2 = outerPositions[oKey];
           if (p1 != null && p2 != null) {
-            final isFocused = (selectedPlanet == oKey || selectedPlanet == nKey);
-            final linePaint = Paint()
-              ..color = isFocused ? aspectColor : aspectColor.withValues(alpha: 0.35)
-              ..strokeWidth = isFocused ? (strokeW + 1.0) : strokeW;
-
-            if (isFocused) {
-              final glowRay = Paint()
-                ..color = aspectColor.withValues(alpha: 0.6)
-                ..strokeWidth = strokeW + 3.0
-                ..maskFilter = const MaskFilter.blur(BlurStyle.normal, 4);
-              canvas.drawLine(p1, p2, glowRay);
-            }
-
-            canvas.drawLine(p1, p2, linePaint);
+            drawAspectBetween(oKey, oDeg, p2, nKey, nDeg, p1);
+          }
+        });
+      });
+    } else if (displayMode == BiWheelDisplayMode.transitOnly) {
+      // Transit <-> Transit Aspects
+      final oKeys = outerDegrees.keys.toList();
+      for (int i = 0; i < oKeys.length; i++) {
+        for (int j = i + 1; j < oKeys.length; j++) {
+          final k1 = oKeys[i];
+          final k2 = oKeys[j];
+          final p1 = outerPositions[k1];
+          final p2 = outerPositions[k2];
+          if (p1 != null && p2 != null) {
+            drawAspectBetween(k1, outerDegrees[k1]!, p1, k2, outerDegrees[k2]!, p2);
           }
         }
-      });
-    });
+      }
+    } else if (displayMode == BiWheelDisplayMode.natalOnly) {
+      // Natal <-> Natal Aspects
+      final nKeys = natalDegrees.keys.toList();
+      for (int i = 0; i < nKeys.length; i++) {
+        for (int j = i + 1; j < nKeys.length; j++) {
+          final k1 = nKeys[i];
+          final k2 = nKeys[j];
+          final p1 = natalPositions[k1];
+          final p2 = natalPositions[k2];
+          if (p1 != null && p2 != null) {
+            drawAspectBetween(k1, natalDegrees[k1]!, p1, k2, natalDegrees[k2]!, p2);
+          }
+        }
+      }
+    }
 
     // ASC/DSC Aksı Çizgisi
     final ascP1 = _getPoint(center, rZodiacOuter, 0.0);
@@ -791,6 +899,7 @@ class BiWheelPainter extends CustomPainter {
         oldDelegate.outerChart != outerChart ||
         oldDelegate.selectedPlanet != selectedPlanet ||
         oldDelegate.rotationOffsetRad != rotationOffsetRad ||
+        oldDelegate.displayMode != displayMode ||
         oldDelegate.isSynastry != isSynastry;
   }
 }

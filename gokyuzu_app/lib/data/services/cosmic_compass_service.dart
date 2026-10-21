@@ -149,49 +149,51 @@ class CosmicCompassService {
     final planetaryInfo = PlanetaryHoursService.calculatePlanetaryHours();
     final currentHour = planetaryInfo.currentHour;
 
-    int score = 50;
+    int score = 56;
 
     // Harita burç yöneticisi uyumu
-    if (liveChart.sunSign == 'Aslan' && currentHour.planetName == 'Güneş') score += 10;
-    if (liveChart.sunSign == 'Yengeç' && currentHour.planetName == 'Ay') score += 10;
-    if ((liveChart.sunSign == 'Boğa' || liveChart.sunSign == 'Terazi') && currentHour.planetName == 'Venüs') score += 10;
-    if ((liveChart.sunSign == 'Koç' || liveChart.sunSign == 'Akrep') && currentHour.planetName == 'Mars') score += 10;
-    if ((liveChart.sunSign == 'İkizler' || liveChart.sunSign == 'Başak') && currentHour.planetName == 'Merkür') score += 10;
-    if ((liveChart.sunSign == 'Yay' || liveChart.sunSign == 'Balık') && currentHour.planetName == 'Jüpiter') score += 10;
-    if ((liveChart.sunSign == 'Oğlak' || liveChart.sunSign == 'Kova') && currentHour.planetName == 'Satürn') score += 10;
+    if (liveChart.sunSign == 'Aslan' && currentHour.planetName == 'Güneş') score += 12;
+    if (liveChart.sunSign == 'Yengeç' && currentHour.planetName == 'Ay') score += 12;
+    if ((liveChart.sunSign == 'Boğa' || liveChart.sunSign == 'Terazi') && currentHour.planetName == 'Venüs') score += 12;
+    if ((liveChart.sunSign == 'Koç' || liveChart.sunSign == 'Akrep') && currentHour.planetName == 'Mars') score += 12;
+    if ((liveChart.sunSign == 'İkizler' || liveChart.sunSign == 'Başak') && currentHour.planetName == 'Merkür') score += 12;
+    if ((liveChart.sunSign == 'Yay' || liveChart.sunSign == 'Balık') && currentHour.planetName == 'Jüpiter') score += 12;
+    if ((liveChart.sunSign == 'Oğlak' || liveChart.sunSign == 'Kova') && currentHour.planetName == 'Satürn') score += 12;
 
-    // Ay Boşlukta ise nötr/bekle puanı ağır basar
+    // Ay Boşlukta durumu
     if (isMoonVoid) {
-      score -= 25;
+      score -= 14;
     }
 
     // Gezegen saatine göre uyum
     if (category == 'Finans' || category == 'Kariyer') {
-      if (currentHour.planetName == 'Jüpiter' || currentHour.planetName == 'Güneş') score += 25;
-      if (currentHour.planetName == 'Merkür') score += 15;
-      if (currentHour.planetName == 'Mars') score += 5;
-      if (currentHour.planetName == 'Satürn') score -= 10;
+      if (currentHour.planetName == 'Jüpiter' || currentHour.planetName == 'Güneş') score += 20;
+      if (currentHour.planetName == 'Merkür') score += 14;
+      if (currentHour.planetName == 'Mars') score += 6;
+      if (currentHour.planetName == 'Satürn') score -= 8;
     } else if (category == 'İlişkiler') {
-      if (currentHour.planetName == 'Venüs') score += 30;
-      if (currentHour.planetName == 'Ay') score += 20;
-      if (currentHour.planetName == 'Jüpiter') score += 15;
-      if (currentHour.planetName == 'Mars') score -= 15; // Çatışma riski
-      if (currentHour.planetName == 'Satürn') score -= 15; // Soğuma riski
+      if (currentHour.planetName == 'Venüs') score += 22;
+      if (currentHour.planetName == 'Ay') score += 16;
+      if (currentHour.planetName == 'Jüpiter') score += 14;
+      if (currentHour.planetName == 'Mars') score -= 8; // Çatışma riski
+      if (currentHour.planetName == 'Satürn') score -= 8; // Soğuma riski
     } else {
-      if (currentHour.planetName == 'Güneş' || currentHour.planetName == 'Jüpiter') score += 20;
+      if (currentHour.planetName == 'Güneş' || currentHour.planetName == 'Jüpiter') score += 18;
+      if (currentHour.planetName == 'Merkür' || currentHour.planetName == 'Venüs') score += 12;
       if (currentHour.planetName == 'Ay') score += 10;
+      if (currentHour.planetName == 'Satürn') score -= 8;
     }
 
     // Ay fazına göre puan
-    if (moonPhase.contains('Büyüyen') || moonPhase.contains('İlk Dördün')) {
-      score += 15;
+    if (moonPhase.contains('Büyüyen') || moonPhase.contains('İlk Dördün') || moonPhase.contains('Hilal')) {
+      score += 12;
     } else if (moonPhase.contains('Dolunay')) {
-      score += (category == 'İlişkiler' ? 10 : 0); // Dolunay görünür kılar ama gerilimlidir
+      score += (category == 'İlişkiler' ? 6 : 4);
     } else if (moonPhase.contains('Küçülen') || moonPhase.contains('Balsamik')) {
-      score -= 10; // Arınma zamanı, yeni başlangıç için değil
+      score -= 4; // Hafif içe dönüş
     }
 
-    score = score.clamp(12, 96);
+    score = score.clamp(15, 96);
 
     CompassAnswerType answerType;
     String title;
@@ -207,7 +209,8 @@ class CosmicCompassService {
       astrologicalInsight =
           'Şu anda ${currentHour.planetName} saati hüküm sürüyor (${currentHour.title}). Ay enerjisi $moonPhase fazında ilerliyor ve niyetinizle uyumlu bir çekim frekansı oluşturuyor.';
       timing = 'Bugün saat ${currentHour.endFormatted}\'ye kadar atılacak adımlar için gökyüzü ilahi koruma ve bereket saçıyor.';
-      angle = 35.0 + (Random().nextDouble() * 20.0); // Yeşil bölge
+      // Üst Bölge (🟢 HAREKET): 0° etrafında (-10° ile +10° arası)
+      angle = ((Random().nextDouble() * 20.0 - 10.0) + 360.0) % 360.0;
     } else if (score >= 42) {
       answerType = CompassAnswerType.neutral;
       title = 'BEKLE & GÖZLEMLE 🟡 (Zemin Henüz Netleşmedi)';
@@ -216,7 +219,8 @@ class CosmicCompassService {
           ? 'Ay şu an boşlukta seyrediyor. Klasik astrolojide Ay boşluktayken başlatılan işler havada kalabilir veya yön değiştirebilir.'
           : 'Gezegen saatinde ${currentHour.planetName} etkisi aktif. Zihinsel veya duygusal belirsizlikler dağılana kadar beklemek en yüksek faydanızadır.';
       timing = 'Özellikle saat ${currentHour.endFormatted} sonrasını ve Ay fazının sonraki açılarını beklemek enerjiyi daha berrak hale getirecektir.';
-      angle = 170.0 + (Random().nextDouble() * 20.0); // Sarı bölge
+      // Sol Bölge (🟡 BEKLE): 270° etrafında (260° ile 280° arası)
+      angle = 260.0 + (Random().nextDouble() * 20.0);
     } else {
       answerType = CompassAnswerType.cautious;
       title = 'DİKKAT / GERİ ÇEKİL 🔴 (Zorlayıcı Transit)';
@@ -224,7 +228,8 @@ class CosmicCompassService {
       astrologicalInsight =
           'Gökyüzünde ${currentHour.planetName} saatinin sert/sınayıcı frekansı devrede. Aceleci adımlar yanılsama veya dirençle karşılaşabilir.';
       timing = 'Kararınızı en az 24 saat erteleyin veya günün ilerleyen saatlerinde Jüpiter/Venüs saatini bekleyin.';
-      angle = 295.0 + (Random().nextDouble() * 25.0); // Kırmızı bölge
+      // Alt Bölge (🔴 DİKKAT): 180° etrafında (170° ile 190° arası)
+      angle = 170.0 + (Random().nextDouble() * 20.0);
     }
 
     return CompassConsultationResult(

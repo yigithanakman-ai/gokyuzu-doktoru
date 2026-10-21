@@ -1,6 +1,7 @@
 import 'dart:math' as math;
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import 'astrological_glyph.dart';
 
 class ChartWheelPainter extends CustomPainter {
   final Map<String, dynamic> planets;
@@ -297,11 +298,6 @@ class ChartWheelPainter extends CustomPainter {
         final pos = _getPointOnWheel(center, r, planetWheelDeg);
         outPositions[name] = pos;
 
-        final glyph = planetGlyphs[name] ??
-            planetGlyphs[lowerName] ??
-            planetGlyphs[displayName] ??
-            '☉';
-
         final planetColor = planetColors[lowerName] ?? AppColors.starlightGold;
 
         // Draw planet badge (filled disc with border and prominent glyph)
@@ -316,21 +312,14 @@ class ChartWheelPainter extends CustomPainter {
           ..strokeWidth = 1.2;
         canvas.drawCircle(pos, 9.5, borderPaint);
 
-        // Draw astrological glyph
-        final textPainter = TextPainter(
-          text: TextSpan(
-            text: glyph,
-            style: TextStyle(
-              color: planetColor,
-              fontSize: 11.5,
-              fontWeight: FontWeight.bold,
-            ),
-          ),
-          textDirection: TextDirection.ltr,
-        )..layout();
-        textPainter.paint(
+        // Draw astrological glyph (Mars and Venus vector, others clean unicode)
+        AstrologicalGlyphPainter.drawPlanet(
           canvas,
-          Offset(pos.dx - textPainter.width / 2, pos.dy - textPainter.height / 2),
+          planetKeyOrName: displayName,
+          center: pos,
+          size: 13.0,
+          color: planetColor,
+          strokeWidth: 1.5,
         );
 
         // If retrograde, draw small '℞' badge

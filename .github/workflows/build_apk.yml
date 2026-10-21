@@ -86,18 +86,19 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.10
-          name: "📱 Gökyüzü Doktoru - v1.0.10 (Sürüm Kodu 11 & Play Faturalandırma Düzeltmesi, Dinamik GPS Geocoder)"
+          tag_name: v1.0.11
+          name: "📱 Gökyüzü Doktoru - v1.0.11 (Sürüm Kodu 12 & 360° Transit Çarkı, Vektörel Mars/Venüs, Pusula & Splash İyileştirmesi)"
           body: |
-            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.10 / Sürüm Kodu 11)
+            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.11 / Sürüm Kodu 12)
 
             - **`gokyuzu-doktoru.apk`**: Kendi Android telefonunuzda doğrudan test edip kullanmak için yükleme dosyası (İmzalı).
-            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı - AIDL Hatası Giderildi, Dinamik GPS Geocoder & 4-Aksiyon Geçiş Reklamı).
+            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı).
 
-            #### 🌟 Bu Sürümdeki Yenilikler (v1.0.10):
-            1. **Play Faturalandırma Kitaplığı (AIDL) Hatası Giderildi**: Manifest dosyasındaki eski raw BILLING izni temizlendi; Google Play Console önizleme ve onay blokajı tamamen kaldırıldı.
-            2. **Dinamik GPS & Tersine Coğrafi Kodlama (Geocoder)**: Gezegen saatleri artık sabit Datça yerine kullanıcının o an neredeyse (Datça, İstanbul, Ankara, İzmir, Berlin, Londra vb.) o ilçeyi/şehri otomatik yazar ve kesin GPS koordinatlarıyla NOAA hesaplaması yapar.
-            3. **Global 4-Aksiyon Geçiş Reklamı & Canlı AdMob**: Tüm araçlarda her 4 tıklamada bir geçiş reklamı açılır, VIP kullanıcılara sıfır reklam.
+            #### 🌟 Bu Sürümdeki Yenilikler (v1.0.11):
+            1. **360° Çark Çoklu Mod (İkili, Sadece Transit, Sadece Doğum)**: Transit gezegenlerin birbiriyle yaptığı açılar (Transit-to-Transit), doğum haritası kök açıları ve ikili harita açıları listeli ve görselleştirilmiş olarak eklendi.
+            2. **Vektörel Mars ve Venüs Çizimi**: Android sistem fontlarındaki emoji kutucukları (🚹/🚺) tamamen kaldırıldı; Mars ve Venüs artık saf matematiksel vektör glifi olarak çiziliyor.
+            3. **Kozmik Karar Pusulası Açı & İbre & Puan Düzeltmesi**: İbre açısı yönleri (0° Hareket, 90° Dönüş, 180° Dikkat, 270° Bekle) düzeltildi; ibre ucu ve parıltısı sonuca göre dinamik renklendirildi.
+            4. **Android 12+ Splash Screen ve Adaptive Launcher Icon**: Tam uyumlu adaptive icon ve kozmik koyu arka planlı açılış ekranı (SplashScreen API) entegre edildi, beyaz kutu ve saniyelik parlama çözüldü.
 
             #### 📲 Telefona Nasıl Yüklenir (APK)?
             1. Aşağıdaki **Assets** bölümünden **`gokyuzu-doktoru.apk`** dosyasına dokunun ve telefonunuza indirin.
