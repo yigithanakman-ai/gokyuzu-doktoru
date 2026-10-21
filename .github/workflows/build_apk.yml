@@ -86,19 +86,18 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.9
-          name: "📱 Gökyüzü Doktoru - v1.0.9 (Sürüm Kodu 10 & GPS Konum Tabanlı Gezegen Saatleri, 4-Aksiyon Geçiş Reklamı)"
+          tag_name: v1.0.10
+          name: "📱 Gökyüzü Doktoru - v1.0.10 (Sürüm Kodu 11 & Play Faturalandırma Düzeltmesi, Dinamik GPS Geocoder)"
           body: |
-            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.9 / Sürüm Kodu 10)
+            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.10 / Sürüm Kodu 11)
 
             - **`gokyuzu-doktoru.apk`**: Kendi Android telefonunuzda doğrudan test edip kullanmak için yükleme dosyası (İmzalı).
-            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı - GPS İzinleri, Canlı AdMob 4-Aksiyon Geçiş Reklamı & In-App Billing).
+            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı - AIDL Hatası Giderildi, Dinamik GPS Geocoder & 4-Aksiyon Geçiş Reklamı).
 
-            #### 🌟 Bu Sürümdeki Yenilikler (v1.0.9):
-            1. **Canlı GPS Konum Algılama & Datça Otomatik Hesaplama**: Gezegen Saatleri artık kullanıcının bulunduğu gerçek koordinatlara (Datça vb.) göre saniyesi saniyesine NOAA gün doğumu ve gün batımını hesaplar.
-            2. **Global 4-Aksiyon Geçiş Reklamı Kuralı**: Astro Bülten, Gezegen Saatleri, Karar Pusulası, Frekanslar, Arşiv, Harita Detayı ve Numeroloji geçişlerinde her 4 tıklamada bir geçiş reklamı gösterilir (VIP kullanıcılara sıfır reklam).
-            3. **Simülasyon Sayaç Kaldırıldı**: Canlı AdMob ödüllü video entegrasyonu tamamlandı, eski geri sayım diyalogu tamamen temizlendi.
-            4. **KVKK & Google Play Veri Güvenliği**: GPS konumunun yalnızca yerel cihazda ve açık rızayla kullanıldığı beyan edildi.
+            #### 🌟 Bu Sürümdeki Yenilikler (v1.0.10):
+            1. **Play Faturalandırma Kitaplığı (AIDL) Hatası Giderildi**: Manifest dosyasındaki eski raw BILLING izni temizlendi; Google Play Console önizleme ve onay blokajı tamamen kaldırıldı.
+            2. **Dinamik GPS & Tersine Coğrafi Kodlama (Geocoder)**: Gezegen saatleri artık sabit Datça yerine kullanıcının o an neredeyse (Datça, İstanbul, Ankara, İzmir, Berlin, Londra vb.) o ilçeyi/şehri otomatik yazar ve kesin GPS koordinatlarıyla NOAA hesaplaması yapar.
+            3. **Global 4-Aksiyon Geçiş Reklamı & Canlı AdMob**: Tüm araçlarda her 4 tıklamada bir geçiş reklamı açılır, VIP kullanıcılara sıfır reklam.
 
             #### 📲 Telefona Nasıl Yüklenir (APK)?
             1. Aşağıdaki **Assets** bölümünden **`gokyuzu-doktoru.apk`** dosyasına dokunun ve telefonunuza indirin.

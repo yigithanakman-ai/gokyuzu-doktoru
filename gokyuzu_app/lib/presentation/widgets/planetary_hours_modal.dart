@@ -1,5 +1,6 @@
 import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
+import '../../data/services/active_profile_service.dart';
 import '../../data/services/planetary_hours_service.dart';
 import '../../data/services/storage_service.dart';
 import '../../data/services/world_cities_service.dart';
@@ -33,8 +34,13 @@ class _PlanetaryHoursModalState extends State<PlanetaryHoursModal> {
   @override
   void initState() {
     super.initState();
-    // Güvenli varsayılan olarak Datça ile başlat
-    _currentCity = WorldCitiesService.findCity('Datça');
+    final effectiveProfile = ActiveProfileService.getEffectiveProfile(widget.profile);
+    final place = effectiveProfile.birthCity.trim();
+    if (place.isNotEmpty) {
+      _currentCity = WorldCitiesService.findCity(place, effectiveProfile.birthCountry);
+    } else {
+      _currentCity = WorldCitiesService.findCity('İstanbul');
+    }
     _recalculate();
     _initLocation();
   }

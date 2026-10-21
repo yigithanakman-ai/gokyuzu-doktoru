@@ -1,6 +1,7 @@
 import 'dart:math';
 import 'package:flutter/foundation.dart';
 import 'package:geolocator/geolocator.dart';
+import 'package:geocoding/geocoding.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'world_cities_service.dart';
 
@@ -85,15 +86,51 @@ class AppLocationService {
         return await getCachedLocation();
       }
 
-      // En yakın şehri tespit et (Haversine/Öklid coğrafi yaklaşımlı)
+      String detectedCity = '';
+      String detectedCountry = 'Türkiye';
+      double detectedTimezone = 3.0;
+
+      // 1. Yerel Android/iOS Geocoder üzerinden cihazın bulunduğu tam ilçe/şehri öğren
+      try {
+        final geocoding = Geocoding();
+        final placemarks = await geocoding.placemarkFromCoordinates(position.latitude, position.longitude);
+        if (placemarks.isNotEmpty) {
+          final place = placemarks.first;
+          final district = place.subAdministrativeArea?.trim(); // Örn: Datça, Kadıköy, Bodrum
+          final locality = place.locality?.trim(); // Örn: Datça, İstanbul, Berlin
+          final state = place.administrativeArea?.trim(); // Örn: Muğla, İstanbul, Ankara
+          final country = place.country?.trim();
+
+          if (district != null && district.isNotEmpty) {
+            detectedCity = district;
+          } else if (locality != null && locality.isNotEmpty) {
+            detectedCity = locality;
+          } else if (state != null && state.isNotEmpty) {
+            detectedCity = state;
+          }
+
+          if (country != null && country.isNotEmpty) {
+            detectedCountry = country;
+          }
+        }
+      } catch (e) {
+        debugPrint('Geocoding reverse lookup note: $e');
+      }
+
+      // 2. Eğer Geocoder boş veya offline ise, en yakın bilinen şehri koordinat bazlı bul
       final matchedCity = findClosestCity(position.latitude, position.longitude);
+      if (detectedCity.isEmpty) {
+        detectedCity = matchedCity.city;
+        detectedCountry = matchedCity.country;
+      }
+      detectedTimezone = matchedCity.timezoneOffset;
 
       final result = CityLocation(
-        city: matchedCity.city,
-        country: matchedCity.country,
+        city: detectedCity,
+        country: detectedCountry,
         latitude: position.latitude,
         longitude: position.longitude,
-        timezoneOffset: matchedCity.timezoneOffset,
+        timezoneOffset: detectedTimezone,
       );
 
       // Önbelleğe kaydet (Sonraki açılışlarda anında kullanılsın)

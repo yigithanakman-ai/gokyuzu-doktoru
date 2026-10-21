@@ -52,7 +52,6 @@ Gökyüzü Doktoru uygulaması cihazınızda yalnızca işlevsel zorunluluğu ol
 - `android.permission.ACCESS_FINE_LOCATION` ve `android.permission.ACCESS_COARSE_LOCATION`: Kullanıcının anlık koordinatlarına göre yerel astronomik gezegen saatlerini ve gün doğumu/batımı döngülerini hesaplamak için (Yalnızca ön planda ve kullanıcı onayıyla).
 - `android.permission.INTERNET`: Güncel efemeris ve transit gezegen verilerini almak ve VIP üyelik durumunu doğrulamak için.
 - `android.permission.ACCESS_NETWORK_STATE`: Ağ bağlantısının aktif olup olmadığını kontrol etmek için.
-- `com.android.vending.BILLING`: Google Play Store üzerinden VIP abonelik ve uygulama içi satın alımların güvenle işlenmesi için.
 - `android.permission.POST_NOTIFICATIONS`: Kullanıcının izniyle günlük kozmik transit ve gökyüzü bildirimlerini iletmek için.
 - `com.google.android.gms.permission.AD_ID`: Google AdMob reklam monetizasyonu ve sahtekarlık önleme için.
 
