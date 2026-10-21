@@ -86,19 +86,20 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.11
-          name: "📱 Gökyüzü Doktoru - v1.0.11 (Sürüm Kodu 12 & 360° Transit Çarkı, Vektörel Mars/Venüs, Pusula & Splash İyileştirmesi)"
+          tag_name: v1.0.12
+          name: "📱 Gökyüzü Doktoru - v1.0.12 (Sürüm Kodu 13 & Google Play In-App Purchase / Doğrudan Satın Alım ve Gizli Patron Girişi)"
           body: |
-            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.11 / Sürüm Kodu 12)
+            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.12 / Sürüm Kodu 13)
 
             - **`gokyuzu-doktoru.apk`**: Kendi Android telefonunuzda doğrudan test edip kullanmak için yükleme dosyası (İmzalı).
             - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı).
 
-            #### 🌟 Bu Sürümdeki Yenilikler (v1.0.11):
-            1. **360° Çark Çoklu Mod (İkili, Sadece Transit, Sadece Doğum)**: Transit gezegenlerin birbiriyle yaptığı açılar (Transit-to-Transit), doğum haritası kök açıları ve ikili harita açıları listeli ve görselleştirilmiş olarak eklendi.
-            2. **Vektörel Mars ve Venüs Çizimi**: Android sistem fontlarındaki emoji kutucukları (🚹/🚺) tamamen kaldırıldı; Mars ve Venüs artık saf matematiksel vektör glifi olarak çiziliyor.
-            3. **Kozmik Karar Pusulası Açı & İbre & Puan Düzeltmesi**: İbre açısı yönleri (0° Hareket, 90° Dönüş, 180° Dikkat, 270° Bekle) düzeltildi; ibre ucu ve parıltısı sonuca göre dinamik renklendirildi.
-            4. **Android 12+ Splash Screen ve Adaptive Launcher Icon**: Tam uyumlu adaptive icon ve kozmik koyu arka planlı açılış ekranı (SplashScreen API) entegre edildi, beyaz kutu ve saniyelik parlama çözüldü.
+            #### 🌟 Bu Sürümdeki Yenilikler (v1.0.12):
+            1. **Resmi In-App Purchase (Uygulama İçi Satın Alma)**: Google Play Billing ve Apple StoreKit entegrasyonu tamamlandı; paket seçildiğinde doğrudan mağaza ödeme ekranı açılır.
+            2. **Geçersiz VIP Yönlendirmeleri Düzeltildi**: Arşiv ekranındaki "VIP Ayrıcalıklarını İncele" ve "VIP Yükselt" butonları artık doğrudan satın alma modalini açar.
+            3. **Açık Kod Girişleri Kaldırıldı**: Kullanıcıların gördüğü "Kod Gir", "Promosyon Kodu" butonları ve metinleri tamamen temizlendi.
+            4. **Gizli Patron / Yönetici Aktivasyonu**: Yalnızca Patron'un (proje sahibinin) bileceği gizli yönetici aktivasyonu taç simgesine 5 kez dokunarak açılacak şekilde gizlendi.
+            5. **Doğrudan Mağaza Abonelik Bağlantısı**: Eski mağaza anasayfası yönlendirmesi yerine resmi Google Play Subscriptions / App Store Subscriptions API'si entegre edildi.
 
             #### 📲 Telefona Nasıl Yüklenir (APK)?
             1. Aşağıdaki **Assets** bölümünden **`gokyuzu-doktoru.apk`** dosyasına dokunun ve telefonunuza indirin.

@@ -8,6 +8,7 @@ import 'core/theme/app_theme.dart';
 import 'data/services/ad_service.dart';
 import 'data/services/app_translation_service.dart';
 import 'data/services/notification_service.dart';
+import 'data/services/in_app_purchase_service.dart';
 import 'presentation/screens/splash_screen.dart';
 
 void main() async {
@@ -23,6 +24,9 @@ void main() async {
       await MobileAds.instance.initialize();
       AdService.preloadInterstitial();
       AdService.preloadRewarded();
+    } catch (_) {}
+    try {
+      await InAppPurchaseService.instance.initialize();
     } catch (_) {}
   }
   try {

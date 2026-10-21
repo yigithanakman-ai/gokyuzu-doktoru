@@ -8,6 +8,7 @@ import '../../data/services/world_cities_service.dart';
 import '../../data/services/active_profile_service.dart';
 import 'chart_detail_screen.dart';
 import 'cosmic_notes_screen.dart';
+import '../widgets/vip_upgrade_modal.dart';
 import '../../data/services/app_translation_service.dart';
 
 class ArchiveScreen extends StatefulWidget {
@@ -508,7 +509,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                 ),
                 onPressed: () {
                   Navigator.of(ctx).pop();
-                  // Ana ekrandaki VIP satın alma modalini tetikle veya bilgi ver
+                  VipUpgradeModal.show(context, onPurchased: _loadData);
                 },
                 child: const Text('VIP Ayrıcalıklarını İncele', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 14)),
               ),
@@ -612,7 +613,7 @@ class _ArchiveScreenState extends State<ArchiveScreen> {
                             minimumSize: Size.zero,
                             shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(8)),
                           ),
-                          onPressed: _showVipRequiredSheet,
+                          onPressed: () => VipUpgradeModal.show(context, onPurchased: _loadData),
                           child: Text(AppTranslationService.tr('VIP Yükselt'), style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold)),
                         ),
                     ],

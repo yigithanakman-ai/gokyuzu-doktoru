@@ -22,6 +22,7 @@ import '../widgets/eclipses_academy_view.dart';
 import '../../data/services/app_translation_service.dart';
 import '../widgets/interactive_bi_wheel_modal.dart';
 import '../widgets/astrological_glyph.dart';
+import '../widgets/vip_upgrade_modal.dart';
 
 class ChartDetailScreen extends StatefulWidget {
   final UserProfile profile;
@@ -3867,10 +3868,12 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                onPressed: () => _showVipCodeModal(context),
+                onPressed: () => VipUpgradeModal.show(context, onPurchased: () {
+                  if (mounted) setState(() => _isVip = true);
+                }),
                 icon: const Icon(Icons.stars_rounded, size: 20),
                 label: const Text(
-                  'VIP Üyeliğe Yükselt / Kod Gir',
+                  '★ VIP Üyeliğe Yükselt',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
                 ),
               ),
@@ -4009,105 +4012,18 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                     borderRadius: BorderRadius.circular(14),
                   ),
                 ),
-                onPressed: () => _showVipCodeModal(context),
+                onPressed: () => VipUpgradeModal.show(context, onPurchased: () {
+                  if (mounted) setState(() => _isVip = true);
+                }),
                 icon: const Icon(Icons.stars_rounded, size: 20),
                 label: const Text(
-                  'VIP Üyeliğe Yükselt / Kod Gir',
+                  '★ VIP Üyeliğe Yükselt',
                   style: TextStyle(fontWeight: FontWeight.bold, fontSize: 13.5),
                 ),
               ),
             ],
           ),
         ),
-      ),
-    );
-  }
-
-  void _showVipCodeModal(BuildContext context) {
-    final controller = TextEditingController();
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF1B162B),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.starlightGold, width: 1),
-        ),
-        title: const Row(
-          children: [
-            Icon(Icons.stars_rounded, color: AppColors.starlightGold),
-            SizedBox(width: 8),
-            Text(
-              'VIP Erişim Aktivasyonu',
-              style: TextStyle(fontSize: 16, fontWeight: FontWeight.bold, color: Colors.white),
-            ),
-          ],
-        ),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          crossAxisAlignment: CrossAxisAlignment.start,
-          children: [
-            const Text(
-              'Satın aldığınız VIP paket veya astrolog davet kodunuzu girerek tüm modüllere sınırsız erişebilirsiniz:',
-              style: TextStyle(fontSize: 12.5, color: AppColors.textSecondary),
-            ),
-            const SizedBox(height: 14),
-            TextField(
-              controller: controller,
-              style: const TextStyle(
-                color: AppColors.starlightGold,
-                fontWeight: FontWeight.bold,
-                letterSpacing: 1.2,
-              ),
-              decoration: InputDecoration(
-                hintText: 'VIP Kodu Giriniz',
-                hintStyle: const TextStyle(color: Colors.white24),
-                filled: true,
-                fillColor: Colors.black26,
-                border: OutlineInputBorder(
-                  borderRadius: BorderRadius.circular(12),
-                  borderSide: const BorderSide(color: AppColors.starlightGold),
-                ),
-              ),
-            ),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Kapat', style: TextStyle(color: AppColors.textMuted)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.starlightGold,
-              foregroundColor: Colors.black87,
-              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
-            ),
-            onPressed: () async {
-              final code = controller.text.trim();
-              final success = await StorageService.activateVipCode(code);
-              if (success && mounted) {
-                setState(() => _isVip = true);
-              }
-              if (ctx.mounted) Navigator.of(ctx).pop();
-              if (context.mounted) {
-                ScaffoldMessenger.of(context).showSnackBar(
-                  SnackBar(
-                    content: Text(
-                      success
-                          ? '🎉 VIP erişimi başarıyla aktif edildi! Tüm modüller açıldı.'
-                          : '❌ Geçersiz kod. Lütfen tekrar deneyiniz.',
-                    ),
-                    backgroundColor: success
-                        ? const Color(0xFF1D5A3A)
-                        : const Color(0xFF5A1D2C),
-                  ),
-                );
-              }
-            },
-            child: const Text('Aktif Et', style: TextStyle(fontWeight: FontWeight.bold)),
-          ),
-        ],
       ),
     );
   }

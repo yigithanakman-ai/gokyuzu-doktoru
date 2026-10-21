@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/services/storage_service.dart';
 import '../../data/services/app_translation_service.dart';
+import 'vip_upgrade_modal.dart';
 
 void showPlatinumMultiProfileUpsellSheet(BuildContext context, {String? targetProfileName}) {
   showModalBottomSheet(
@@ -212,29 +213,9 @@ class PlatinumMultiProfileUpsellSheet extends StatelessWidget {
                 shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
                 elevation: 6,
               ),
-              onPressed: () async {
-                await StorageService.setVipTier(VipTier.platinum);
-                if (context.mounted) {
-                  Navigator.of(context).pop();
-                  ScaffoldMessenger.of(context).showSnackBar(
-                    const SnackBar(
-                      content: Row(
-                        children: [
-                          Icon(Icons.workspace_premium_rounded, color: Color(0xFFFFD700)),
-                          SizedBox(width: 8),
-                          Expanded(
-                            child: Text(
-                              '🎉 Tebrikler! VIP Platinum üyeliğiniz ve +1 Hediye PDF raporunuz aktif edildi.',
-                              style: TextStyle(fontWeight: FontWeight.bold),
-                            ),
-                          ),
-                        ],
-                      ),
-                      backgroundColor: Color(0xFF6C5CE7),
-                      duration: Duration(seconds: 4),
-                    ),
-                  );
-                }
+              onPressed: () {
+                Navigator.of(context).pop();
+                VipUpgradeModal.show(context, preselectedTier: VipTier.platinum);
               },
               icon: const Icon(Icons.workspace_premium_rounded, size: 20),
               label: const Text(
