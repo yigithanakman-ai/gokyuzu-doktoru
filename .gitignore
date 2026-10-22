@@ -10,4 +10,7 @@ Arsiv_Eski_Kodlar/
 *credentials*.json
 *token*.json
 *secret*
+*.apk
+*.aab
+*.ipa
 .DS_Store
