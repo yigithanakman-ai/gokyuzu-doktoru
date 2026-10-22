@@ -118,10 +118,6 @@ class NotificationService {
         // Android 13+ (API 33+) resmi izin penceresini açar
         granted =
             await androidImpl?.requestNotificationsPermission() ?? false;
-        // Android 12+ tam zamanlı alarm izni
-        try {
-          await androidImpl?.requestExactAlarmsPermission();
-        } catch (_) {}
       } else if (!kIsWeb &&
           (defaultTargetPlatform == TargetPlatform.iOS ||
               defaultTargetPlatform == TargetPlatform.macOS)) {
@@ -281,20 +277,9 @@ class NotificationService {
             body: body,
             scheduledDate: scheduledDate,
             notificationDetails: notificationDetails,
-            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
           );
-        } catch (_) {
-          try {
-            await _notificationsPlugin.zonedSchedule(
-              id: notificationId,
-              title: title,
-              body: body,
-              scheduledDate: scheduledDate,
-              notificationDetails: notificationDetails,
-              androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-            );
-          } catch (_) {}
-        }
+        } catch (_) {}
       }
     }
 
@@ -338,22 +323,10 @@ class NotificationService {
           body: item['body'] as String,
           scheduledDate: scheduledTime,
           notificationDetails: notificationDetails,
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
           matchDateTimeComponents: DateTimeComponents.time,
         );
-      } catch (_) {
-        try {
-          await _notificationsPlugin.zonedSchedule(
-            id: id,
-            title: item['title'] as String,
-            body: item['body'] as String,
-            scheduledDate: scheduledTime,
-            notificationDetails: notificationDetails,
-            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-            matchDateTimeComponents: DateTimeComponents.time,
-          );
-        } catch (_) {}
-      }
+      } catch (_) {}
     }
   }
 
@@ -452,9 +425,6 @@ class NotificationService {
         );
         return;
       }
-      try {
-        await androidImpl?.requestExactAlarmsPermission();
-      } catch (_) {}
     }
 
     // 14 günlük arka plan alarmlarını (09:30, 14:30, 20:30) güncelle

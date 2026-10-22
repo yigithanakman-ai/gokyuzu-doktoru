@@ -1,4 +1,4 @@
-# 🪐 GÖKYÜZÜ DOKTORU — MASTER PROJE HAFIZASI & YAPAY ZEKA DEVİR (HANDOFF) RAPORU (v1.0.14+15)
+# 🪐 GÖKYÜZÜ DOKTORU — MASTER PROJE HAFIZASI & YAPAY ZEKA DEVİR (HANDOFF) RAPORU (v1.0.14+16)
 
 > **Yeni Bir Yapay Zeka Asistanına Not:**  
 > Bu doküman, **Yiğithan Akman (Patron 👑)** tarafından geliştirilen **Gökyüzü Doktoru** projesinin tüm teknik mimarisini, astronomik motorlarını, para kazanma (AdMob & In-App Purchase) altyapısını, gizli yönetici özelliklerini ve bugüne kadar yapılan tüm güncellemeleri en ince ayrıntısına kadar içerir. Kullanıcıya her zaman **"Patron 👑"** diye hitap et ve buradaki kuralları harfiyen koru.
@@ -9,7 +9,7 @@
 
 - **Uygulama Adı:** Gökyüzü Doktoru
 - **Geliştirici / Kurucu:** Yiğithan Akman (Patron 👑)
-- **Güncel Sürüm:** `v1.0.14+15` (`versionName: 1.0.14`, `versionCode: 15`)
+- **Güncel Sürüm:** `v1.0.14+16` (`versionName: 1.0.14`, `versionCode: 16`)
 - **Android / iOS Paket Adı (Bundle ID):** `com.gokyuzudoktoru.gokyuzu_app`
 - **GitHub Deposu:** `https://github.com/yigithanakman-ai/gokyuzu-doktoru` (`main` dalı)
 - **Çalışma Dizini:** `/Users/yigithanakman/Desktop/Gökyüzü_YapayZeka_Sistemi/gokyuzu_app`
@@ -82,15 +82,15 @@
   - Anasayfada (Canlı Gökyüzü) ve Doğum Haritası (Kadim & Melekler sekmesi) içinde **28 Kadim Ay Menzili** ile **Hermetik Adımlar & Tılsım Rehberi** birbirinden tamamen ayrıldı.
   - Hermetik Adımlar kendi ayrı kartına ve kendi ayrı 28 adımlık rehber modalına (`_showAllHermeticStepsModal`) kavuştu (Adım başlığı, Hermetik Tılsım sembolü, Tütsü/Frekans rezonansı ve Hermetik Uygulama adımı).
 
-### 7) Uygulamaya Girmeden Arka Planda Bildirim Gelmesi (14 Günlük Tam Zamanlı Alarm Motoru)
+### 7) Uygulamaya Girmeden Arka Planda Bildirim Gelmesi & Google Play Exact Alarm Politikası Uyumu
 - **Dosyalar:**
   - `gokyuzu_app/android/app/src/main/AndroidManifest.xml`
   - `gokyuzu_app/lib/data/services/notification_service.dart`
-- **Önceki Sorun:** Bildirimler yalnızca uygulamaya girildiğinde anlık tetikleniyor, uygulama kapalıyken gün içinde gelmiyordu.
-- **Çözüm:**
-  1. `AndroidManifest.xml` dosyasına `SCHEDULE_EXACT_ALARM`, `USE_EXACT_ALARM` ve `WAKE_LOCK` izinleri eklendi.
-  2. Uygulama açıldığında `sendTestOrDailyNotification` ile anlık bildirim atma davranışı kaldırıldı; bunun yerine **gelecek 14 gün boyunca her gün 09:30, 14:30 ve 20:30** saatleri için (toplam 42 bağımsız tam zamanlı alarm + 3 döngüsel yedek alarm) o günün gerçek Ay burcu, derecesi ve fazı hesaplanarak işletim sistemine `AndroidScheduleMode.exactAllowWhileIdle` modunda kaydedilir.
-  3. Kullanıcı uygulamaya günlerce hiç girmese bile telefonun işletim sistemi sabah 09:30, öğle 14:30 ve akşam 20:30'da bildirimleri otomatik olarak düşürür.
+- **Önceki Sorun & Google Play Hatası:**
+  - Bildirimler yalnızca uygulamaya girildiğinde tetikleniyordu. Arka planda 14 günlük alarm planlaması için `SCHEDULE_EXACT_ALARM` izni eklendiğinde Google Play Console yükleme aşamasında *"Uygulamanızda tam alarm izni kullanılıp kullanılmadığını bize bildirmeniz gerekir"* hatası verdi. Çünkü Google Play politikalarına göre `SCHEDULE_EXACT_ALARM` ve `USE_EXACT_ALARM` izinleri yalnızca çalar saat (alarm clock) ve takvim uygulamaları için geçerlidir; astroloji veya diğer kategorilerdeki uygulamalarda bu izin beyanı reddedilir.
+- **Kökten Çözüm:**
+  1. `AndroidManifest.xml` içine `tools:node="remove"` ile `SCHEDULE_EXACT_ALARM` ve `USE_EXACT_ALARM` kaldırılarak Google Play Console'un gereksiz beyan istemesi engellendi.
+  2. Arka plan bildirimleri `AndroidScheduleMode.inexactAllowWhileIdle` moduna geçirildi. Bu mod sayesinde hem telefon uyku modundayken (Doze mode) sabah 09:30, öğle 14:30 ve akşam 20:30'da bildirimler bataryayı sömürmeden iletilir, hem de Google Play Console sıfır hata ve sıfır beyan ile AAB paketini doğrudan onaylar.
 
 ### 8) Taşma (Overflow) Sorunlarının Giderilmesi
 - **Dosya:** `gokyuzu_app/lib/presentation/screens/chart_detail_screen.dart`

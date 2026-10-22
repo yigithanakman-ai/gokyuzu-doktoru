@@ -10,8 +10,10 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
-    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
+    <!-- Google Play Exact Alarm Politikası: Saat/Takvim uygulaması olmayan uygulamalar tam alarm beyanı veremez.
+         Google Play Console'daki 'Tam alarm izni beyanı' hatasını önlemek için kaldırılır ve bildirimler inexactAllowWhileIdle ile iletilir. -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" tools:node="remove"/>
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM" tools:node="remove"/>
 
     <!-- Google Play Fotoğraf/Video Politikası Uyumluluğu: open_filex kütüphanesinin eklediği gereksiz medya izinlerini kaldır -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove"/>
