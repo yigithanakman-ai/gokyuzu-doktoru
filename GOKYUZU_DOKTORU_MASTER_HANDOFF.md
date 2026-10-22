@@ -209,37 +209,40 @@ Patron'un paylaştığı AdMob Reklam Birimleri paneli ekran görüntüsüne gö
 
 ## 📋 7. Yapılanlar ve Yapılacaklar Listesi (Roadmap)
 
-### ✅ Yapılanlar (v1.0.13+14 Tamamlandı):
+### ✅ Yapılanlar (v1.0.14+17 Tamamlandı):
 - [x] **Türkiye Tarihi Yaz Saati Uygulaması (1910–2026+) Tablosu:** Resmi Gazete (`astrolojidergisi.com/yaz-saati-2`) ve IANA `Europe/Istanbul` verilerine göre tüm yıllar, günler ve geçiş saatleri (`UTC+2`, `UTC+3`, 1983 `UTC+4`) eksiksiz kodlandı.
 - [x] **Solar Fire & Astro Gold %100 Yükselen (GAST + Nutasyon) Kalibrasyonu:** `10.09.1971 16:46 İzmir` (`10°38' Kova`) ve `11.09.1959 10:30 Kırıkkale` (`18°06' Akrep`) dahil tüm doğum haritalarında dakika hassasiyetinde eşleşme sağlandı.
 - [x] **Türkçe Şehir Normalizasyonu & Bulanık Arama (Fuzzy Match):** `"kırkkale"` gibi harf eksikleri, `İ/I` dönüşümleri ve halk arasındaki il isimleri (`afyon`, `antep`, `urfa`, `maras`, `icel`, `izmit`, `adapazari`, `antakya`) otomatik olarak doğru şehre bağlandı.
+- [x] **Google Play Tam Alarm İzni (Exact Alarm) Düzeltmesi:** `SCHEDULE_EXACT_ALARM` ve `USE_EXACT_ALARM` izinleri `tools:node="remove"` ile kaldırıldı; bildirimler Google Play politikalarına tam uyumlu `AndroidScheduleMode.inexactAllowWhileIdle` moduna geçirildi, beyan hatası sıfırlandı.
+- [x] **GitGuardian Sızıntı Alarmı & Güvenlik Temizliği:** Eski `v1.0.13` etiketi ve `0148e0e8` commitinin tüm referansları uzak depodan silindi, repodaki tüm dallar temizlendi, `.env` dosyaları gitignore ile izole edildi.
+- [x] **Siber Güvenlik Kalkanı & Tersine Mühendislik Koruması:** Flutter Dart AOT bytecode karartma (`--obfuscate --split-debug-info`), API rate limiter (günlük 50, aylık 350 limit) ve XOR maskeli gizli API uç noktaları (`SecurityShieldService`) devreye alındı.
+- [x] **İletişim Botları (@gokyuzudoktoru_destek_bot) Entegrasyonu:** Bot tokenı `.env` ortamına taşındı, test mesajı Patron'un Telegram hesabına başarıyla ulaştırıldı; sabah 09:00 VIP günlük transit bülteni garanti altına alındı.
+- [x] **v1.0.14 (Build 17) Paketi Derlendi ve İndirildi:** `~/Downloads/gokyuzu-doktoru-v1.0.14-build17.aab` ve `.apk` resmi upload anahtarıyla imzalanıp hazırlandı.
 - [x] AdMob test birimi yönlendirme hatası (`kReleaseMode ? live : test`) kaldırıldı; tüm istekler canlı kimliklere bağlandı.
 - [x] AdMob panelindeki `Gokyuzu_Gecis_Sekmeler` (`7656178404`) ve `Gokyuzu_Odullu_Pusula` (`1704268715`) kodla birebir doğrulandı.
-- [x] 4. eylemde reklam bellekte yoksa atlama hatası giderildi; anında yükleyip gösterme (`loadAndShowInterstitial`) eklendi.
-- [x] Android `AndroidManifest.xml` (`APPLICATION_ID`, `AD_ID`, alarmlar) tam uyarlandı.
-- [x] iOS `Info.plist` (`GADApplicationIdentifier`, `SKAdNetworkItems`) eklendi.
 - [x] True Node / Mean Node, 9 Asteroit, Astro Gold 360 Çark, Evrensel Orblar, Sa'd el-Ahbiye ve Hermetik Adımlar teslim edildi.
-- [x] Gizli Patron yönetici girişi kuruldu.
+- [x] Gizli Patron yönetici girişi kuruldu (`gkyz2453`).
 
 ### 📌 Yapılacaklar (Gelecek Adımlar):
-- [ ] **Google Play Console Kapalı Teste Yeni AAB Yükleme:** Canlı AdMob düzeltmelerini içeren `v1.0.13+14` bundle'ının kapalı test kanalına yüklenmesi.
+- [ ] **Google Play Console'a Yeni AAB Yükleme:** İndirilenler klasöründeki `gokyuzu-doktoru-v1.0.14-build17.aab` paketinin kapalı teste yüklenmesi ve incelemeye gönderilmesi.
 - [ ] **AdMob Paneli İzleme:** Güncelleme yüklendikten 24-48 saat sonra AdMob panelindeki "İstekler" ve "Eşleşme Oranı" istatistiklerinin sıfırdan yukarı tırmandığının kontrol edilmesi.
-- [ ] **AdMob iOS Uygulaması Oluşturma:** iOS App Store sürümü öncesinde AdMob panelinden `Uygulama Ekle -> iOS` adımıyla iOS için özel 2 reklam birimi alınıp `ad_service.dart` içindeki `iosInterstitialAdId` ve `iosRewardedAdId` değişkenlerine yazılması.
 - [ ] **Google Play In-App Purchase Aboneliklerini Etkinleştirme:** Play Console -> Para Kazanma -> Abonelikler altındaki 4 abonelik ID'sinin aktifleştirilmesi.
+- [ ] **AdMob iOS Uygulaması Oluşturma:** iOS App Store sürümü öncesinde AdMob panelinden `Uygulama Ekle -> iOS` adımıyla iOS için özel 2 reklam birimi alınıp `ad_service.dart` içindeki `iosInterstitialAdId` ve `iosRewardedAdId` değişkenlerine yazılması.
 
 ---
 
-## 🚀 8. Sürüm Dağıtım Notları (Google Play & App Store v1.0.13+14)
+## 🚀 8. Sürüm Dağıtım Notları (Google Play & App Store v1.0.14+17)
 
 ```text
-Gökyüzü Doktoru v1.0.13 Yayında! 🪐✨
+Gökyüzü Doktoru v1.0.14 Yayında! 🪐✨
 
-Bu sürümde astronomi motorumuzu ve harita deneyimini baştan aşağı yeniledik:
-• Ay Düğümleri Seçimi: True Node (Gerçek) ve Mean Node (Ortalama) ayrımı eklendi.
-• 9 Yeni Asteroit & Nokta: Lilith, Vesta, Juno, Amor, Hekate, Isis, Vertex, Pallas ve Ceres'i haritanıza ekleyebilir veya filtreleyebilirsiniz.
-• Astro Gold Tarzı 360° Çark: Belirgin Placidus ev kaspları, kasp dereceleri, ev numaraları ve gezegen açı sembolleriyle profesyonel görselleştirme.
-• Evrensel Açı Orbları: Kavuşum/Karşıt 10°, Üçgen 8°, Kare/Sekstil 7° standart kuralları haritaya entegre edildi.
-• 28 Ay Menzili & Hermetik Adımlar: Ay Balık burcundayken Sa'd el-Ahbiye menzili kalibrasyonu sağlandı ve Hermetik Adımlar müstakil bir rehbere dönüştürüldü.
-• Kesintisiz Bildirimler: Uygulamaya girmeseniz bile günlük gezegen ve ay rehberliği bildirimleri tam zamanında telefonunuza ulaşır.
-• Arayüz İyileştirmeleri ve Performans: Taşmalar giderildi, reklam ve abonelik geçişleri hızlandırıldı.
+Bu sürümde astronomik motorumuzda ve kullanıcı güvenliğinde köklü yenilikler yaptık:
+• Türkiye Tarihsel Yaz Saati (1910-2026+) Kalibrasyonu: Resmi Gazete kararları sisteme entegre edildi, tüm doğum haritalarında saat dilimi geçişleri dakikası dakikasına doğrulandı.
+• Solar Fire & Astro Gold %100 Yükselen Uyumu: GAST (Görünür Yıldız Zamanı) ve Nutasyon hesaplamalarıyla Yükselen dereceleri tam uluslararası standartlara kavuştu.
+• True Node (Gerçek) ve Mean Node (Ortalama) Ay Düğümleri: Tek dokunuşla geçiş ve karşılaştırma imkanı.
+• 9 Seçilebilir Asteroit & Nokta: Lilith, Vesta, Juno, Amor, Hekate, Isis, Vertex, Pallas ve Ceres haritaya eklendi.
+• Astro Gold Tarzı 360° Çark: Belirgin Placidus ev kaspları, kasp dereceleri, ev numaraları ve gezegen açı sembolleri.
+• Evrensel Açı Orbları: Kavuşum/Karşıt 10°, Üçgen 8°, Kare/Sekstil 7° kuralı tüm haritaya uygulandı.
+• 28 Ay Menzili (Sa'd el-Ahbiye) & Hermetik Adımlar: Kadim ay menzili kalibrasyonu ve müstakil Hermetik Adımlar rehberi.
+• Siber Güvenlik & Performans: İleri seviye kod karartma (obfuscation), sıfır hata bildirim mimarisi ve optimize edilmiş geçişler.
 ```
