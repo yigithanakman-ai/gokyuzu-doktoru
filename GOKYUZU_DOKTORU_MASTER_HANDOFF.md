@@ -1,4 +1,4 @@
-# 🪐 GÖKYÜZÜ DOKTORU — MASTER PROJE HAFIZASI & YAPAY ZEKA DEVİR (HANDOFF) RAPORU (v1.0.14+17)
+# 🪐 GÖKYÜZÜ DOKTORU — MASTER PROJE HAFIZASI & YAPAY ZEKA DEVİR (HANDOFF) RAPORU (v1.0.14+19)
 
 > **Yeni Bir Yapay Zeka Asistanına Not:**  
 > Bu doküman, **Yiğithan Akman (Patron 👑)** tarafından geliştirilen **Gökyüzü Doktoru** projesinin tüm teknik mimarisini, astronomik motorlarını, para kazanma (AdMob & In-App Purchase) altyapısını, gizli yönetici özelliklerini ve bugüne kadar yapılan tüm güncellemeleri en ince ayrıntısına kadar içerir. Kullanıcıya her zaman **"Patron 👑"** diye hitap et ve buradaki kuralları harfiyen koru.
@@ -9,7 +9,7 @@
 
 - **Uygulama Adı:** Gökyüzü Doktoru
 - **Geliştirici / Kurucu:** Yiğithan Akman (Patron 👑)
-- **Güncel Sürüm:** `v1.0.14+17` (`versionName: 1.0.14`, `versionCode: 17`)
+- **Güncel Sürüm:** `v1.0.14+19` (`versionName: 1.0.14`, `versionCode: 19`)
 - **Android / iOS Paket Adı (Bundle ID):** `com.gokyuzudoktoru.gokyuzu_app`
 - **GitHub Deposu:** `https://github.com/yigithanakman-ai/gokyuzu-doktoru` (`main` dalı)
 - **Çalışma Dizini:** `/Users/yigithanakman/Desktop/Gökyüzü_YapayZeka_Sistemi/gokyuzu_app`
@@ -207,42 +207,71 @@ Patron'un paylaştığı AdMob Reklam Birimleri paneli ekran görüntüsüne gö
 
 ---
 
-## 📋 7. Yapılanlar ve Yapılacaklar Listesi (Roadmap)
+### 11) Haritayı 2 Parmakla Büyütme (Pinch-to-Zoom / `ChartZoomScreen`) & Sabit Oryantasyon (Build 18)
+- **Dosyalar:**
+  - `gokyuzu_app/lib/presentation/screens/chart_zoom_screen.dart`
+  - `gokyuzu_app/lib/presentation/screens/chart_detail_screen.dart`
+  - `gokyuzu_app/lib/presentation/widgets/chart_wheel_painter.dart`
+  - `gokyuzu_app/lib/presentation/widgets/interactive_bi_wheel_modal.dart`
+- **Detay:**
+  - Parmakla çark döndürme modu kullanıcı isteğiyle tamamen kaldırıldı; harita evrensel oryantasyonda (ASC = 9 yönü) kilitlendi.
+  - Tekli ve Çift Çarkta haritaya veya butonuna dokunulduğunda tam ekran `ChartZoomScreen` açılır; kullanıcı 2 parmağıyla haritayı 0.6x ile 6.0x arasında akıcı şekilde büyütüp küçültebilir ve gezdirebilir.
 
-### ✅ Yapılanlar (v1.0.14+17 Tamamlandı):
-- [x] **Türkiye Tarihi Yaz Saati Uygulaması (1910–2026+) Tablosu:** Resmi Gazete (`astrolojidergisi.com/yaz-saati-2`) ve IANA `Europe/Istanbul` verilerine göre tüm yıllar, günler ve geçiş saatleri (`UTC+2`, `UTC+3`, 1983 `UTC+4`) eksiksiz kodlandı.
-- [x] **Solar Fire & Astro Gold %100 Yükselen (GAST + Nutasyon) Kalibrasyonu:** `10.09.1971 16:46 İzmir` (`10°38' Kova`) ve `11.09.1959 10:30 Kırıkkale` (`18°06' Akrep`) dahil tüm doğum haritalarında dakika hassasiyetinde eşleşme sağlandı.
-- [x] **Türkçe Şehir Normalizasyonu & Bulanık Arama (Fuzzy Match):** `"kırkkale"` gibi harf eksikleri, `İ/I` dönüşümleri ve halk arasındaki il isimleri (`afyon`, `antep`, `urfa`, `maras`, `icel`, `izmit`, `adapazari`, `antakya`) otomatik olarak doğru şehre bağlandı.
-- [x] **Google Play Tam Alarm İzni (Exact Alarm) Düzeltmesi:** `SCHEDULE_EXACT_ALARM` ve `USE_EXACT_ALARM` izinleri `tools:node="remove"` ile kaldırıldı; bildirimler Google Play politikalarına tam uyumlu `AndroidScheduleMode.inexactAllowWhileIdle` moduna geçirildi, beyan hatası sıfırlandı.
-- [x] **GitGuardian Sızıntı Alarmı & Güvenlik Temizliği:** Eski `v1.0.13` etiketi ve `0148e0e8` commitinin tüm referansları uzak depodan silindi, repodaki tüm dallar temizlendi, `.env` dosyaları gitignore ile izole edildi.
-- [x] **Siber Güvenlik Kalkanı & Tersine Mühendislik Koruması:** Flutter Dart AOT bytecode karartma (`--obfuscate --split-debug-info`), API rate limiter (günlük 50, aylık 350 limit) ve XOR maskeli gizli API uç noktaları (`SecurityShieldService`) devreye alındı.
-- [x] **İletişim Botları (@gokyuzudoktoru_destek_bot) Entegrasyonu:** Bot tokenı `.env` ortamına taşındı, test mesajı Patron'un Telegram hesabına başarıyla ulaştırıldı; sabah 09:00 VIP günlük transit bülteni garanti altına alındı.
-- [x] **v1.0.14 (Build 17) Paketi Derlendi ve İndirildi:** `~/Downloads/gokyuzu-doktoru-v1.0.14-build17.aab` ve `.apk` resmi upload anahtarıyla imzalanıp hazırlandı.
-- [x] AdMob test birimi yönlendirme hatası (`kReleaseMode ? live : test`) kaldırıldı; tüm istekler canlı kimliklere bağlandı.
-- [x] AdMob panelindeki `Gokyuzu_Gecis_Sekmeler` (`7656178404`) ve `Gokyuzu_Odullu_Pusula` (`1704268715`) kodla birebir doğrulandı.
-- [x] True Node / Mean Node, 9 Asteroit, Astro Gold 360 Çark, Evrensel Orblar, Sa'd el-Ahbiye ve Hermetik Adımlar teslim edildi.
-- [x] Gizli Patron yönetici girişi kuruldu (`gkyz2453`).
+### 12) Kilitli / Uykuda / Şarjda / Pilde Tam Zamanlı Kesintisiz Bildirim Çözümü (Build 18)
+- **Dosyalar:**
+  - `gokyuzu_app/android/app/src/main/AndroidManifest.xml`
+  - `gokyuzu_app/lib/data/services/notification_service.dart`
+- **Detay:**
+  - Telefon uykuda, ekran koruyucuda, kilitliyken veya şarjdayken bildirimlerin iletilmeme sorunu çözüldü.
+  - `NotificationVisibility.public`, `WAKE_LOCK`, `SCHEDULE_EXACT_ALARM`, `ScheduledNotificationBootReceiver` ve `exactAllowWhileIdle` ile CPU uyandırılarak 09:30, 14:30 ve 20:30 alarmları zamanında iletilir.
+  - Cihaz saat dilimi ile IANA Europe/Istanbul ofset eşleştirmesi uygulandı.
 
-### 📌 Yapılacaklar (Gelecek Adımlar):
-- [ ] **Google Play Console'a Yeni AAB Yükleme:** İndirilenler klasöründeki `gokyuzu-doktoru-v1.0.14-build17.aab` paketinin kapalı teste yüklenmesi ve incelemeye gönderilmesi.
-- [ ] **AdMob Paneli İzleme:** Güncelleme yüklendikten 24-48 saat sonra AdMob panelindeki "İstekler" ve "Eşleşme Oranı" istatistiklerinin sıfırdan yukarı tırmandığının kontrol edilmesi.
-- [ ] **Google Play In-App Purchase Aboneliklerini Etkinleştirme:** Play Console -> Para Kazanma -> Abonelikler altındaki 4 abonelik ID'sinin aktifleştirilmesi.
-- [ ] **AdMob iOS Uygulaması Oluşturma:** iOS App Store sürümü öncesinde AdMob panelinden `Uygulama Ekle -> iOS` adımıyla iOS için özel 2 reklam birimi alınıp `ad_service.dart` içindeki `iosInterstitialAdId` ve `iosRewardedAdId` değişkenlerine yazılması.
+### 13) 🌙 Ay Burç, 🔮 28 Ay Menzili ve 🪐 Gezegen Burç Geçiş Bildirimleri (Build 19)
+- **Dosyalar:**
+  - `gokyuzu_app/lib/data/services/sky_transits_service.dart`
+  - `gokyuzu_app/lib/data/services/lunar_mansions_service.dart`
+  - `gokyuzu_app/lib/data/services/notification_service.dart`
+  - `gokyuzu_app/lib/presentation/screens/profile_screen.dart`
+  - `gokyuzu_app/lib/presentation/screens/home_screen.dart`
+- **Detay:**
+  1. **Ay Burç Değişimleri (Moon Sign Ingress):** Ay her yeni burca geçtiğinde (ortalama ~2.5 günde bir) ikili arama (binary search) algoritmasıyla dakika dakikasına geçiş anı yakalanır ve anlık bildirim kurulur (`findUpcomingMoonSignIngresses`, 14 gün, ID 2000+).
+  2. **28 Kadim Ay Menzili Geçişleri (Lunar Mansion Transitions):** Ay 28 duraktan (El-Şaratan, Butayn, Sa'd el-Ahbiye vb.) birine geçtiğinde anlık bildirim kurulur (`findUpcomingMoonMansionTransitions`, 14 gün, ID 3000+).
+  3. **Gezegen Burç Girişleri (Planetary Ingress):** Güneş, Merkür, Venüs, Mars, Jüpiter ve Satürn yeni bir burca 00° 00' ile adım attığında anlık ingress bildirimi kurulur (`findUpcomingPlanetaryIngresses`, 21 gün, ID 4000+).
+  4. **Ayarlar & Bildirim Modal Arayüzü:** Ayarlar / Profil ekranı ve Bildirim İzni penceresine 09:30, 14:30, 20:30'a ek olarak bu 3 yeni astronomik bildirim türü de renkli maddeler olarak eklendi.
 
 ---
 
-## 🚀 8. Sürüm Dağıtım Notları (Google Play & App Store v1.0.14+17)
+## 📋 7. Yapılanlar ve Yapılacaklar Listesi (Roadmap)
+
+### ✅ Yapılanlar (v1.0.14+19 Tamamlandı):
+- [x] **Ay Burç Değişimi Anlık Bildirimleri:** Ay'ın yeni burca geçtiği anı dakikasına kadar hesaplayan ve anlık bildirim fırlatan motor devrede.
+- [x] **28 Ay Menzili Geçiş Bildirimleri:** 28 kadim menzil geçiş anında uğurlu/zorlu rezonans bildirimleri devrede.
+- [x] **Gezegen Burç Geçiş Bildirimleri (İngress):** Güneş ve 5 temel gezegenin yeni burca adım atışını bildiren sistem devrede.
+- [x] **Haritayı 2 Parmakla Büyütme (Pinch-to-Zoom / `ChartZoomScreen`):** Çark döndürme modu kaldırıldı, 0.6x - 6.0x serbest yakınlaştırma sağlandı.
+- [x] **Kilitli / Uykuda / Şarjda / Pilde Kesintisiz Tam Zamanlı Bildirim Çözümü:** `NotificationVisibility.public`, `exactAllowWhileIdle` ve boot receiver entegre edildi.
+- [x] **Türkiye Tarihi Yaz Saati Uygulaması (1910–2026+) Tablosu:** Resmi Gazete ve IANA Europe/Istanbul verilerine göre tüm yıllar eksiksiz kodlandı.
+- [x] **Solar Fire & Astro Gold %100 Yükselen Kalibrasyonu:** GAST + Nutasyon ile tüm doğum haritalarında dakika hassasiyetinde eşleşme sağlandı.
+- [x] **Siber Güvenlik Kalkanı & Tersine Mühendislik Koruması:** Flutter Dart AOT bytecode karartma (`--obfuscate --split-debug-info`), API rate limiter ve XOR maskeli gizli API uç noktaları devrede.
+- [x] **v1.0.14 (Build 19) Paketi Derlendi ve Dağıtıma Hazırlandı.**
+
+### 📌 Yapılacaklar (Gelecek Adımlar):
+- [ ] **Google Play Console'a Yeni AAB Yükleme:** İndirilenler klasöründeki `gokyuzu-doktoru-v1.0.14-build19.aab` paketinin kapalı teste yüklenmesi ve incelemeye gönderilmesi.
+- [ ] **AdMob Paneli İzleme:** Güncelleme yüklendikten 24-48 saat sonra AdMob panelindeki istatistiklerin kontrol edilmesi.
+- [ ] **Google Play In-App Purchase Aboneliklerini Etkinleştirme:** Play Console -> Para Kazanma -> Abonelikler altındaki 4 abonelik ID'sinin aktifleştirilmesi.
+
+---
+
+## 🚀 8. Sürüm Dağıtım Notları (Google Play & App Store v1.0.14+19)
 
 ```text
-Gökyüzü Doktoru v1.0.14 Yayında! 🪐✨
+Gökyüzü Doktoru v1.0.14 (Build 19) Yayında! 🪐✨
 
-Bu sürümde astronomik motorumuzda ve kullanıcı güvenliğinde köklü yenilikler yaptık:
-• Türkiye Tarihsel Yaz Saati (1910-2026+) Kalibrasyonu: Resmi Gazete kararları sisteme entegre edildi, tüm doğum haritalarında saat dilimi geçişleri dakikası dakikasına doğrulandı.
-• Solar Fire & Astro Gold %100 Yükselen Uyumu: GAST (Görünür Yıldız Zamanı) ve Nutasyon hesaplamalarıyla Yükselen dereceleri tam uluslararası standartlara kavuştu.
-• True Node (Gerçek) ve Mean Node (Ortalama) Ay Düğümleri: Tek dokunuşla geçiş ve karşılaştırma imkanı.
-• 9 Seçilebilir Asteroit & Nokta: Lilith, Vesta, Juno, Amor, Hekate, Isis, Vertex, Pallas ve Ceres haritaya eklendi.
-• Astro Gold Tarzı 360° Çark: Belirgin Placidus ev kaspları, kasp dereceleri, ev numaraları ve gezegen açı sembolleri.
-• Evrensel Açı Orbları: Kavuşum/Karşıt 10°, Üçgen 8°, Kare/Sekstil 7° kuralı tüm haritaya uygulandı.
-• 28 Ay Menzili (Sa'd el-Ahbiye) & Hermetik Adımlar: Kadim ay menzili kalibrasyonu ve müstakil Hermetik Adımlar rehberi.
-• Siber Güvenlik & Performans: İleri seviye kod karartma (obfuscation), sıfır hata bildirim mimarisi ve optimize edilmiş geçişler.
+Bu sürümde astronomik motorumuzda ve bildirim deneyiminde çığır açan yenilikler yaptık:
+• 🌙 Anlık Ay Burç Değişim Bildirimleri: Ay her yeni burca geçtiğinde (ortalama ~2.5 günde bir) dakika dakikasına hesaplanıp anlık bildirim iletilir.
+• 🔮 28 Kadim Ay Menzili Geçiş Bildirimleri: Ay'ın 28 kadim duraktan (El-Şaratan, Butayn, Sa'd el-Ahbiye vb.) bir yenisine geçişi anlık rehberlikle telefonunuza ulaşır.
+• 🪐 Gezegenlerin Yeni Bir Burca Geçişi (İngress): Güneş, Merkür, Venüs, Mars, Jüpiter ve Satürn yeni bir burca adım attığında anlık bildirim kurulur.
+• 🔍 Haritayı 2 Parmakla Büyütme (Pinch-to-Zoom): Çark döndürme kaldırılarak harita sabitlendi; tekli ve çift çarkta 2 parmakla 0.6x'den 6.0x'e kadar serbestçe büyütüp inceleme sayfası eklendi.
+• ⚡ Kilit Ekranında ve Uyku Modunda Kesintisiz Bildirim Garantisi: Telefon kilitli, uykuda veya şarjda olsa bile CPU uyandırılarak bildirimler tam zamanında ve açıkça görünür.
+• 🛡️ Siber Güvenlik ve R8 / Dart AOT Karartma: Tersine mühendisliğe ve kod kopyalanmasına karşı tam koruma.
+• ☀️ Türkiye Tarihi Yaz Saati & Solar Fire %100 Yükselen Kalibrasyonu korundu.
 ```

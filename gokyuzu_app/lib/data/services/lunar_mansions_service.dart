@@ -36,6 +36,36 @@ class LunarMansionInfo {
   });
 }
 
+class MoonMansionTransitionEvent {
+  final int oldMansionNumber;
+  final String oldMansionName;
+  final int newMansionNumber;
+  final String newMansionName;
+  final String arabicName;
+  final String nature;
+  final String signRange;
+  final String favorableFor;
+  final String avoidFor;
+  final DateTime eventTime;
+  final String title;
+  final String body;
+
+  const MoonMansionTransitionEvent({
+    required this.oldMansionNumber,
+    required this.oldMansionName,
+    required this.newMansionNumber,
+    required this.newMansionName,
+    required this.arabicName,
+    required this.nature,
+    required this.signRange,
+    required this.favorableFor,
+    required this.avoidFor,
+    required this.eventTime,
+    required this.title,
+    required this.body,
+  });
+}
+
 class LunarMansionsService {
   static const double mansionSpan = 360.0 / 28.0; // 12° 51' 26" (Her burç 00° 00' dk ile 29° 59' dk arasındadır)
 
@@ -581,6 +611,73 @@ class LunarMansionsService {
       'formatted': '$degStr° $minStr\' dk ${signNames[signIdx]}',
       'mansion': getMansionForDegree(moonLon),
     };
+  }
+
+  /// Gelecek [daysAhead] gün içindeki 28 Ay Menzili geçişlerini dakika hassasiyetiyle tespit eder
+  static List<MoonMansionTransitionEvent> findUpcomingMoonMansionTransitions({
+    DateTime? from,
+    int daysAhead = 14,
+  }) {
+    final start = from ?? DateTime.now();
+    final end = start.add(Duration(days: daysAhead));
+    final List<MoonMansionTransitionEvent> events = [];
+
+    DateTime current = start;
+    double currentLon = SkyTransitsService.calculateMoonLongitude(current);
+    LunarMansionInfo currentMansion = getMansionForDegree(currentLon);
+
+    const step = Duration(minutes: 30);
+
+    while (current.isBefore(end)) {
+      final next = current.add(step);
+      final nextLon = SkyTransitsService.calculateMoonLongitude(next);
+      final nextMansion = getMansionForDegree(nextLon);
+
+      if (nextMansion.number != currentMansion.number) {
+        // İkili arama (Binary search) ile menzil sınırını geçtiği tam dakikayı bul
+        DateTime low = current;
+        DateTime high = next;
+        while (high.difference(low).inSeconds > 60) {
+          final mid = low.add(Duration(seconds: high.difference(low).inSeconds ~/ 2));
+          final midLon = SkyTransitsService.calculateMoonLongitude(mid);
+          final midMansion = getMansionForDegree(midLon);
+          if (midMansion.number == currentMansion.number) {
+            low = mid;
+          } else {
+            high = mid;
+          }
+        }
+
+        final transitionMoment = high;
+        final favFirst = nextMansion.favorableFor.split('.').first.trim();
+        final avoidFirst = nextMansion.avoidFor.split('.').first.trim();
+
+        if (transitionMoment.isBefore(end)) {
+          events.add(MoonMansionTransitionEvent(
+            oldMansionNumber: currentMansion.number,
+            oldMansionName: currentMansion.name,
+            newMansionNumber: nextMansion.number,
+            newMansionName: nextMansion.name,
+            arabicName: nextMansion.arabicName,
+            nature: nextMansion.nature,
+            signRange: nextMansion.signRange,
+            favorableFor: nextMansion.favorableFor,
+            avoidFor: nextMansion.avoidFor,
+            eventTime: transitionMoment,
+            title: '🔮 Ay Yeni Menzile Geçti: ${nextMansion.name}',
+            body: '${nextMansion.arabicName} [${nextMansion.nature}]. Uğurlu: $favFirst. Sakınılması gereken: $avoidFirst.',
+          ));
+        }
+
+        current = high.add(const Duration(seconds: 1));
+        currentLon = SkyTransitsService.calculateMoonLongitude(current);
+        currentMansion = getMansionForDegree(currentLon);
+      } else {
+        current = next;
+      }
+    }
+
+    return events;
   }
 
   static int _getSignIndex(String sign) {

@@ -4,6 +4,7 @@ import 'package:shared_preferences/shared_preferences.dart';
 import 'package:timezone/data/latest_all.dart' as tz;
 import 'package:timezone/timezone.dart' as tz;
 import 'astrology_engine.dart';
+import 'lunar_mansions_service.dart';
 import 'sky_transits_service.dart';
 import 'storage_service.dart';
 
@@ -324,6 +325,116 @@ class NotificationService {
       }
     }
 
+    // 2. Ay Burç Değişimleri (Gelecek 14 gün için anlık ingress alarmları - 2000+)
+    try {
+      final moonIngresses = SkyTransitsService.findUpcomingMoonSignIngresses(
+        from: DateTime.now(),
+        daysAhead: 14,
+      );
+      for (int i = 0; i < moonIngresses.length; i++) {
+        final ev = moonIngresses[i];
+        final scheduledDate = tz.TZDateTime.from(ev.eventTime, tz.local);
+        if (scheduledDate.isBefore(nowTz)) continue;
+
+        final notificationId = 2000 + i;
+        try {
+          await _notificationsPlugin.zonedSchedule(
+            id: notificationId,
+            title: ev.title,
+            body: ev.body,
+            scheduledDate: scheduledDate,
+            notificationDetails: notificationDetails,
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          );
+        } catch (_) {
+          try {
+            await _notificationsPlugin.zonedSchedule(
+              id: notificationId,
+              title: ev.title,
+              body: ev.body,
+              scheduledDate: scheduledDate,
+              notificationDetails: notificationDetails,
+              androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            );
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+
+    // 3. Ay Menzil Geçişleri (28 Kadim Ay Menzili Değişimleri - 3000+)
+    try {
+      final mansionTransitions =
+          LunarMansionsService.findUpcomingMoonMansionTransitions(
+        from: DateTime.now(),
+        daysAhead: 14,
+      );
+      for (int i = 0; i < mansionTransitions.length; i++) {
+        final ev = mansionTransitions[i];
+        final scheduledDate = tz.TZDateTime.from(ev.eventTime, tz.local);
+        if (scheduledDate.isBefore(nowTz)) continue;
+
+        final notificationId = 3000 + i;
+        try {
+          await _notificationsPlugin.zonedSchedule(
+            id: notificationId,
+            title: ev.title,
+            body: ev.body,
+            scheduledDate: scheduledDate,
+            notificationDetails: notificationDetails,
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          );
+        } catch (_) {
+          try {
+            await _notificationsPlugin.zonedSchedule(
+              id: notificationId,
+              title: ev.title,
+              body: ev.body,
+              scheduledDate: scheduledDate,
+              notificationDetails: notificationDetails,
+              androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            );
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+
+    // 4. Gezegenlerin Yeni Bir Burca Geçişi (İngress Alarmları - 4000+)
+    try {
+      final planetIngresses =
+          SkyTransitsService.findUpcomingPlanetaryIngresses(
+        from: DateTime.now(),
+        daysAhead: 21,
+      );
+      for (int i = 0; i < planetIngresses.length; i++) {
+        final ev = planetIngresses[i];
+        final scheduledDate = tz.TZDateTime.from(ev.eventTime, tz.local);
+        if (scheduledDate.isBefore(nowTz)) continue;
+
+        final notificationId = 4000 + i;
+        try {
+          await _notificationsPlugin.zonedSchedule(
+            id: notificationId,
+            title: ev.title,
+            body: ev.body,
+            scheduledDate: scheduledDate,
+            notificationDetails: notificationDetails,
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          );
+        } catch (_) {
+          try {
+            await _notificationsPlugin.zonedSchedule(
+              id: notificationId,
+              title: ev.title,
+              body: ev.body,
+              scheduledDate: scheduledDate,
+              notificationDetails: notificationDetails,
+              androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            );
+          } catch (_) {}
+        }
+      }
+    } catch (_) {}
+
     // Ayrıca 14 gün sonrasında da kesintisiz devam etmesi için 3 ana döngüsel (repeating) alarmı kaydet
     final fallbackItems = [
       {
@@ -415,12 +526,13 @@ class NotificationService {
     }
     final moonSign = moonT?.sign ?? 'Boğa';
     final moonDeg = moonT?.degree.toInt() ?? 15;
+    final mansion = LunarMansionsService.getCurrentMoonMansion();
 
     final title = isWelcome
         ? '🔔 Kozmik Bildirimler Aktif Edildi!'
         : '🌌 Günün Transit Bildirimi (${liveChart.ascendant} Yükselen)';
     final body =
-        'Transit Ay $moonDeg° $moonSign burcunda (${moonPhase.phaseName}). Sabah 09:30, Öğle 14:30 ve Akşam 20:30 kozmik bildirimleriniz telefonunuza düzenli olarak iletilecektir.';
+        'Transit Ay $moonDeg° $moonSign burcunda (${moonPhase.phaseName}) ve ${mansion.name} menzilinde. Günlük transitler (09:30, 14:30, 20:30), anlık Ay burç/menzil geçişleri ve gezegen burç değişimleri telefonunuza tam zamanında iletilecektir.';
 
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(

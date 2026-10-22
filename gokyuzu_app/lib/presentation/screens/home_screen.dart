@@ -207,10 +207,10 @@ class _HomeScreenState extends State<HomeScreen> {
           children: [
             Text(
               isInitialPrompt
-                  ? 'Gün boyu gerçekleşen gökyüzü transitlerini, Ay fazı değişimlerini, Ay Boşlukta uyarılarını ve doğum haritanıza özel enerjileri cep telefonunuza bildirim olarak göndermemize izin verir misiniz?'
+                  ? 'Gün boyu gerçekleşen gökyüzü transitlerini, Ay burç & menzil değişimlerini, gezegen burç geçişlerini ve haritanıza özel enerjileri cep telefonunuza bildirim olarak göndermemize izin verir misiniz?'
                   : (_notificationsEnabled
-                      ? 'Günlük kozmik bildirimleriniz şu anda AKTİF. Her gün sabah 09:30, öğle 14:30 ve akşam 20:30 saatlerinde telefonunuza haritanıza özel gökyüzü bildirimleri iletilmektedir.'
-                      : 'Bildirimlere izin vererek sabah 09:30, öğle 14:30 ve akşam 20:30 saatlerinde telefonunuza günlük transit ve Ay boşlukta bildirimleri gelmesini sağlayabilirsiniz.'),
+                      ? 'Kozmik bildirimleriniz şu anda AKTİF. Günlük (09:30, 14:30, 20:30) transit rehberiniz, Ay burç ve menzil geçişleri ile gezegen burç değişimleri telefonunuza anlık iletilmektedir.'
+                      : 'Bildirimlere izin vererek günlük transitleri, anlık Ay burç ve menzil geçişlerini ve gezegen burç değişimlerini telefonunuza alabilirsiniz.'),
               style: const TextStyle(
                 color: Colors.white70,
                 fontSize: 12.5,
@@ -236,6 +236,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   SizedBox(height: 4),
                   Text('✨ 20:30 • Akşam Gece Gökyüzü & Yıldız Rehberi',
                       style: TextStyle(fontSize: 11, color: AppColors.pastelLavender)),
+                  SizedBox(height: 4),
+                  Text('🌙 Anlık • Ay Burç Değişimleri (Yeni Burca Giriş)',
+                      style: TextStyle(fontSize: 11, color: Color(0xFF00E5FF))),
+                  SizedBox(height: 4),
+                  Text('🔮 Anlık • Ay Menzil Geçişleri (28 Kadim Menzil)',
+                      style: TextStyle(fontSize: 11, color: Color(0xFFE056FD))),
+                  SizedBox(height: 4),
+                  Text('🪐 Anlık • Gezegen Burç Geçişleri (Güneş & Gezegenler)',
+                      style: TextStyle(fontSize: 11, color: Color(0xFFFF9F43))),
                 ],
               ),
             ),

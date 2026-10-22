@@ -75,30 +75,32 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.14-build18
-          name: "📱 Gökyüzü Doktoru - v1.0.14 (Sürüm Kodu 18 & 2 Parmakla Yakınlaştırma / Pinch-to-Zoom, Arka Plan Tam Zamanlı Bildirimler)"
+          tag_name: v1.0.14-build19
+          name: "📱 Gökyüzü Doktoru - v1.0.14 (Sürüm Kodu 19 & Ay Burç, 28 Ay Menzili ve Gezegen Burç Geçiş Bildirimleri)"
           body: |
-            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.14 / Sürüm Kodu 18)
+            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.14 / Sürüm Kodu 19)
 
             - **`gokyuzu-doktoru.apk`**: Kendi Android telefonunuzda doğrudan test edip kullanmak için yükleme dosyası (İmzalı, Obfuscated).
-            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı, Sürüm Kodu 18, ProGuard & R8 Korumalı).
+            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı, Sürüm Kodu 19, ProGuard & R8 Korumalı).
 
-            #### 🌟 Bu Sürümdeki Yenilikler (Build 18):
-            1. **Haritayı 2 Parmakla Büyütme & Serbest İnceleme (Pinch-to-Zoom / `ChartZoomScreen`)**:
-               - Çarkı parmakla döndürme modu kaldırıldı; harita evrensel astronomik oryantasyonda (ASC = 9 yönü) sabitlendi.
-               - Hem Tekli Doğum Haritasında hem de Çift Çarkta (Transit / Sinastri) haritaya dokunulduğunda veya "Haritayı Büyüt & 2 Parmakla İncele" butonuna tıklandığında açılan tam ekran yakınlaştırma sayfası eklendi.
-               - Kullanıcı iki parmağıyla haritayı 0.6x'den 6.0x'e kadar serbestçe büyütebilir, gezdirebilir (pan), çift dokunarak yakınlaştırıp sıfırlayabilir.
-            2. **Kilitli / Uykuda / Şarjda / Pilde Kesintisiz Tam Zamanlı Bildirim Çözümü**:
-               - `NotificationVisibility.public` ile kilit ekranında gizlenmeyen tam bildirim içeriği sağlandı.
-               - `SCHEDULE_EXACT_ALARM`, `WAKE_LOCK` ve `ScheduledNotificationBootReceiver` ile telefon uykuda, ekran koruyucuda veya şarjda olsa bile CPU uyandırılarak 09:30, 14:30 ve 20:30 alarmları zamanında iletilir.
-               - Uygulama açılışında tetiklenen yapay/anlık bildirim fırlatma davranışı kaldırıldı; yalnızca gerçek zamanlanmış arka plan transit alarmlarının çalışması garantiye alındı.
-               - Cihaz saat dilimiyle tam uyumlu IANA ofset eşleme entegre edildi.
-            3. **Siber Güvenlik & Kod Karartma (ProGuard / R8 & Dart AOT)**:
-               - `--obfuscate --split-debug-info` ile tersine mühendisliğe karşı %100 karartılmış kod mimarisi.
-               - API rate limiter ile bot ve scraping saldırılarına karşı koruma.
-            4. **Türkiye Tarihi Yaz Saati Uygulaması (1910–2026+) & Solar Fire %100 Yükselen Kalibrasyonu**:
-               - Resmi Gazete kararları (1940-2018) ve Swiss Ephemeris GAST/Nutasyon standardında dakika dakikasına doğru yükselen ve ev hesaplamaları.
-            5. **True Node & Mean Node Geçişi ve 9 Asteroit Desteği**: Lilith, Vesta, Juno, Amor, Hekate, Isis, Vertex, Pallas, Ceres.
+            #### 🌟 Bu Sürümdeki Yenilikler (Build 19):
+            1. **🌙 Anlık Ay Burç Değişim Bildirimleri (Moon Sign Ingress)**:
+               - Transit Ay her yeni burca geçtiğinde (ortalama ~2.5 günde bir) dakika dakikasına hassas ikili arama algoritmasıyla tespit edilip anlık bildirim fırlatılır.
+               - Yeni burcun element, tema ve psikolojik etkilerine özel rehberlik sunulur.
+            2. **🔮 28 Kadim Ay Menzili Geçiş Bildirimleri (Lunar Mansion Transitions)**:
+               - Transit Ay 28 kadim duraktan (El-Şaratan, Butayn, Sa'd el-Ahbiye vb.) bir diğerine geçtiğinde anlık bildirim üretilir.
+               - Menzilin doğası (Uğurlu/Nahs), kadim Hermetik rezonansı ve sakınılması gereken durumlar telefon ekranına kilitli olsa dahi iletilir.
+            3. **🪐 Gezegenlerin Yeni Bir Burca Geçiş Bildirimleri (Planetary Ingress)**:
+               - Güneş, Merkür, Venüs, Mars, Jüpiter ve Satürn yeni bir burca 00° 00' ile adım attığında anlık ingress bildirimi kurulur.
+               - Gelecek 21 günlük gökyüzü rotası taranarak kullanıcıya burç geçiş anı ulaştırılır.
+            4. **📋 Ayarlar & Açılış İzin Ekranında Tam Bildirim Listesi**:
+               - Ayarlar / Profil ekranı ve Bildirim İzni penceresine bu 3 yeni astronomik bildirim akışı (Ay Burç, Ay Menzil, Gezegen Girişleri) renkli ve detaylı maddeler olarak eklendi.
+            5. **Haritayı 2 Parmakla Büyütme (Pinch-to-Zoom / `ChartZoomScreen`)**:
+               - Çark döndürme kaldırıldı; harita evrensel oryantasyonda sabitlendi.
+               - 2 parmakla 0.6x - 6.0x serbest yakınlaştırma ve çift dokunuşla sıfırlama.
+            6. **Kilitli / Uykuda / Şarjda / Pilde Kesintisiz Tam Zamanlı Bildirim Garantisi**:
+               - `NotificationVisibility.public`, `SCHEDULE_EXACT_ALARM`, `WAKE_LOCK` ve `exactAllowWhileIdle` ile 7/24 tam zamanlı alarm koruması.
+            7. **Siber Güvenlik, R8/ProGuard Karartma & DST / Solar Fire Kalibrasyonu Korundu**.
           files: |
             gokyuzu-doktoru.apk
             gokyuzu-doktoru.aab

@@ -100,6 +100,42 @@ class ViaCombustaInfo {
   });
 }
 
+class MoonSignIngressEvent {
+  final String oldSign;
+  final String newSign;
+  final DateTime eventTime;
+  final String title;
+  final String body;
+
+  const MoonSignIngressEvent({
+    required this.oldSign,
+    required this.newSign,
+    required this.eventTime,
+    required this.title,
+    required this.body,
+  });
+}
+
+class PlanetaryIngressEvent {
+  final String planetName;
+  final String planetSymbol;
+  final String oldSign;
+  final String newSign;
+  final DateTime eventTime;
+  final String title;
+  final String body;
+
+  const PlanetaryIngressEvent({
+    required this.planetName,
+    required this.planetSymbol,
+    required this.oldSign,
+    required this.newSign,
+    required this.eventTime,
+    required this.title,
+    required this.body,
+  });
+}
+
 /// Jean Meeus Astronomik Efemeris Algoritmaları ile Anlık Canlı Transit Motoru
 class SkyTransitsService {
   static const List<String> signs = [
@@ -835,6 +871,200 @@ class SkyTransitsService {
         exitEstimation:
             'Ay şu an Yanık Yol hattında bulunmamaktadır.',
       );
+    }
+  }
+
+  /// Gelecek [daysAhead] gün içindeki tüm Ay burç değişimlerini (İngress) dakika hassasiyetiyle tespit eder
+  static List<MoonSignIngressEvent> findUpcomingMoonSignIngresses({
+    DateTime? from,
+    int daysAhead = 14,
+  }) {
+    final start = from ?? DateTime.now();
+    final end = start.add(Duration(days: daysAhead));
+    final List<MoonSignIngressEvent> events = [];
+
+    DateTime current = start;
+    double currentLon = calculateMoonLongitude(current);
+    int currentSignIdx = (currentLon / 30.0).floor() % 12;
+
+    const step = Duration(hours: 1);
+
+    while (current.isBefore(end)) {
+      final next = current.add(step);
+      final nextLon = calculateMoonLongitude(next);
+      final nextSignIdx = (nextLon / 30.0).floor() % 12;
+
+      if (nextSignIdx != currentSignIdx) {
+        // İkili arama ile tam geçiş anını dakikasına kadar hesapla
+        DateTime low = current;
+        DateTime high = next;
+        while (high.difference(low).inSeconds > 60) {
+          final mid = low.add(Duration(seconds: high.difference(low).inSeconds ~/ 2));
+          final midLon = calculateMoonLongitude(mid);
+          final midSignIdx = (midLon / 30.0).floor() % 12;
+          if (midSignIdx == currentSignIdx) {
+            low = mid;
+          } else {
+            high = mid;
+          }
+        }
+
+        final oldSign = signs[currentSignIdx];
+        final newSign = signs[nextSignIdx];
+        final ingressMoment = high;
+
+        if (ingressMoment.isBefore(end)) {
+          final desc = _getMoonSignTransitTheme(newSign);
+          events.add(MoonSignIngressEvent(
+            oldSign: oldSign,
+            newSign: newSign,
+            eventTime: ingressMoment,
+            title: '🌙 Ay $newSign Burcuna Geçti!',
+            body: 'Ay $oldSign burcundan ayrılarak $newSign burcuna adım attı. $desc',
+          ));
+        }
+
+        current = high.add(const Duration(seconds: 1));
+        currentLon = calculateMoonLongitude(current);
+        currentSignIdx = (currentLon / 30.0).floor() % 12;
+      } else {
+        current = next;
+      }
+    }
+
+    return events;
+  }
+
+  static String _getMoonSignTransitTheme(String sign) {
+    switch (sign) {
+      case 'Koç':
+        return 'Öncü adımlar, yüksek enerji ve cesur kararlar devresi.';
+      case 'Boğa':
+        return 'Dinginlik, finansal sağlamlık ve bedensel huzur devresi.';
+      case 'İkizler':
+        return 'İletişim, merak, zihinsel canlılık ve yeni fikirler devresi.';
+      case 'Yengeç':
+        return 'Derin duygusal bağlar, yuva ve şefkat odaklı enerji.';
+      case 'Aslan':
+        return 'Yaratıcılık, kalp neşesi, liderlik ve görünür olma zamanı.';
+      case 'Başak':
+        return 'Detaylar, arınma, çalışma düzeni ve şifalanma zamanı.';
+      case 'Terazi':
+        return 'İlişkilerde ahenk, adalet, zarafet ve diplomatik denge.';
+      case 'Akrep':
+        return 'Derin sezgiler, dönüşüm ve tutkulu odaklanma devresi.';
+      case 'Yay':
+        return 'Genişleme, umut, felsefi açılımlar ve yeni ufuklar devresi.';
+      case 'Oğlak':
+        return 'Disiplin, uzun vadeli hedefler ve somut başarı odağı.';
+      case 'Kova':
+        return 'Özgürlük, vizyoner fikirler ve kolektif dayanışma zamanı.';
+      case 'Balık':
+        return 'Yüksek sezgiler, ilham, rüyalar ve ruhsal şifa zamanı.';
+      default:
+        return 'Gökyüzü enerjisi haritanızla yeni bir fazda buluşuyor.';
+    }
+  }
+
+  /// Gelecek [daysAhead] gün içindeki Güneş ve Gezegen (Merkür, Venüs, Mars, Jüpiter, Satürn) burç geçişlerini tespit eder
+  static List<PlanetaryIngressEvent> findUpcomingPlanetaryIngresses({
+    DateTime? from,
+    int daysAhead = 21,
+  }) {
+    final start = from ?? DateTime.now();
+    final end = start.add(Duration(days: daysAhead));
+    final List<PlanetaryIngressEvent> events = [];
+
+    final targetPlanets = [
+      {'name': 'Güneş', 'symbol': '☀️'},
+      {'name': 'Merkür', 'symbol': '☿'},
+      {'name': 'Venüs', 'symbol': '♀'},
+      {'name': 'Mars', 'symbol': '♂'},
+      {'name': 'Jüpiter', 'symbol': '♃'},
+      {'name': 'Satürn', 'symbol': '♄'},
+    ];
+
+    double getPlanetLon(String name, DateTime dt) {
+      if (name == 'Güneş') return calculateSunLongitude(dt);
+      final pMap = calculatePlanetsLongitudes(dt);
+      return pMap[name] ?? 0.0;
+    }
+
+    const step = Duration(hours: 4);
+
+    for (final p in targetPlanets) {
+      final pName = p['name']!;
+      final pSymbol = p['symbol']!;
+
+      DateTime current = start;
+      double currentLon = getPlanetLon(pName, current);
+      int currentSignIdx = (currentLon / 30.0).floor() % 12;
+
+      while (current.isBefore(end)) {
+        final next = current.add(step);
+        final nextLon = getPlanetLon(pName, next);
+        final nextSignIdx = (nextLon / 30.0).floor() % 12;
+
+        if (nextSignIdx != currentSignIdx) {
+          DateTime low = current;
+          DateTime high = next;
+          while (high.difference(low).inSeconds > 60) {
+            final mid = low.add(Duration(seconds: high.difference(low).inSeconds ~/ 2));
+            final midLon = getPlanetLon(pName, mid);
+            final midSignIdx = (midLon / 30.0).floor() % 12;
+            if (midSignIdx == currentSignIdx) {
+              low = mid;
+            } else {
+              high = mid;
+            }
+          }
+
+          final oldSign = signs[currentSignIdx];
+          final newSign = signs[nextSignIdx];
+          final ingressMoment = high;
+
+          if (ingressMoment.isBefore(end)) {
+            final desc = _getPlanetIngressTheme(pName, newSign);
+            events.add(PlanetaryIngressEvent(
+              planetName: pName,
+              planetSymbol: pSymbol,
+              oldSign: oldSign,
+              newSign: newSign,
+              eventTime: ingressMoment,
+              title: '$pSymbol $pName $newSign Burcuna Geçti!',
+              body: desc,
+            ));
+          }
+
+          current = high.add(const Duration(seconds: 1));
+          currentLon = getPlanetLon(pName, current);
+          currentSignIdx = (currentLon / 30.0).floor() % 12;
+        } else {
+          current = next;
+        }
+      }
+    }
+
+    events.sort((a, b) => a.eventTime.compareTo(b.eventTime));
+    return events;
+  }
+
+  static String _getPlanetIngressTheme(String planet, String newSign) {
+    switch (planet) {
+      case 'Güneş':
+        return '$newSign sezonu başladı! Yaşam enerjiniz, hedefleriniz ve iradeniz $newSign burcunun temalarıyla aydınlanıyor.';
+      case 'Merkür':
+        return 'Merkür $newSign burcuna geçti. Zihinsel odak, iletişim, anlaşmalar ve karar alma süreçleri $newSign frekansına taşındı.';
+      case 'Venüs':
+        return 'Venüs $newSign burcuna adım attı. Aşk, ilişkiler, çekim gücü, estetik ve finansal değer algınız tazeleniyor.';
+      case 'Mars':
+        return 'Mars $newSign burcuna girdi. Mücadele, eylem gücü, cesaret ve motivasyon dinamikleriniz artık $newSign tarzında akacak.';
+      case 'Jüpiter':
+        return 'Büyük şans ve genişleme gezegeni Jüpiter $newSign burcunda! Bolluk ve bilgelik kapıları haritanızda yeni bir alanda açılıyor.';
+      case 'Satürn':
+        return 'Zamanın efendisi Satürn $newSign burcunda! Kalıcı yapılar kurma, sorumluluk ve büyük hayat dersleri devresi başlıyor.';
+      default:
+        return '$planet $newSign burcunda yeni bir göksel dönemi başlattı. Haritanızdaki etkilerini incelemek için dokunun.';
     }
   }
 
