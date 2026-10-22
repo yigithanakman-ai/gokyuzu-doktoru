@@ -3967,108 +3967,218 @@ class _HomeScreenState extends State<HomeScreen> {
 
               const SizedBox(height: 12),
 
-              // Kadim Ay Menzili & Hermetik Durak
+              // 1. Kadim 28 Ay Menzili (Hermetik Adımlardan Ayrı Başlık Altında)
               Builder(
                 builder: (context) {
                   final mansion = LunarMansionsService.getCurrentMoonMansion();
-                  return Container(
-                    padding: const EdgeInsets.all(12),
-                    decoration: BoxDecoration(
-                      color: AppColors.starlightGold.withValues(alpha: 0.08),
-                      borderRadius: BorderRadius.circular(14),
-                      border: Border.all(
-                        color: AppColors.starlightGold.withValues(alpha: 0.35),
-                      ),
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Row(
-                          mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  return Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: AppColors.starlightGold.withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: AppColors.starlightGold.withValues(alpha: 0.35),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
                           children: [
-                            Expanded(
-                              child: Row(
-                                children: [
-                                  const Icon(Icons.stars_rounded,
-                                      size: 16, color: AppColors.starlightGold),
-                                  const SizedBox(width: 6),
-                                  Expanded(
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.stars_rounded,
+                                          size: 16, color: AppColors.starlightGold),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          '${AppTranslationService.tr('28 KADİM AY MENZİLİ')} (${mansion.number}/28)',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.6,
+                                            color: AppColors.starlightGold,
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                InkWell(
+                                  onTap: () => _showAllLunarMansionsModal(context),
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
                                     child: Text(
-                                      '${AppTranslationService.tr('AY MENZİLİ & HERMETİK DURAK')} (${mansion.number}/28)',
-                                      maxLines: 1,
-                                      overflow: TextOverflow.ellipsis,
+                                      AppTranslationService.tr('28 Menzil Listesi →'),
                                       style: const TextStyle(
-                                        fontSize: 11,
+                                        fontSize: 10,
                                         fontWeight: FontWeight.bold,
-                                        letterSpacing: 0.6,
                                         color: AppColors.starlightGold,
                                       ),
                                     ),
                                   ),
-                                ],
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              '${AppTranslationService.tr(mansion.name)} (${mansion.arabicName})',
+                              style: const TextStyle(
+                                fontSize: 12.5,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
                             ),
-                            const SizedBox(width: 8),
-                            InkWell(
-                              onTap: () => _showAllLunarMansionsModal(context),
-                              borderRadius: BorderRadius.circular(6),
-                              child: Padding(
-                                padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
-                                child: Text(
-                                  AppTranslationService.tr('28 Menzil Listesi →'),
-                                  style: const TextStyle(
-                                    fontSize: 10,
-                                    fontWeight: FontWeight.bold,
-                                    color: AppColors.starlightGold,
+                            const SizedBox(height: 2),
+                            Text(
+                              '📍 ${AppTranslationService.tr('Menzil Derecesi:')} ${AppTranslationService.tr(mansion.signRange)} (Burç sınırı: 00° 00\' dk – 29° 59\' dk)',
+                              style: const TextStyle(
+                                fontSize: 10.5,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.starlightGold,
+                              ),
+                            ),
+                            const SizedBox(height: 2),
+                            Text(
+                              '${AppTranslationService.tr('Menzil Doğası:')} ${AppTranslationService.tr(mansion.nature)} (${AppTranslationService.tr(mansion.element)} ${AppTranslationService.tr('Unsuru')})',
+                              style: const TextStyle(fontSize: 10.5, color: AppColors.pastelMint),
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              AppTranslationService.tr(mansion.description),
+                              style: const TextStyle(fontSize: 11, height: 1.35, color: Colors.white70),
+                            ),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.black26,
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '✓ ${AppTranslationService.tr('Uğurlu:')} ${AppTranslationService.tr(mansion.favorableFor)}',
+                                    style: const TextStyle(fontSize: 10.5, color: AppColors.pastelMint),
                                   ),
-                                ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    '✗ ${AppTranslationService.tr('Sakınılmalı:')} ${AppTranslationService.tr(mansion.avoidFor)}',
+                                    style: const TextStyle(fontSize: 10.5, color: AppColors.pastelPeach),
+                                  ),
+                                ],
                               ),
                             ),
                           ],
                         ),
-                        const SizedBox(height: 6),
-                        Text(
-                          '${AppTranslationService.tr(mansion.name)} • ${AppTranslationService.tr(mansion.signRange)}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                      ),
+                      const SizedBox(height: 10),
+                      // 2. HERMETİK ADIMLAR & TILSIM REHBERİ (Ayrı Başlık Altında)
+                      Container(
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF00CEC9).withValues(alpha: 0.08),
+                          borderRadius: BorderRadius.circular(14),
+                          border: Border.all(
+                            color: const Color(0xFF00CEC9).withValues(alpha: 0.35),
                           ),
                         ),
-                        const SizedBox(height: 2),
-                        Text(
-                          '${AppTranslationService.tr('Hermetik Doğa:')} ${AppTranslationService.tr(mansion.nature)} (${AppTranslationService.tr(mansion.element)} ${AppTranslationService.tr('Unsuru')})',
-                          style: const TextStyle(fontSize: 10.5, color: AppColors.pastelMint),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          AppTranslationService.tr(mansion.description),
-                          style: const TextStyle(fontSize: 11, height: 1.35, color: Colors.white70),
-                        ),
-                        const SizedBox(height: 6),
-                        Container(
-                          padding: const EdgeInsets.all(8),
-                          decoration: BoxDecoration(
-                            color: Colors.black26,
-                            borderRadius: BorderRadius.circular(8),
-                          ),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Text(
-                                '✓ ${AppTranslationService.tr('Uğurlu:')} ${AppTranslationService.tr(mansion.favorableFor)}',
-                                style: const TextStyle(fontSize: 10.5, color: AppColors.pastelMint),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Expanded(
+                                  child: Row(
+                                    children: [
+                                      const Icon(Icons.auto_fix_high_rounded,
+                                          size: 16, color: Color(0xFF00CEC9)),
+                                      const SizedBox(width: 6),
+                                      Expanded(
+                                        child: Text(
+                                          '${AppTranslationService.tr('HERMETİK ADIMLAR & TILSIM REHBERİ')} (${mansion.number}/28)',
+                                          maxLines: 1,
+                                          overflow: TextOverflow.ellipsis,
+                                          style: const TextStyle(
+                                            fontSize: 11,
+                                            fontWeight: FontWeight.bold,
+                                            letterSpacing: 0.6,
+                                            color: Color(0xFF00CEC9),
+                                          ),
+                                        ),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                                const SizedBox(width: 8),
+                                InkWell(
+                                  onTap: () => _showAllHermeticStepsModal(context),
+                                  borderRadius: BorderRadius.circular(6),
+                                  child: Padding(
+                                    padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
+                                    child: Text(
+                                      AppTranslationService.tr('28 Hermetik Adım →'),
+                                      style: const TextStyle(
+                                        fontSize: 10,
+                                        fontWeight: FontWeight.bold,
+                                        color: Color(0xFF00CEC9),
+                                      ),
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              AppTranslationService.tr(mansion.hermeticStepTitle),
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
                               ),
-                              const SizedBox(height: 3),
-                              Text(
-                                '✗ ${AppTranslationService.tr('Sakınılmalı:')} ${AppTranslationService.tr(mansion.avoidFor)}',
-                                style: const TextStyle(fontSize: 10.5, color: AppColors.pastelPeach),
+                            ),
+                            const SizedBox(height: 6),
+                            Container(
+                              padding: const EdgeInsets.all(8),
+                              decoration: BoxDecoration(
+                                color: Colors.black26,
+                                borderRadius: BorderRadius.circular(8),
                               ),
-                            ],
-                          ),
+                              child: Column(
+                                crossAxisAlignment: CrossAxisAlignment.start,
+                                children: [
+                                  Text(
+                                    '🔮 ${AppTranslationService.tr('Hermetik Tılsım:')} ${AppTranslationService.tr(mansion.hermeticTalisman)}',
+                                    style: const TextStyle(fontSize: 10.5, color: AppColors.starlightGold, fontWeight: FontWeight.w600),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    '🌿 ${AppTranslationService.tr('Tütsü & Frekans:')} ${AppTranslationService.tr(mansion.hermeticIncense)}',
+                                    style: const TextStyle(fontSize: 10.5, color: AppColors.pastelMint),
+                                  ),
+                                  const SizedBox(height: 3),
+                                  Text(
+                                    '🕯️ ${AppTranslationService.tr('Uygulama Adımı:')} ${AppTranslationService.tr(mansion.hermeticPractice)}',
+                                    style: const TextStyle(fontSize: 10.5, height: 1.35, color: Colors.white70),
+                                  ),
+                                ],
+                              ),
+                            ),
+                          ],
                         ),
-                      ],
-                    ),
+                      ),
+                    ],
                   );
                 },
               ),
@@ -4589,7 +4699,7 @@ class _HomeScreenState extends State<HomeScreen> {
       backgroundColor: Colors.transparent,
       builder: (ctx) => _buildDemoSheet(
         ctx: ctx,
-        title: AppTranslationService.tr('28 Kadim Ay Menzili & Hermetik Duraklar'),
+        title: AppTranslationService.tr('28 Kadim Ay Menzili (Manazil el-Qamar)'),
         color: AppColors.starlightGold,
         icon: Icons.stars_rounded,
         children: [
@@ -4608,7 +4718,7 @@ class _HomeScreenState extends State<HomeScreen> {
                 const SizedBox(width: 10),
                 Expanded(
                   child: Text(
-                    AppTranslationService.tr('Manazil el-Qamar (Kadim Arapça & Hermetik Ay Durakları). Ay her 28 durağı yaklaşık 1 günde geçer. Şu an transit Ay, ${current.number}. Menzil (${current.name}) durağındadır.'),
+                    AppTranslationService.tr('Manazil el-Qamar (28 Ay Menzili). Her bir burç 00° 00\' dk ile 29° 59\' dk (30°) arasında yer alır. Şu an transit Ay, ${current.number}. Menzil (${current.name}) durağındadır.'),
                     style: const TextStyle(
                         fontSize: 12, height: 1.4, color: Colors.white70),
                   ),
@@ -4730,11 +4840,137 @@ class _HomeScreenState extends State<HomeScreen> {
                         Text('✗ ${AppTranslationService.tr('Sakınılmalı:')} ${AppTranslationService.tr(m.avoidFor)}',
                             style: const TextStyle(
                                 fontSize: 10.5, color: AppColors.pastelPeach)),
-                        const SizedBox(height: 3),
-                        Text('🔮 ${AppTranslationService.tr('Tılsım Enerjisi:')} ${AppTranslationService.tr(m.hermeticTalisman)}',
+                      ],
+                    ),
+                  ),
+                ],
+              ),
+            );
+          }),
+        ],
+      ),
+    );
+  }
+
+  void _showAllHermeticStepsModal(BuildContext context) {
+    final mansions = LunarMansionsService.mansions;
+    final current = LunarMansionsService.getCurrentMoonMansion();
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => _buildDemoSheet(
+        ctx: ctx,
+        title: AppTranslationService.tr('28 Hermetik Adım & Tılsım Rehberi'),
+        color: const Color(0xFF00CEC9),
+        icon: Icons.auto_fix_high_rounded,
+        children: [
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              color: const Color(0xFF00CEC9).withValues(alpha: 0.12),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                  color: const Color(0xFF00CEC9).withValues(alpha: 0.35)),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.auto_fix_high_rounded,
+                    color: Color(0xFF00CEC9), size: 22),
+                const SizedBox(width: 10),
+                Expanded(
+                  child: Text(
+                    AppTranslationService.tr('Hermetik Külliyat (Picatrix & İbn Arabi geleneği) 28 Adım Rehberi. Ay\'ın bulunduğu menzile göre aktif olan tılsım arketipleri, tütsüleri ve içsel odaklanma adımları.'),
+                    style: const TextStyle(
+                        fontSize: 12, height: 1.4, color: Colors.white70),
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 14),
+          ...mansions.map((m) {
+            final isCurrent = m.number == current.number;
+            return Container(
+              margin: const EdgeInsets.only(bottom: 12),
+              padding: const EdgeInsets.all(14),
+              decoration: BoxDecoration(
+                color: isCurrent
+                    ? const Color(0xFF102428)
+                    : const Color(0xFF14121E),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: isCurrent ? const Color(0xFF00CEC9) : Colors.white12,
+                  width: isCurrent ? 1.5 : 1.0,
+                ),
+              ),
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Expanded(
+                        child: Text(
+                          AppTranslationService.tr(m.hermeticStepTitle),
+                          style: const TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ),
+                      if (isCurrent)
+                        Container(
+                          padding: const EdgeInsets.symmetric(
+                              horizontal: 8, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: const Color(0xFF00CEC9).withValues(alpha: 0.2),
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: Text(
+                            AppTranslationService.tr('AKTİF ADIM ✨'),
+                            style: const TextStyle(
+                              fontSize: 9.5,
+                              fontWeight: FontWeight.bold,
+                              color: Color(0xFF00CEC9),
+                            ),
+                          ),
+                        ),
+                    ],
+                  ),
+                  const SizedBox(height: 4),
+                  Text(
+                    '${m.number}. Menzil (${m.name}) • ${m.signRange}',
+                    style: const TextStyle(
+                        fontSize: 10.5, color: Color(0xFF00CEC9)),
+                  ),
+                  const SizedBox(height: 8),
+                  Container(
+                    padding: const EdgeInsets.all(10),
+                    decoration: BoxDecoration(
+                      color: Colors.black26,
+                      borderRadius: BorderRadius.circular(8),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Text('🔮 ${AppTranslationService.tr('Tılsım Sembolü:')} ${AppTranslationService.tr(m.hermeticTalisman)}',
+                            style: const TextStyle(
+                                fontSize: 11,
+                                fontWeight: FontWeight.w600,
+                                color: AppColors.starlightGold)),
+                        const SizedBox(height: 4),
+                        Text('🌿 ${AppTranslationService.tr('Tütsü & Frekans:')} ${AppTranslationService.tr(m.hermeticIncense)}',
+                            style: const TextStyle(
+                                fontSize: 10.5, color: AppColors.pastelMint)),
+                        const SizedBox(height: 4),
+                        Text('🕯️ ${AppTranslationService.tr('Hermetik Uygulama:')} ${AppTranslationService.tr(m.hermeticPractice)}',
                             style: const TextStyle(
                                 fontSize: 10.5,
-                                color: AppColors.pastelLavender)),
+                                height: 1.35,
+                                color: Colors.white70)),
                       ],
                     ),
                   ),

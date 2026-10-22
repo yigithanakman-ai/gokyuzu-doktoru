@@ -115,19 +115,19 @@ class AspectsService {
 
   // All Major and Minor Aspects Encyclopedia
   static final List<AspectDefinition> allAspectDefinitions = [
-    // --- MAJOR ASPECTS ---
+    // --- MAJOR ASPECTS (Evrensel Orb Kuralı: 0°=10°, 180°=10°, 120°=8°, 90°=7°, 60°=7°) ---
     const AspectDefinition(
       name: 'Kavuşum (Conjunction)',
       shortName: 'Kavuşum',
       symbol: '☌',
       degree: 0.0,
-      defaultOrb: 8.0,
+      defaultOrb: 10.0,
       isMajor: true,
       category: 'Majör Açı (0°)',
       nature: 'Odaklanmış Güç',
       color: AppColors.starlightGold,
       description:
-          'İki gezegenin gökyüzünde aynı burç ve derece civarında (0°) buluşmasıdır. En güçlü ve doğrudan açı formudur.',
+          'İki gezegenin gökyüzünde aynı burç ve derece civarında (0°, ±10° orb) buluşmasıdır. En güçlü ve doğrudan açı formudur.',
       psychologicalMeaning:
           'İki farklı arketipsel enerjinin ayrılmaz biçimde birleşmesi. Birey bu iki gücü birbirinden bağımsız deneyimleyemez; biri tetiklendiğinde diğeri derhal devreye girer.',
       gift: 'Yüksek odaklanma, yoğun irade ve tek bir hedef doğrultusunda muazzam enerji akışı.',
@@ -138,13 +138,13 @@ class AspectsService {
       shortName: 'Karşıt',
       symbol: '☍',
       degree: 180.0,
-      defaultOrb: 8.0,
+      defaultOrb: 10.0,
       isMajor: true,
       category: 'Majör Açı (180°)',
       nature: 'Kutupsallık & Denge',
       color: AppColors.savageRed,
       description:
-          'İki gezegenin tam karşıt burç ve derecelerde (180° mesafede, örn. Oğlak - Yengeç, Koç - Terazi) bulunmasıdır.',
+          'İki gezegenin tam karşıt burç ve derecelerde (180° mesafede, ±10° orb) bulunmasıdır.',
       psychologicalMeaning:
           'İçsel kutupsallık ve bu gerilimin sıklıkla dış dünyaya veya ilişkilere projekte edilmesi. Karşıtlık, bireye kendisini başkasının aynasında görme ve iki zıt kutbu dengeleme fırsatı sunar.',
       gift: 'Geniş perspektif, objektiflik, ilişkilerde yüksek farkındalık ve kutupları uzlaştırma bilgeliği.',
@@ -155,13 +155,13 @@ class AspectsService {
       shortName: 'Üçgen',
       symbol: '△',
       degree: 120.0,
-      defaultOrb: 7.5,
+      defaultOrb: 8.0,
       isMajor: true,
       category: 'Majör Açı (120°)',
       nature: 'Ahenk & Akış',
       color: AppColors.pastelMint,
       description:
-          'Aynı elementteki iki burcun gezegenleri arasındaki 120 derecelik uyumlu açıdır (örn. Ateş-Ateş, Toprak-Toprak).',
+          'Aynı elementteki iki burcun gezegenleri arasındaki 120 derecelik (±8° orb) uyumlu açıdır (örn. Ateş-Ateş, Toprak-Toprak).',
       psychologicalMeaning:
           'Doğuştan gelen yetenekler, akış hali ve rahat enerji transferi. Birey bu alanda doğal bir koruma, sezgi ve ustalık taşır.',
       gift: 'Doğal yaratıcılık, yüksek şans, sezgisel kolaylık ve içsel sükunet.',
@@ -172,13 +172,13 @@ class AspectsService {
       shortName: 'Kare',
       symbol: '□',
       degree: 90.0,
-      defaultOrb: 7.5,
+      defaultOrb: 7.0,
       isMajor: true,
       category: 'Majör Açı (90°)',
       nature: 'Dinamik Gerilim',
       color: AppColors.warningOrange,
       description:
-          'Aynı nitelikteki (Öncü, Sabit veya Değişken) burçlar arasındaki 90 derecelik dik ve eylem odaklı açıdır.',
+          'Aynı nitelikteki (Öncü, Sabit veya Değişken) burçlar arasındaki 90 derecelik (±7° orb) dik ve eylem odaklı açıdır.',
       psychologicalMeaning:
           'İçsel sürtünme ve gelişim motoru. Rahatlığa izin vermeyen bu açı, insanı somut adım atmaya ve engelleri aşarak ustalaşmaya zorlar.',
       gift: 'Kararlılık, krizleri avantaja çevirme, yüksek direnç ve kalıcı başarı inşa etme gücü.',
@@ -189,13 +189,13 @@ class AspectsService {
       shortName: 'Sekstil',
       symbol: '⚹',
       degree: 60.0,
-      defaultOrb: 6.0,
+      defaultOrb: 7.0,
       isMajor: true,
       category: 'Majör Açı (60°)',
       nature: 'Fırsat & İşbirliği',
       color: AppColors.pastelBlue,
       description:
-          'Birbiriyle uyumlu elementler (Ateş-Hava veya Toprak-Su) arasındaki 60 derecelik destekleyici açıdır.',
+          'Birbiriyle uyumlu elementler (Ateş-Hava veya Toprak-Su) arasındaki 60 derecelik (±7° orb) destekleyici açıdır.',
       psychologicalMeaning:
           'Bilinçli çaba ve iletişim ile açığa çıkan fırsatlar. Birey inisiyatif aldığında zihinsel ve sosyal kapılar hızla açılır.',
       gift: 'Zihinsel kıvraklık, işbirliği kurma yeteneği, sosyal köprüler ve pratik çözümler.',
@@ -323,6 +323,16 @@ class AspectsService {
     'Chiron': '⚷',
     'Yükselen (ASC)': 'ASC',
     'Tepe Noktası (MC)': 'MC',
+    'Kara Ay Lilith': '⚸',
+    'Lilith': '⚸',
+    'Ceres': '⚳',
+    'Pallas': '⚴',
+    'Juno': '⚵',
+    'Vesta': '⚶',
+    'Vertex (Vx)': 'Vx',
+    'Amor': '♡',
+    'Hekate': '⚝',
+    'Isis': '☥',
   };
 
   static const Map<String, String> _keyToDisplayName = {
@@ -340,6 +350,15 @@ class AspectsService {
     'chiron': 'Chiron',
     'ascendant': 'Yükselen (ASC)',
     'mc': 'Tepe Noktası (MC)',
+    'lilith': 'Kara Ay Lilith',
+    'ceres': 'Ceres',
+    'pallas': 'Pallas',
+    'juno': 'Juno',
+    'vesta': 'Vesta',
+    'vertex': 'Vertex (Vx)',
+    'amor': 'Amor',
+    'hekate': 'Hekate',
+    'isis': 'Isis',
   };
 
   static double parseDegreeInSign(String formatted) {
@@ -455,8 +474,8 @@ class AspectsService {
       if (isTransit && !def.isMajor && def.degree != 150.0) continue;
 
       double maxOrb = def.defaultOrb;
-      if (isTransit) {
-        maxOrb = def.isMajor ? 5.0 : 2.0;
+      if (isTransit && !def.isMajor) {
+        maxOrb = 2.5;
       } else if (involveAngles && !def.isMajor) {
         maxOrb = 2.0;
       }

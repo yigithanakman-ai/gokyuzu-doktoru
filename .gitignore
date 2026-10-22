@@ -1,52 +1,13 @@
-# Credentials & Secrets (ASLA GITHUB'A YÜKLENMEZ)
-.env
+# Yerel Python Botları, Eski Arşivler ve Gizli Anahtarlar Asla GitHub'a Yüklenmez
+1_Iletisim_Botlari/
+2_ Sosyal_Medya_Gorselleri/
+3_YapayZeka_Beyni/
+4_Zamanli_Gorevler/
+Arsiv_Eski_Kodlar/
+*.csv
 *.env
-*.env.*
-credentials.json
-*service_account*.json
-token*.json
-client_secret*.json
-*.pem
-*.key
-*.tar.gz
-*.zip
-*.dmg
-*.pkg
-*.apk
-*.aab
-
-# Python
-__pycache__/
-*.py[cod]
-*$py.class
-venv/
-.venv/
-*venv*/
-env/
-.env/
-*.log
-
-# Flutter & Dart
-.dart_tool/
-.flutter-plugins
-.flutter-plugins-dependencies
-.pub-cache/
-.pub/
-build/
-coverage/
-**/ios/Flutter/.last_build_id
-**/android/app/debug
-**/android/app/profile
-**/android/app/release
-.widget_preview/
-
-# macOS
+.env*
+*credentials*.json
+*token*.json
+*secret*
 .DS_Store
-.AppleDouble
-.LSOverride
-._*
-
-# IDEs
-.idea/
-*.iml
-.vscode/

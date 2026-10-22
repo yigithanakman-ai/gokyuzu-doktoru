@@ -22,7 +22,8 @@ class TransitPlanet {
     required this.conjunctStars,
   });
 
-  String get degreeStr => '${degree.toInt()}°${minute.toInt().toString().padLeft(2, '0')}\' $sign';
+  String get degreeStr =>
+      '${degree.toInt().clamp(0, 29).toString().padLeft(2, '0')}° ${minute.toInt().clamp(0, 59).toString().padLeft(2, '0')}\' $sign';
 }
 
 class MoonPhaseInfo {
@@ -358,12 +359,12 @@ class SkyTransitsService {
       lDeg: 217.07 + 0.019555 * d,
     );
 
-    // Kuzey Ay Düğümü (True Lunar Node)
+    // Kuzey Ay Düğümü (True Lunar Node & Mean Lunar Node)
     final dMoon = _rad(297.8502 + 445267.1114 * t);
     final mSun = _rad(357.5291 + 35999.0503 * t);
     final mMoon = _rad(134.9634 + 477198.8675 * t);
     final fMoon = _rad(93.2721 + 483202.0175 * t);
-    final meanNode = 125.04452 - 1934.136261 * t;
+    final meanNode = _normalize(125.04452 - 1934.136261 * t + 0.0020708 * t * t);
     final trueNode = _normalize(
       meanNode -
           1.4979 * math.sin(2 * (dMoon - fMoon)) -
@@ -371,6 +372,80 @@ class SkyTransitsService {
           0.1226 * math.sin(2 * dMoon) +
           0.1176 * math.sin(2 * fMoon) -
           0.0801 * math.sin(2 * (mMoon - fMoon)),
+    );
+
+    // Kara Ay Lilith (Mean Lunar Apogee - Jean Meeus)
+    final lilith = _normalize(83.3532465 + 4069.0137287 * t - 0.0103200 * t * t);
+
+    // Asteroitler (JPL / Minor Planet Center J2000 Keplerian Elements)
+    // 1 Ceres
+    final ceres = keplerGeo(
+      a: 2.7675,
+      e: 0.0758,
+      iDeg: 10.593,
+      omegaDeg: 80.305,
+      wDeg: 153.903,
+      lDeg: 291.428 + 0.2140817 * d,
+    );
+
+    // 2 Pallas
+    final pallas = keplerGeo(
+      a: 2.7720,
+      e: 0.2310,
+      iDeg: 34.841,
+      omegaDeg: 173.080,
+      wDeg: 123.164,
+      lDeg: 219.804 + 0.2135488 * d,
+    );
+
+    // 3 Juno
+    final juno = keplerGeo(
+      a: 2.6691,
+      e: 0.2569,
+      iDeg: 12.982,
+      omegaDeg: 169.851,
+      wDeg: 57.913,
+      lDeg: 196.429 + 0.2260287 * d,
+    );
+
+    // 4 Vesta
+    final vesta = keplerGeo(
+      a: 2.3618,
+      e: 0.0887,
+      iDeg: 7.140,
+      omegaDeg: 103.811,
+      wDeg: 254.994,
+      lDeg: 27.793 + 0.2715447 * d,
+    );
+
+    // 1221 Amor
+    final amor = keplerGeo(
+      a: 1.9190,
+      e: 0.4356,
+      iDeg: 11.879,
+      omegaDeg: 171.345,
+      wDeg: 197.997,
+      lDeg: 148.200 + 0.370543 * d,
+    );
+
+    // 100 Hekate
+    final hekate = keplerGeo(
+      a: 3.0906,
+      e: 0.1680,
+      iDeg: 6.432,
+      omegaDeg: 127.065,
+      wDeg: 311.531,
+      lDeg: 143.680 + 0.181416 * d,
+    );
+
+    // 42 Isis
+    final isis = keplerGeo(
+      a: 2.4414,
+      e: 0.2227,
+      iDeg: 8.530,
+      omegaDeg: 84.382,
+      wDeg: 321.116,
+      lDeg: 198.810 + 0.258365 * d,
     );
 
     return {
@@ -384,6 +459,16 @@ class SkyTransitsService {
       'pluto': plu,
       'chiron': chiron,
       'node': trueNode,
+      'true_node': trueNode,
+      'mean_node': meanNode,
+      'lilith': lilith,
+      'ceres': ceres,
+      'pallas': pallas,
+      'juno': juno,
+      'vesta': vesta,
+      'amor': amor,
+      'hekate': hekate,
+      'isis': isis,
     };
   }
 
@@ -414,8 +499,8 @@ class SkyTransitsService {
     }) {
       final signIndex = (lon / 30.0).floor() % 12;
       final degInSign = lon % 30.0;
-      final deg = degInSign.floor().toDouble();
-      final min = ((degInSign - deg) * 60.0).round().toDouble();
+      final deg = degInSign.floor().clamp(0, 29).toDouble();
+      final min = ((degInSign - deg) * 60.0).floor().clamp(0, 59).toDouble();
       final signName = signs[signIndex];
 
       return TransitPlanet(
@@ -530,6 +615,59 @@ class SkyTransitsService {
     ];
   }
 
+  /// Seçilebilir Asteroitler, Özel Noktalar ve Mean/True Ay Düğümleri için Canlı Transit Konumları
+  static Map<String, TransitPlanet> getExtraTransitBodies([DateTime? targetTime]) {
+    final now = targetTime ?? DateTime.now();
+    final planets = _calculatePlanetsLongitudes(now);
+    final tomorrow = now.add(const Duration(days: 1));
+    final planetsNext = _calculatePlanetsLongitudes(tomorrow);
+
+    bool isRetro(String key) {
+      if (!planets.containsKey(key) || !planetsNext.containsKey(key)) return false;
+      double diff = planetsNext[key]! - planets[key]!;
+      if (diff > 180) diff -= 360;
+      if (diff < -180) diff += 360;
+      return diff < 0;
+    }
+
+    TransitPlanet makeBody(String name, String symbol, double lon, bool retro, String theme) {
+      final norm = _normalize(lon);
+      final signIndex = (norm / 30.0).floor() % 12;
+      final degInSign = norm % 30.0;
+      final deg = degInSign.floor().clamp(0, 29).toDouble();
+      final min = ((degInSign - deg) * 60.0).floor().clamp(0, 59).toDouble();
+      final signName = signs[signIndex];
+      return TransitPlanet(
+        name: name,
+        symbol: symbol,
+        sign: signName,
+        degree: deg,
+        minute: min,
+        isRetrograde: retro,
+        theme: theme,
+        conjunctStars: FixedStarsService.findConjunctions(signName, deg + min / 60.0),
+      );
+    }
+
+    final trueNN = planets['true_node']!;
+    final meanNN = planets['mean_node']!;
+
+    return {
+      'true_north_node': makeBody('Kuzey Ay Düğümü (True)', '☊', trueNN, true, 'Gerçek (True) Kuzey Ay Düğümü: Anlık astronomik kadersel büyüme yönü.'),
+      'true_south_node': makeBody('Güney Ay Düğümü (True)', '☋', _normalize(trueNN + 180.0), true, 'Gerçek (True) Güney Ay Düğümü: Bırakılması gereken karmik gölge.'),
+      'mean_north_node': makeBody('Kuzey Ay Düğümü (Mean)', '☊', meanNN, true, 'Ortalama (Mean) Kuzey Ay Düğümü: Düzenli matematiksel kadersel rota.'),
+      'mean_south_node': makeBody('Güney Ay Düğümü (Mean)', '☋', _normalize(meanNN + 180.0), true, 'Ortalama (Mean) Güney Ay Düğümü: Geçmişten gelen alışkanlık kalıpları.'),
+      'lilith': makeBody('Lilith', '⚸', planets['lilith']!, false, 'Kara Ay Lilith: Bastırılmış içgüdüler, ham özgüven ve bağımsızlık.'),
+      'ceres': makeBody('Ceres', '⚳', planets['ceres']!, isRetro('ceres'), 'Ceres: Beslenme, şefkat, bolluk ve doğanın bereket döngüsü.'),
+      'pallas': makeBody('Pallas', '⚴', planets['pallas']!, isRetro('pallas'), 'Pallas Athena: Stratejik zeka, bilgelik, örüntü okuma ve sanatsal vizyon.'),
+      'juno': makeBody('Juno', '⚵', planets['juno']!, isRetro('juno'), 'Juno: Ruh eşi kontratları, sadakat, evlilik ve eşit ortaklıklar.'),
+      'vesta': makeBody('Vesta', '⚶', planets['vesta']!, isRetro('vesta'), 'Vesta: Kutsal adanmışlık, içsel ateş, odaklanma ve ruhsal saflık.'),
+      'amor': makeBody('Amor', '♡', planets['amor']!, isRetro('amor'), 'Amor: Koşulsuz sevgi, şefkatli çekim ve romantik idealizm.'),
+      'hekate': makeBody('Hekate', '⚝', planets['hekate']!, isRetro('hekate'), 'Hekate: Yol ayrımları, eşik bekçiliği, sezgi ve kadim bilgelik.'),
+      'isis': makeBody('Isis', '☥', planets['isis']!, isRetro('isis'), 'Isis: Bütünleştirici şifa, ruhsal yeniden doğuş ve sadık sevgi.'),
+    };
+  }
+
   /// Canlı Ay Fazı Bilgisi (Gerçek Zamanlı Faz & Aydınlanma Oranı)
   static MoonPhaseInfo getMoonPhase([DateTime? targetTime]) {
     final now = targetTime ?? DateTime.now();
@@ -633,8 +771,8 @@ class SkyTransitsService {
     final moonLon = calculateMoonLongitude(now);
     final signIdx = (moonLon / 30.0).floor() % 12;
     final degInSign = moonLon % 30.0;
-    final deg = degInSign.floor();
-    final min = ((degInSign - deg) * 60.0).round();
+    final deg = degInSign.floor().clamp(0, 29);
+    final min = ((degInSign - deg) * 60.0).floor().clamp(0, 59);
     final progress = degInSign / 30.0;
 
     final transits = getCurrentTransits(now);
@@ -663,8 +801,8 @@ class SkyTransitsService {
 
     final signIdx = (moonLon / 30.0).floor() % 12;
     final degInSign = moonLon % 30.0;
-    final deg = degInSign.floor();
-    final min = ((degInSign - deg) * 60.0).round();
+    final deg = degInSign.floor().clamp(0, 29);
+    final min = ((degInSign - deg) * 60.0).floor().clamp(0, 59);
     final moonStr = '${deg.toString().padLeft(2, '0')}° ${min.toString().padLeft(2, '0')}\' ${signs[signIdx]}';
 
     if (isViaCombusta) {

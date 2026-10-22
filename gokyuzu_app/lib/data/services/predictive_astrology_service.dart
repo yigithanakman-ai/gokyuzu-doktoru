@@ -184,9 +184,19 @@ class PredictiveAstrologyService {
     double ascDeg = _deg(math.atan2(yCoord, xCoord));
     ascDeg = _normalize(ascDeg + 180.0);
 
+    // Vertex Calculation (Prime Vertical Western Intersection using Co-Latitude)
+    final coLat = (90.0 - latitude).clamp(-89.5, 89.5);
+    final coLatRad = _rad(coLat);
+    final ramcWestRad = _rad(_normalize(ramc + 180.0));
+    final vyCoord = -math.cos(ramcWestRad);
+    final vxCoord = math.sin(ramcWestRad) * math.cos(epsRad) + math.tan(coLatRad) * math.sin(epsRad);
+    double vertexDeg = _deg(math.atan2(vyCoord, vxCoord));
+    vertexDeg = _normalize(vertexDeg + 180.0);
+
     return {
       'asc': ascDeg,
       'mc': mcDeg,
+      'vertex': vertexDeg,
       'ramc': ramc,
       'gmst': gmst,
     };

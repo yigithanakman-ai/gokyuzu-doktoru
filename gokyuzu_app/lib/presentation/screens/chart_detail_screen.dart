@@ -41,7 +41,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
   int _sacredSubTab = 0;
   bool _isVip = false;
 
-  // --- İnteraktif Çift Çark (Bi-Wheel) State ---
+  // --- İnteraktif Çift Çark (Bi-Wheel) & Asteroit/Düğüm Seçimi State ---
   bool _isBiWheelActive = true;
   DateTime _simulatedTransitDate = DateTime.now();
   TimeOfDay _simulatedTransitTime = TimeOfDay.fromDateTime(DateTime.now());
@@ -49,6 +49,351 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
   String? _selectedBiWheelPlanet;
   double _biWheelRotationAngle = 0.0;
   BiWheelDisplayMode _wheelDisplayMode = BiWheelDisplayMode.dual;
+  bool _useTrueNode = true; // true = True Node (Gerçek), false = Mean Node (Ortalama)
+  final Set<String> _enabledAsteroids = {
+    'chiron',
+    'lilith',
+    'vertex',
+    'juno',
+    'vesta',
+    'pallas',
+    'ceres',
+  };
+
+  static const List<Map<String, String>> _selectableAsteroidDefs = [
+    {'key': 'lilith', 'name': 'Lilith', 'sym': '⚸'},
+    {'key': 'vesta', 'name': 'Vesta', 'sym': '⚶'},
+    {'key': 'juno', 'name': 'Juno', 'sym': '⚵'},
+    {'key': 'amor', 'name': 'Amor', 'sym': '♡'},
+    {'key': 'hekate', 'name': 'Hekate', 'sym': '⚝'},
+    {'key': 'isis', 'name': 'Isis', 'sym': '☥'},
+    {'key': 'vertex', 'name': 'Vertex Noktası', 'sym': 'Vx'},
+    {'key': 'pallas', 'name': 'Pallas', 'sym': '⚴'},
+    {'key': 'ceres', 'name': 'Ceres', 'sym': '⚳'},
+    {'key': 'chiron', 'name': 'Chiron', 'sym': '⚷'},
+  ];
+
+  List<String> _getActiveChartPlanetKeys({bool includeAngles = false}) {
+    const core = [
+      'sun', 'moon', 'mercury', 'venus', 'mars',
+      'jupiter', 'saturn', 'uranus', 'neptune', 'pluto',
+    ];
+    final nodeKeys = _useTrueNode
+        ? ['true_north_node', 'true_south_node']
+        : ['mean_north_node', 'mean_south_node'];
+    final extras = _selectableAsteroidDefs
+        .map((e) => e['key']!)
+        .where((k) => _enabledAsteroids.contains(k))
+        .toList();
+    final angles = includeAngles ? ['ascendant', 'mc', 'descendant', 'ic'] : <String>[];
+    return [...core, ...nodeKeys, ...extras, ...angles];
+  }
+
+  Widget _buildNodesAndAsteroidsSelectorCard() {
+    final trueNN = _chart?.planets['true_north_node'] ?? _chart?.planets['north_node'];
+    final meanNN = _chart?.planets['mean_north_node'] ?? _chart?.planets['north_node'];
+    final trueSN = _chart?.planets['true_south_node'] ?? _chart?.planets['south_node'];
+    final meanSN = _chart?.planets['mean_south_node'] ?? _chart?.planets['south_node'];
+
+    return Column(
+      crossAxisAlignment: CrossAxisAlignment.start,
+      children: [
+        // 1. AY DÜĞÜMLERİ: TRUE NODE & MEAN NODE İKİYE AYRILMIŞ KART
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            gradient: LinearGradient(
+              colors: [
+                const Color(0xFF1E1836),
+                AppColors.pastelMint.withValues(alpha: 0.08),
+              ],
+            ),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.pastelMint.withValues(alpha: 0.35)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Expanded(
+                    child: Row(
+                      children: [
+                        Icon(Icons.all_inclusive_rounded, color: AppColors.pastelMint, size: 18),
+                        SizedBox(width: 8),
+                        Flexible(
+                          child: Text(
+                            'AY DÜĞÜMLERİ (TRUE NODE / MEAN NODE)',
+                            style: TextStyle(
+                              fontSize: 12,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.pastelMint,
+                              letterSpacing: 0.5,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Container(
+                    padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 2),
+                    decoration: BoxDecoration(
+                      color: AppColors.starlightGold.withValues(alpha: 0.18),
+                      borderRadius: BorderRadius.circular(6),
+                    ),
+                    child: Text(
+                      _useTrueNode ? 'Aktif: True Node' : 'Aktif: Mean Node',
+                      style: const TextStyle(
+                        fontSize: 9.5,
+                        fontWeight: FontWeight.bold,
+                        color: AppColors.starlightGold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+              const SizedBox(height: 10),
+              Row(
+                children: [
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => setState(() => _useTrueNode = true),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: _useTrueNode
+                              ? AppColors.pastelMint.withValues(alpha: 0.18)
+                              : Colors.black26,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: _useTrueNode ? AppColors.pastelMint : Colors.white12,
+                            width: _useTrueNode ? 1.4 : 1.0,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  _useTrueNode ? Icons.radio_button_checked : Icons.radio_button_off,
+                                  size: 14,
+                                  color: _useTrueNode ? AppColors.pastelMint : Colors.white54,
+                                ),
+                                const SizedBox(width: 5),
+                                const Expanded(
+                                  child: Text(
+                                    'True Node (Gerçek)',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '☊ KAD: ${trueNN?.formatted ?? "—"}',
+                              style: const TextStyle(fontSize: 10.5, color: AppColors.pastelMint, fontWeight: FontWeight.w600),
+                            ),
+                            Text(
+                              '☋ GAD: ${trueSN?.formatted ?? "—"}',
+                              style: const TextStyle(fontSize: 10, color: Colors.white70),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: InkWell(
+                      onTap: () => setState(() => _useTrueNode = false),
+                      borderRadius: BorderRadius.circular(12),
+                      child: Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: !_useTrueNode
+                              ? AppColors.starlightGold.withValues(alpha: 0.18)
+                              : Colors.black26,
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: !_useTrueNode ? AppColors.starlightGold : Colors.white12,
+                            width: !_useTrueNode ? 1.4 : 1.0,
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              children: [
+                                Icon(
+                                  !_useTrueNode ? Icons.radio_button_checked : Icons.radio_button_off,
+                                  size: 14,
+                                  color: !_useTrueNode ? AppColors.starlightGold : Colors.white54,
+                                ),
+                                const SizedBox(width: 5),
+                                const Expanded(
+                                  child: Text(
+                                    'Mean Node (Ortalama)',
+                                    style: TextStyle(
+                                      fontSize: 11.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: Colors.white,
+                                    ),
+                                    overflow: TextOverflow.ellipsis,
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 4),
+                            Text(
+                              '☊ KAD: ${meanNN?.formatted ?? "—"}',
+                              style: const TextStyle(fontSize: 10.5, color: AppColors.starlightGold, fontWeight: FontWeight.w600),
+                            ),
+                            Text(
+                              '☋ GAD: ${meanSN?.formatted ?? "—"}',
+                              style: const TextStyle(fontSize: 10, color: Colors.white70),
+                            ),
+                          ],
+                        ),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ],
+          ),
+        ),
+        const SizedBox(height: 12),
+
+        // 2. SEÇİLEBİLİR ASTEROİTLER & ÖZEL NOKTALAR KARTI
+        Container(
+          padding: const EdgeInsets.all(14),
+          decoration: BoxDecoration(
+            color: const Color(0xFF161224),
+            borderRadius: BorderRadius.circular(16),
+            border: Border.all(color: AppColors.starlightGold.withValues(alpha: 0.3)),
+          ),
+          child: Column(
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Row(
+                mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                children: [
+                  const Expanded(
+                    child: Row(
+                      children: [
+                        Icon(Icons.auto_graph_rounded, color: AppColors.starlightGold, size: 17),
+                        SizedBox(width: 7),
+                        Flexible(
+                          child: Text(
+                            'ASTEROİTLER & ÖZEL NOKTALAR (SEÇ / ÇIKAR)',
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.starlightGold,
+                            ),
+                            overflow: TextOverflow.ellipsis,
+                          ),
+                        ),
+                      ],
+                    ),
+                  ),
+                  Row(
+                    mainAxisSize: MainAxisSize.min,
+                    children: [
+                      InkWell(
+                        onTap: () {
+                          setState(() {
+                            if (_enabledAsteroids.length == _selectableAsteroidDefs.length) {
+                              _enabledAsteroids.clear();
+                            } else {
+                              _enabledAsteroids.addAll(_selectableAsteroidDefs.map((e) => e['key']!));
+                            }
+                          });
+                        },
+                        child: Text(
+                          _enabledAsteroids.length == _selectableAsteroidDefs.length ? 'Tümünü Kaldır' : 'Tümünü Seç',
+                          style: const TextStyle(
+                            fontSize: 10.5,
+                            color: AppColors.pastelLavender,
+                            fontWeight: FontWeight.bold,
+                            decoration: TextDecoration.underline,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                ],
+              ),
+              const SizedBox(height: 8),
+              Wrap(
+                spacing: 6,
+                runSpacing: 6,
+                children: _selectableAsteroidDefs.map((ast) {
+                  final key = ast['key']!;
+                  final isSelected = _enabledAsteroids.contains(key);
+                  return InkWell(
+                    onTap: () {
+                      setState(() {
+                        if (isSelected) {
+                          _enabledAsteroids.remove(key);
+                        } else {
+                          _enabledAsteroids.add(key);
+                        }
+                      });
+                    },
+                    borderRadius: BorderRadius.circular(9),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 9, vertical: 5),
+                      decoration: BoxDecoration(
+                        color: isSelected
+                            ? AppColors.starlightGold.withValues(alpha: 0.22)
+                            : Colors.white.withValues(alpha: 0.05),
+                        borderRadius: BorderRadius.circular(9),
+                        border: Border.all(
+                          color: isSelected ? AppColors.starlightGold : Colors.white12,
+                        ),
+                      ),
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Text(
+                            ast['sym']!,
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.bold,
+                              color: isSelected ? AppColors.starlightGold : Colors.white54,
+                            ),
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            ast['name']!,
+                            style: TextStyle(
+                              fontSize: 11,
+                              fontWeight: isSelected ? FontWeight.bold : FontWeight.normal,
+                              color: isSelected ? Colors.white : Colors.white60,
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  );
+                }).toList(),
+              ),
+            ],
+          ),
+        ),
+      ],
+    );
+  }
 
   @override
   void initState() {
@@ -410,6 +755,10 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                       ),
                       const SizedBox(height: 22),
 
+                      // Ay Düğümleri (True / Mean Node) & Seçilebilir Asteroitler Kartı
+                      _buildNodesAndAsteroidsSelectorCard(),
+                      const SizedBox(height: 18),
+
                       // Planets
                       Row(
                         mainAxisAlignment: MainAxisAlignment.spaceBetween,
@@ -436,8 +785,10 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                         ],
                       ),
                       const SizedBox(height: 10),
-                      ..._chart!.planets.entries.map((entry) {
-                        final planet = entry.value;
+                      ..._getActiveChartPlanetKeys(includeAngles: true).map((pKey) {
+                        final planet = _chart!.planets[pKey];
+                        if (planet == null) return const SizedBox.shrink();
+                        final entry = MapEntry(pKey, planet);
                         return Container(
                           margin: const EdgeInsets.only(bottom: 8),
                           child: InkWell(
@@ -771,11 +1122,12 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
   List<Map<String, dynamic>> _getBiWheelActiveAspects() {
     if (_chart == null || _transitChart == null) return [];
     final List<Map<String, dynamic>> aspects = [];
-    final planetKeys = ['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'];
+    final planetKeys = _getActiveChartPlanetKeys(includeAngles: false);
 
     double getAbsoluteDegree(BirthChartModel chart, String key) {
       final p = chart.planets[key];
       if (p == null) return 0.0;
+      if (p.longitude != null) return p.longitude! % 360.0;
       final zodiacSigns = ['Koç', 'Boğa', 'İkizler', 'Yengeç', 'Aslan', 'Başak', 'Terazi', 'Akrep', 'Yay', 'Oğlak', 'Kova', 'Balık'];
       final idx = zodiacSigns.indexOf(p.sign);
       final sDeg = idx >= 0 ? idx * 30.0 : 0.0;
@@ -807,31 +1159,33 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
       Color? aspectColor;
       double orb = 0.0;
 
-      if (diff <= 5.0) {
+      // Evrensel Açı Orbları Kuralı:
+      // Kavuşum (0°): 10°, Karşıt (180°): 10°, Üçgen (120°): 8°, Kare (90°): 7°, Sekstil (60°): 7°
+      if (diff <= 10.0) {
         aspectType = 'Kavuşum (0°)';
         aspectSymbol = '☌';
         aspectColor = const Color(0xFFFFD700);
         orb = diff;
-      } else if ((diff - 60.0).abs() <= 4.0) {
-        aspectType = 'Sekstil (60°)';
-        aspectSymbol = '✶';
-        aspectColor = const Color(0xFF74B9FF);
-        orb = (diff - 60.0).abs();
-      } else if ((diff - 90.0).abs() <= 5.0) {
-        aspectType = 'Kare (90°)';
-        aspectSymbol = '■';
-        aspectColor = const Color(0xFFFF5252);
-        orb = (diff - 90.0).abs();
-      } else if ((diff - 120.0).abs() <= 5.0) {
-        aspectType = 'Üçgen (120°)';
-        aspectSymbol = '▲';
-        aspectColor = const Color(0xFF55EFC4);
-        orb = (diff - 120.0).abs();
-      } else if ((diff - 180.0).abs() <= 5.0) {
+      } else if ((diff - 180.0).abs() <= 10.0) {
         aspectType = 'Karşıt (180°)';
         aspectSymbol = '☍';
         aspectColor = const Color(0xFFA29BFE);
         orb = (diff - 180.0).abs();
+      } else if ((diff - 120.0).abs() <= 8.0) {
+        aspectType = 'Üçgen (120°)';
+        aspectSymbol = '▲';
+        aspectColor = const Color(0xFF55EFC4);
+        orb = (diff - 120.0).abs();
+      } else if ((diff - 90.0).abs() <= 7.0) {
+        aspectType = 'Kare (90°)';
+        aspectSymbol = '■';
+        aspectColor = const Color(0xFFFF5252);
+        orb = (diff - 90.0).abs();
+      } else if ((diff - 60.0).abs() <= 7.0) {
+        aspectType = 'Sekstil (60°)';
+        aspectSymbol = '✶';
+        aspectColor = const Color(0xFF74B9FF);
+        orb = (diff - 60.0).abs();
       }
 
       if (aspectType != null) {
@@ -944,6 +1298,9 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
         children: [
           // Segmented Switcher: Single Natal Wheel vs Interactive Bi-Wheel
           _buildWheelModeToggle(),
+          const SizedBox(height: 12),
+          // Ay Düğümleri (True / Mean) & Asteroit Seçici
+          _buildNodesAndAsteroidsSelectorCard(),
           const SizedBox(height: 14),
 
           if (!_isBiWheelActive) ...[
@@ -975,7 +1332,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
               },
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
                 decoration: BoxDecoration(
                   color: !_isBiWheelActive ? AppColors.starlightGold : Colors.transparent,
                   borderRadius: BorderRadius.circular(12),
@@ -983,8 +1340,10 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                 child: Center(
                   child: Text(
                     '🪐 Tekli Doğum Çarkı',
+                    maxLines: 1,
+                    overflow: TextOverflow.ellipsis,
                     style: TextStyle(
-                      fontSize: 12.5,
+                      fontSize: 11.5,
                       fontWeight: FontWeight.bold,
                       color: !_isBiWheelActive ? Colors.black : Colors.white70,
                     ),
@@ -1006,7 +1365,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
               },
               borderRadius: BorderRadius.circular(12),
               child: Container(
-                padding: const EdgeInsets.symmetric(vertical: 10),
+                padding: const EdgeInsets.symmetric(vertical: 10, horizontal: 6),
                 decoration: BoxDecoration(
                   gradient: _isBiWheelActive
                       ? const LinearGradient(
@@ -1017,20 +1376,25 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                 ),
                 child: Center(
                   child: Row(
+                    mainAxisSize: MainAxisSize.min,
                     mainAxisAlignment: MainAxisAlignment.center,
                     children: [
                       Icon(
                         Icons.blur_circular_rounded,
-                        size: 15,
+                        size: 14,
                         color: _isBiWheelActive ? Colors.white : const Color(0xFF00CEC9),
                       ),
-                      const SizedBox(width: 6),
-                      Text(
-                        '🔭 Canlı Çift Çark (Transit)',
-                        style: TextStyle(
-                          fontSize: 12,
-                          fontWeight: FontWeight.bold,
-                          color: _isBiWheelActive ? Colors.white : Colors.white70,
+                      const SizedBox(width: 5),
+                      Flexible(
+                        child: Text(
+                          '🔭 Canlı Çift Çark (Transit)',
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: TextStyle(
+                            fontSize: 11.5,
+                            fontWeight: FontWeight.bold,
+                            color: _isBiWheelActive ? Colors.white : Colors.white70,
+                          ),
                         ),
                       ),
                     ],
@@ -1045,6 +1409,25 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
   }
 
   Widget _buildSingleWheelContent() {
+    final activeKeys = _getActiveChartPlanetKeys(includeAngles: false);
+    final placidusData = PredictiveAstrologyService.calculatePlacidusHouses(profile: widget.profile);
+    final Map<int, double>? placidusCusps = placidusData['cusps'] is Map<int, double>
+        ? (placidusData['cusps'] as Map<int, double>)
+        : null;
+
+    final filteredWheelPlanets = <String, dynamic>{};
+    for (final k in activeKeys) {
+      final v = _chart!.planets[k];
+      if (v != null) {
+        filteredWheelPlanets[k] = {
+          'name': v.name,
+          'sign': v.sign,
+          'degree': _parseDegreeFromFormatted(v.formatted),
+          'isRetrograde': v.isRetrograde,
+        };
+      }
+    }
+
     return Column(
       children: [
         Container(
@@ -1062,7 +1445,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
               SizedBox(width: 8),
               Expanded(
                 child: Text(
-                  'Geocentric Placidus 360° Zodyak Çarkı. Yükselen (ASC) 9 yönünde, Tepe Noktası (MC) 12 yönündedir.',
+                  'Geocentric Placidus 360° Zodyak Çarkı. Ev giriş kaspları (1-12), kasp dereceleri ve gezegen dereceleri çark üzerinde gösterilir.',
                   style: TextStyle(fontSize: 11.5, color: Colors.white70),
                 ),
               ),
@@ -1074,22 +1457,19 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
         // Wheel Canvas
         LayoutBuilder(
           builder: (context, constraints) {
-            final canvasSize = constraints.maxWidth.clamp(260.0, 320.0);
+            final canvasSize = constraints.maxWidth.clamp(280.0, 350.0);
             return Center(
               child: SizedBox(
                 width: canvasSize,
                 height: canvasSize,
                 child: CustomPaint(
                   painter: ChartWheelPainter(
-                    planets: _chart!.planets.map((k, v) => MapEntry(k, {
-                          'sign': v.sign,
-                          'degree': _parseDegreeFromFormatted(v.formatted),
-                          'isRetrograde': v.isRetrograde,
-                        })),
+                    planets: filteredWheelPlanets,
                     ascendantSign: _chart!.risingSign,
                     ascDegree: _parseDegreeFromFormatted(_chart!.risingFormatted),
                     mcSign: _chart!.planets['mc']?.sign ?? 'Kova',
                     mcDegree: _parseDegreeFromFormatted(_chart!.planets['mc']?.formatted ?? '14°30\' Kova'),
+                    houseCusps: placidusCusps,
                   ),
                 ),
               ),
@@ -1110,9 +1490,9 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
             crossAxisAlignment: CrossAxisAlignment.start,
             children: [
               const Text(
-                'Açı & Aks Göstergeleri',
+                'Açı Orbları & Aks Göstergeleri (0°/180°=10°, 120°=8°, 90°/60°=7°)',
                 style: TextStyle(
-                  fontSize: 12,
+                  fontSize: 11.5,
                   fontWeight: FontWeight.bold,
                   color: AppColors.starlightGold,
                 ),
@@ -1131,10 +1511,11 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
               Row(
                 mainAxisAlignment: MainAxisAlignment.spaceAround,
                 children: [
-                  _buildLegendItem('▲ 120°', 'Üçgen', AppColors.pastelMint),
-                  _buildLegendItem('■ 90°', 'Kare', AppColors.savageRed),
-                  _buildLegendItem('☍ 180°', 'Karşıt', AppColors.starlightGold),
-                  _buildLegendItem('✶ 60°', 'Sekstil', AppColors.pastelBlue),
+                  _buildLegendItem('☌ 0° (10°)', 'Kavuşum', AppColors.starlightGold),
+                  _buildLegendItem('☍ 180° (10°)', 'Karşıt', AppColors.savageRed),
+                  _buildLegendItem('△ 120° (8°)', 'Üçgen', AppColors.pastelMint),
+                  _buildLegendItem('□ 90° (7°)', 'Kare', AppColors.warningOrange),
+                  _buildLegendItem('✶ 60° (7°)', 'Sekstil', AppColors.pastelBlue),
                 ],
               ),
             ],
@@ -1142,9 +1523,11 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
         ),
         const SizedBox(height: 16),
 
-        // Quick Planet List
-        ..._chart!.planets.entries.map((entry) {
-          final p = entry.value;
+        // Quick Planet List (filtered by active node + asteroids)
+        ..._getActiveChartPlanetKeys(includeAngles: true).map((pKey) {
+          final p = _chart!.planets[pKey];
+          if (p == null) return const SizedBox.shrink();
+          final entry = MapEntry(pKey, p);
           return Container(
             margin: const EdgeInsets.only(bottom: 8),
             child: InkWell(
@@ -1322,25 +1705,35 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                 child: Column(
                   crossAxisAlignment: CrossAxisAlignment.start,
                   children: [
-                    Row(
+                    Wrap(
+                      spacing: 12,
+                      runSpacing: 4,
+                      crossAxisAlignment: WrapCrossAlignment.center,
                       children: [
-                        if (_wheelDisplayMode != BiWheelDisplayMode.natalOnly) ...[
-                          Container(
-                            width: 8, height: 8,
-                            decoration: const BoxDecoration(color: Color(0xFF00CEC9), shape: BoxShape.circle),
+                        if (_wheelDisplayMode != BiWheelDisplayMode.natalOnly)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 8, height: 8,
+                                decoration: const BoxDecoration(color: Color(0xFF00CEC9), shape: BoxShape.circle),
+                              ),
+                              const SizedBox(width: 5),
+                              const Text('Dış Çark: Canlı Transitler', style: TextStyle(color: Color(0xFF00CEC9), fontWeight: FontWeight.bold, fontSize: 10.5)),
+                            ],
                           ),
-                          const SizedBox(width: 5),
-                          const Text('Dış Çark: Canlı Transitler', style: TextStyle(color: Color(0xFF00CEC9), fontWeight: FontWeight.bold, fontSize: 11)),
-                          const SizedBox(width: 12),
-                        ],
-                        if (_wheelDisplayMode != BiWheelDisplayMode.transitOnly) ...[
-                          Container(
-                            width: 8, height: 8,
-                            decoration: const BoxDecoration(color: AppColors.starlightGold, shape: BoxShape.circle),
+                        if (_wheelDisplayMode != BiWheelDisplayMode.transitOnly)
+                          Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Container(
+                                width: 8, height: 8,
+                                decoration: const BoxDecoration(color: AppColors.starlightGold, shape: BoxShape.circle),
+                              ),
+                              const SizedBox(width: 5),
+                              const Text('İç Çark: Doğum (Natal)', style: TextStyle(color: AppColors.starlightGold, fontWeight: FontWeight.bold, fontSize: 10.5)),
+                            ],
                           ),
-                          const SizedBox(width: 5),
-                          const Text('İç Çark: Doğum (Natal)', style: TextStyle(color: AppColors.starlightGold, fontWeight: FontWeight.bold, fontSize: 11)),
-                        ],
                       ],
                     ),
                     const SizedBox(height: 3),
@@ -1439,7 +1832,11 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                         onPressed: () {
                           Navigator.of(context).push(
                             MaterialPageRoute(
-                              builder: (_) => InteractiveBiWheelModal(natalProfile: widget.profile),
+                              builder: (_) => InteractiveBiWheelModal(
+                                natalProfile: widget.profile,
+                                initialUseTrueNode: _useTrueNode,
+                                initialEnabledAsteroids: _enabledAsteroids,
+                              ),
                             ),
                           );
                         },
@@ -1470,7 +1867,11 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
         // 3. Dual Wheel Interactive Canvas with Drag Rotation
         LayoutBuilder(
           builder: (context, constraints) {
-            final canvasSize = constraints.maxWidth.clamp(280.0, 340.0);
+            final canvasSize = constraints.maxWidth.clamp(280.0, 350.0);
+            final placidusData = PredictiveAstrologyService.calculatePlacidusHouses(profile: widget.profile);
+            final Map<int, double>? houseCusps = placidusData['cusps'] is Map<int, double>
+                ? (placidusData['cusps'] as Map<int, double>)
+                : null;
             return GestureDetector(
               onPanUpdate: (details) {
                 setState(() {
@@ -1488,6 +1889,9 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                       selectedPlanet: _selectedBiWheelPlanet,
                       rotationOffsetRad: _biWheelRotationAngle,
                       displayMode: _wheelDisplayMode,
+                      useTrueNode: _useTrueNode,
+                      enabledExtraBodies: _enabledAsteroids,
+                      houseCusps: houseCusps,
                       onAspectFound: (_) {},
                     ),
                   ),
@@ -1504,9 +1908,12 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
           children: [
             const Icon(Icons.touch_app_outlined, size: 14, color: Colors.white38),
             const SizedBox(width: 4),
-            const Text(
-              'Çarkı parmağınızla 360° serbestçe döndürebilirsiniz',
-              style: TextStyle(fontSize: 11, color: Colors.white38),
+            const Flexible(
+              child: Text(
+                'Çarkı parmağınızla 360° serbestçe döndürebilirsiniz',
+                style: TextStyle(fontSize: 11, color: Colors.white38),
+                overflow: TextOverflow.ellipsis,
+              ),
             ),
             if (_biWheelRotationAngle != 0.0) ...[
               const SizedBox(width: 8),
@@ -1530,7 +1937,11 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
             onTap: () {
               Navigator.of(context).push(
                 MaterialPageRoute(
-                  builder: (_) => InteractiveBiWheelModal(natalProfile: widget.profile),
+                  builder: (_) => InteractiveBiWheelModal(
+                    natalProfile: widget.profile,
+                    initialUseTrueNode: _useTrueNode,
+                    initialEnabledAsteroids: _enabledAsteroids,
+                  ),
                 ),
               );
             },
@@ -1552,9 +1963,12 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                 children: [
                   Icon(Icons.open_in_new_rounded, size: 16, color: Color(0xFF00CEC9)),
                   SizedBox(width: 8),
-                  Text(
-                    'Canlı Transit Haritasını Ayrı Sayfada Aç ➔',
-                    style: TextStyle(color: Color(0xFF00CEC9), fontWeight: FontWeight.bold, fontSize: 12),
+                  Flexible(
+                    child: Text(
+                      'Canlı Transit Haritasını Ayrı Sayfada Aç ➔',
+                      style: TextStyle(color: Color(0xFF00CEC9), fontWeight: FontWeight.bold, fontSize: 12),
+                      overflow: TextOverflow.ellipsis,
+                    ),
                   ),
                 ],
               ),
@@ -1582,7 +1996,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
               child: Row(
                 children: [
                   _buildBiWheelFilterChip(null, 'Tümü'),
-                  ...['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'].map((k) {
+                  ..._getActiveChartPlanetKeys(includeAngles: false).map((k) {
                     return _buildBiWheelFilterChip(
                       k,
                       _getTurkishPlanetName(k),
@@ -1643,7 +2057,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                   padding: EdgeInsets.symmetric(vertical: 8),
                   child: Center(
                     child: Text(
-                      'Seçilen kriterde 5° orp aralığında majör açı bulunamadı.',
+                      'Seçilen kriterde (0°/180°:10°, 120°:8°, 90°/60°:7° orp) majör açı bulunamadı.',
                       style: TextStyle(fontSize: 11.5, color: Colors.white54),
                     ),
                   ),
@@ -1763,7 +2177,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                 ],
               ),
               const Divider(color: Colors.white12, height: 14),
-              ...['sun', 'moon', 'mercury', 'venus', 'mars', 'jupiter', 'saturn', 'uranus', 'neptune', 'pluto'].map((k) {
+              ..._getActiveChartPlanetKeys(includeAngles: false).map((k) {
                 final np = _chart!.planets[k];
                 final tp = _transitChart!.planets[k];
                 return Padding(
@@ -1771,20 +2185,37 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                   child: Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
                     children: [
-                      Row(
-                        children: [
-                          AstrologicalGlyphWidget(planetKeyOrName: k, size: 13, color: Colors.white),
-                          const SizedBox(width: 6),
-                          Text(_getTurkishPlanetName(k), style: const TextStyle(color: Colors.white, fontSize: 11.5)),
-                        ],
+                      Expanded(
+                        flex: 4,
+                        child: Row(
+                          children: [
+                            AstrologicalGlyphWidget(planetKeyOrName: k, size: 13, color: Colors.white),
+                            const SizedBox(width: 6),
+                            Flexible(
+                              child: Text(
+                                _getTurkishPlanetName(k),
+                                style: const TextStyle(color: Colors.white, fontSize: 11),
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
                       ),
-                      Text(
-                        np != null ? '${np.sign} ${np.formatted}' : '—',
-                        style: const TextStyle(color: AppColors.starlightGold, fontSize: 11),
+                      Expanded(
+                        flex: 3,
+                        child: Text(
+                          np != null ? '${np.sign} ${np.formatted}' : '—',
+                          textAlign: TextAlign.center,
+                          style: const TextStyle(color: AppColors.starlightGold, fontSize: 10.5),
+                        ),
                       ),
-                      Text(
-                        tp != null ? '${tp.sign} ${tp.formatted}' : '—',
-                        style: const TextStyle(color: Color(0xFF00CEC9), fontSize: 11),
+                      Expanded(
+                        flex: 3,
+                        child: Text(
+                          tp != null ? '${tp.sign} ${tp.formatted}' : '—',
+                          textAlign: TextAlign.right,
+                          style: const TextStyle(color: Color(0xFF00CEC9), fontSize: 10.5),
+                        ),
                       ),
                     ],
                   ),
@@ -3206,7 +3637,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
           ),
           const SizedBox(height: 10),
 
-          // 4th Card: Doğum Haritası Ay Menzili & Hermetik Durağı
+          // 4th Card: Doğum Haritası Ay Menzili (Hermetik Adımlardan Ayrılmış)
           Container(
             padding: const EdgeInsets.all(14),
             decoration: BoxDecoration(
@@ -3233,7 +3664,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                             color: AppColors.starlightGold, size: 20),
                         const SizedBox(width: 8),
                         Text(
-                          'Natal Ay Menzili (${moonMansion.number}/28)',
+                          '28 Ay Menzili (${moonMansion.number}/28)',
                           style: const TextStyle(
                             fontSize: 13,
                             fontWeight: FontWeight.bold,
@@ -3285,13 +3716,107 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                   child: Column(
                     crossAxisAlignment: CrossAxisAlignment.start,
                     children: [
-                      Text('✨ Hermetik Tılsım: ${moonMansion.hermeticTalisman}',
+                      Text('✓ Doğuştan Yatkınlık: ${moonMansion.favorableFor}',
                           style: const TextStyle(
                               fontSize: 11, color: AppColors.pastelMint)),
                       const SizedBox(height: 2),
-                      Text('✓ Doğuştan Yatkınlık: ${moonMansion.favorableFor}',
+                      Text('✕ Kaçınılması Gerekenler: ${moonMansion.avoidFor}',
                           style: const TextStyle(
                               fontSize: 10.5, color: Colors.white60)),
+                    ],
+                  ),
+                ),
+              ],
+            ),
+          ),
+          const SizedBox(height: 12),
+
+          // 5th Card: HERMETİK ADIMLAR & TILSIMLAR (Ayrı Başlık Altında)
+          Container(
+            padding: const EdgeInsets.all(14),
+            decoration: BoxDecoration(
+              gradient: LinearGradient(
+                colors: [
+                  const Color(0xFF00CEC9).withValues(alpha: 0.16),
+                  const Color(0xFF161326),
+                ],
+              ),
+              borderRadius: BorderRadius.circular(16),
+              border: Border.all(
+                color: const Color(0xFF00CEC9).withValues(alpha: 0.45),
+              ),
+            ),
+            child: Column(
+              crossAxisAlignment: CrossAxisAlignment.start,
+              children: [
+                Row(
+                  mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                  children: [
+                    const Row(
+                      children: [
+                        Icon(Icons.auto_fix_high_rounded,
+                            color: Color(0xFF00CEC9), size: 20),
+                        SizedBox(width: 8),
+                        Text(
+                          'Hermetik Adımlar & Tılsım Rehberi',
+                          style: TextStyle(
+                            fontSize: 13,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                        ),
+                      ],
+                    ),
+                    Container(
+                      padding: const EdgeInsets.symmetric(
+                          horizontal: 8, vertical: 2),
+                      decoration: BoxDecoration(
+                        color: const Color(0xFF00CEC9).withValues(alpha: 0.2),
+                        borderRadius: BorderRadius.circular(6),
+                      ),
+                      child: Text(
+                        '${moonMansion.number}. Adım',
+                        style: const TextStyle(
+                          fontSize: 10,
+                          fontWeight: FontWeight.bold,
+                          color: Color(0xFF00CEC9),
+                        ),
+                      ),
+                    ),
+                  ],
+                ),
+                const SizedBox(height: 6),
+                Text(
+                  moonMansion.hermeticStepTitle,
+                  style: const TextStyle(
+                    fontSize: 12,
+                    fontWeight: FontWeight.bold,
+                    color: Color(0xFF00CEC9),
+                  ),
+                ),
+                const SizedBox(height: 6),
+                Container(
+                  padding: const EdgeInsets.all(10),
+                  decoration: BoxDecoration(
+                    color: Colors.black26,
+                    borderRadius: BorderRadius.circular(10),
+                  ),
+                  child: Column(
+                    crossAxisAlignment: CrossAxisAlignment.start,
+                    children: [
+                      Text('🔮 Hermetik Tılsım & Sembol: ${moonMansion.hermeticTalisman}',
+                          style: const TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.w600,
+                              color: AppColors.starlightGold)),
+                      const SizedBox(height: 4),
+                      Text('🌿 Tütsü & Rezonans: ${moonMansion.hermeticIncense}',
+                          style: const TextStyle(
+                              fontSize: 11, color: AppColors.pastelMint)),
+                      const SizedBox(height: 4),
+                      Text('🕯️ Hermetik Uygulama Adımı: ${moonMansion.hermeticPractice}',
+                          style: const TextStyle(
+                              fontSize: 11, height: 1.35, color: Colors.white70)),
                     ],
                   ),
                 ),
@@ -5187,9 +5712,48 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
       case 'kuzey ay düğümü':
         name = 'Kuzey Ay Düğümü';
         break;
+      case 'true_north_node':
+        name = 'Kuzey Ay Düğümü (True)';
+        break;
+      case 'mean_north_node':
+        name = 'Kuzey Ay Düğümü (Mean)';
+        break;
       case 'south_node':
       case 'güney ay düğümü':
         name = 'Güney Ay Düğümü';
+        break;
+      case 'true_south_node':
+        name = 'Güney Ay Düğümü (True)';
+        break;
+      case 'mean_south_node':
+        name = 'Güney Ay Düğümü (Mean)';
+        break;
+      case 'lilith':
+        name = 'Kara Ay Lilith';
+        break;
+      case 'vesta':
+        name = 'Vesta';
+        break;
+      case 'juno':
+        name = 'Juno';
+        break;
+      case 'amor':
+        name = 'Amor';
+        break;
+      case 'hekate':
+        name = 'Hekate';
+        break;
+      case 'isis':
+        name = 'Isis';
+        break;
+      case 'vertex':
+        name = 'Vertex Noktası';
+        break;
+      case 'pallas':
+        name = 'Pallas';
+        break;
+      case 'ceres':
+        name = 'Ceres';
         break;
       case 'ascendant':
       case 'yükselen':

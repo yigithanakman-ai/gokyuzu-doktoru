@@ -14,7 +14,6 @@ class NotificationService {
 
   static const String _prefEnabledKey = 'cosmic_notifications_enabled';
   static const String _prefAskedKey = 'cosmic_notifications_prompted';
-  static const String _prefLastDailyPushKey = 'cosmic_last_daily_push_date';
   static const String channelId = 'gokyuzu_cosmic_channel';
   static const String channelName = 'Gökyüzü Doktoru Kozmik Bildirimler';
 
@@ -88,7 +87,8 @@ class NotificationService {
 
   static Future<bool> isEnabled() async {
     final prefs = await SharedPreferences.getInstance();
-    final prefVal = prefs.getBool(_prefEnabledKey) ?? false;
+    // Varsayılan olarak bildirimler açık başlar (kullanıcı kapatmadığı sürece true)
+    final prefVal = prefs.getBool(_prefEnabledKey) ?? true;
     if (!prefVal) return false;
 
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
@@ -118,6 +118,10 @@ class NotificationService {
         // Android 13+ (API 33+) resmi izin penceresini açar
         granted =
             await androidImpl?.requestNotificationsPermission() ?? false;
+        // Android 12+ tam zamanlı alarm izni
+        try {
+          await androidImpl?.requestExactAlarmsPermission();
+        } catch (_) {}
       } else if (!kIsWeb &&
           (defaultTargetPlatform == TargetPlatform.iOS ||
               defaultTargetPlatform == TargetPlatform.macOS)) {
@@ -159,7 +163,8 @@ class NotificationService {
     } catch (_) {}
   }
 
-  /// 3 Farklı Saat Diliminde Günlük Kozmik Bildirimleri Planla (09:30, 14:30, 20:30)
+  /// Uygulamaya hiç girilmese bile 14 gün boyunca her gün 3 farklı saatte (09:30, 14:30, 20:30)
+  /// o günün gerçek Ay burcu, derecesi ve fazıyla arka plan bildirimlerini önceden işletim sistemine kaydeder.
   static Future<void> scheduleDailyCosmicNotifications(
     UserProfile profile,
   ) async {
@@ -172,49 +177,9 @@ class NotificationService {
       city: profile.birthCity,
       country: profile.birthCountry,
     );
-    final transits = SkyTransitsService.getCurrentTransits();
-    final moonPhase = SkyTransitsService.getMoonPhase();
-    final voc = SkyTransitsService.getVoidOfCourse();
 
-    TransitPlanet? sunT;
-    TransitPlanet? moonT;
-    for (final t in transits) {
-      if (t.name == 'Güneş') sunT = t;
-      if (t.name == 'Ay') moonT = t;
-    }
-
-    final sunSign = sunT?.sign ?? 'Koç';
-    final moonSign = moonT?.sign ?? 'Boğa';
-    final moonDeg = moonT?.degree.toInt() ?? 15;
     final cleanName =
         profile.name.trim().isEmpty ? 'Kozmik Yolcu' : profile.name.trim();
-
-    final items = [
-      {
-        'id': 101,
-        'hour': 9,
-        'minute': 30,
-        'title': '☀️ Günaydın $cleanName • Günün Kozmik Enerjisi',
-        'body':
-            'Bugün Güneş $sunSign, Ay $moonSign burcunda (${moonPhase.phaseName}) ilerliyor. Yükselen ${liveChart.ascendant} haritanıza özel günlük transit yorumunuz hazır!',
-      },
-      {
-        'id': 102,
-        'hour': 14,
-        'minute': 30,
-        'title': '🌙 Gün Ortası Gökyüzü & Ay Rehberi',
-        'body':
-            'Transit Ay $moonDeg° $moonSign derecesinde. ${voc.isVoid ? "Ay Boşlukta: Yeni imzalar yerine mevcut işleri tamamlayın." : "Gökyüzü akışı aktif: Önemli görüşme ve adımlar için destekleyici saatler."}',
-      },
-      {
-        'id': 103,
-        'hour': 20,
-        'minute': 30,
-        'title': '✨ Gece Gökyüzü & Yıldız Rehberi',
-        'body':
-            'Günün yorgunluğunu geride bırakırken ${liveChart.sunSign} Güneş ve ${liveChart.moonSign} Ay enerjinizi dengeleyin. Gece transitlerini incelemek için dokunun.',
-      },
-    ];
 
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
@@ -241,25 +206,154 @@ class NotificationService {
       macOS: darwinDetails,
     );
 
-    for (final item in items) {
+    final tz.TZDateTime nowTz = tz.TZDateTime.now(tz.local);
+
+    // Gelecek 14 günün her biri için (09:30, 14:30, 20:30) 42 bağımsız tam zamanlı alarm kur
+    for (int dayOffset = 0; dayOffset < 14; dayOffset++) {
+      final targetDay = nowTz.add(Duration(days: dayOffset));
+      final sampleDt = DateTime(targetDay.year, targetDay.month, targetDay.day, 12, 0);
+
+      final transits = SkyTransitsService.getCurrentTransits(sampleDt);
+      final moonPhase = SkyTransitsService.getMoonPhase(sampleDt);
+      final voc = SkyTransitsService.getVoidOfCourse(sampleDt);
+
+      TransitPlanet? sunT;
+      TransitPlanet? moonT;
+      for (final t in transits) {
+        if (t.name == 'Güneş') sunT = t;
+        if (t.name == 'Ay') moonT = t;
+      }
+
+      final sunSign = sunT?.sign ?? 'Koç';
+      final moonSign = moonT?.sign ?? 'Balık';
+      final moonDeg = moonT?.degree.toInt().clamp(0, 29) ?? 11;
+
+      final slots = [
+        {
+          'slotIndex': 0,
+          'hour': 9,
+          'minute': 30,
+          'title': '☀️ Günaydın $cleanName • Günün Kozmik Enerjisi',
+          'body':
+              'Bugün Güneş $sunSign, Ay $moonDeg° $moonSign burcunda (${moonPhase.phaseName}) ilerliyor. Yükselen ${liveChart.ascendant} haritanıza özel günlük transit yorumunuz hazır!',
+        },
+        {
+          'slotIndex': 1,
+          'hour': 14,
+          'minute': 30,
+          'title': '🌙 Gün Ortası Gökyüzü & Ay Rehberi',
+          'body':
+              'Transit Ay $moonDeg° $moonSign derecesinde. ${voc.isVoid ? "Ay Boşlukta: Yeni imzalar yerine mevcut işleri tamamlayın." : "Gökyüzü akışı aktif: Önemli görüşme ve adımlar için destekleyici saatler."}',
+        },
+        {
+          'slotIndex': 2,
+          'hour': 20,
+          'minute': 30,
+          'title': '✨ Gece Gökyüzü & Yıldız Rehberi',
+          'body':
+              'Günün yorgunluğunu geride bırakırken ${liveChart.sunSign} Güneş ve $moonSign Ay enerjinizi dengeleyin. Gece transitlerini incelemek için dokunun.',
+        },
+      ];
+
+      for (final slot in slots) {
+        final slotIdx = slot['slotIndex'] as int;
+        final hour = slot['hour'] as int;
+        final minute = slot['minute'] as int;
+        final title = slot['title'] as String;
+        final body = slot['body'] as String;
+        final notificationId = 1000 + (dayOffset * 3) + slotIdx;
+
+        final scheduledDate = tz.TZDateTime(
+          tz.local,
+          targetDay.year,
+          targetDay.month,
+          targetDay.day,
+          hour,
+          minute,
+        );
+
+        if (scheduledDate.isBefore(nowTz)) continue;
+
+        try {
+          await _notificationsPlugin.zonedSchedule(
+            id: notificationId,
+            title: title,
+            body: body,
+            scheduledDate: scheduledDate,
+            notificationDetails: notificationDetails,
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+          );
+        } catch (_) {
+          try {
+            await _notificationsPlugin.zonedSchedule(
+              id: notificationId,
+              title: title,
+              body: body,
+              scheduledDate: scheduledDate,
+              notificationDetails: notificationDetails,
+              androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            );
+          } catch (_) {}
+        }
+      }
+    }
+
+    // Ayrıca 14 gün sonrasında da kesintisiz devam etmesi için 3 ana döngüsel (repeating) alarmı kaydet
+    final fallbackItems = [
+      {
+        'id': 101,
+        'hour': 9,
+        'minute': 30,
+        'title': '☀️ Günaydın $cleanName • Günün Kozmik Enerjisi',
+        'body':
+            'Yükselen ${liveChart.ascendant} haritanıza özel bugünkü gezegen transitleri ve Ay menzili rehberiniz hazır!',
+      },
+      {
+        'id': 102,
+        'hour': 14,
+        'minute': 30,
+        'title': '🌙 Gün Ortası Gökyüzü & Ay Rehberi',
+        'body':
+            'Gün ortası Ay fazı, gezegen saatleri ve kozmik karar pusulası analiziniz için dokunun.',
+      },
+      {
+        'id': 103,
+        'hour': 20,
+        'minute': 30,
+        'title': '✨ Gece Gökyüzü & Yıldız Rehberi',
+        'body':
+            'Gece gökyüzündeki canlı transit açıları ve yarının astrolojik enerjilerini keşfedin.',
+      },
+    ];
+
+    for (final item in fallbackItems) {
       final id = item['id'] as int;
       final hour = item['hour'] as int;
       final minute = item['minute'] as int;
-      final title = item['title'] as String;
-      final body = item['body'] as String;
-
+      final scheduledTime = _nextInstanceOfTime(hour, minute);
       try {
-        final scheduledTime = _nextInstanceOfTime(hour, minute);
         await _notificationsPlugin.zonedSchedule(
           id: id,
-          title: title,
-          body: body,
+          title: item['title'] as String,
+          body: item['body'] as String,
           scheduledDate: scheduledTime,
           notificationDetails: notificationDetails,
-          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
           matchDateTimeComponents: DateTimeComponents.time,
         );
-      } catch (_) {}
+      } catch (_) {
+        try {
+          await _notificationsPlugin.zonedSchedule(
+            id: id,
+            title: item['title'] as String,
+            body: item['body'] as String,
+            scheduledDate: scheduledTime,
+            notificationDetails: notificationDetails,
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            matchDateTimeComponents: DateTimeComponents.time,
+          );
+        } catch (_) {}
+      }
     }
   }
 
@@ -340,18 +434,31 @@ class NotificationService {
 
   static Future<void> syncDailyNotificationsIfEnabled(
       UserProfile profile) async {
-    final enabled = await isEnabled();
-    if (!enabled) return;
-
-    await scheduleDailyCosmicNotifications(profile);
-
+    await init();
     final prefs = await SharedPreferences.getInstance();
-    final now = DateTime.now();
-    final todayKey = '${now.year}-${now.month}-${now.day}';
-    final lastPush = prefs.getString(_prefLastDailyPushKey);
-    if (lastPush != todayKey) {
-      await prefs.setString(_prefLastDailyPushKey, todayKey);
-      await sendTestOrDailyNotification(profile, isWelcome: false);
+    final userDisabled = prefs.getBool(_prefEnabledKey) == false;
+    if (userDisabled) return;
+
+    // İzin henüz alınmadıysa işletim sisteminden sessizce/resmi olarak iste
+    if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
+      final androidImpl = _notificationsPlugin
+          .resolvePlatformSpecificImplementation<
+              AndroidFlutterLocalNotificationsPlugin>();
+      final osEnabled = await androidImpl?.areNotificationsEnabled() ?? false;
+      if (!osEnabled) {
+        await requestPermissionAndEnable(
+          profile,
+          sendImmediateConfirmation: false,
+        );
+        return;
+      }
+      try {
+        await androidImpl?.requestExactAlarmsPermission();
+      } catch (_) {}
     }
+
+    // 14 günlük arka plan alarmlarını (09:30, 14:30, 20:30) güncelle
+    // (Uygulamaya girildiğinde anlık bildirim fırlatmaz, sadece zamanlanmış arka plan bildirimlerini senkronize eder)
+    await scheduleDailyCosmicNotifications(profile);
   }
 }

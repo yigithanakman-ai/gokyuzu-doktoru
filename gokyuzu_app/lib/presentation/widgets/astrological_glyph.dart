@@ -99,16 +99,26 @@ class AstrologicalGlyphPainter {
   static String _resolveUnicode(String nameOrSym) {
     final s = nameOrSym.toLowerCase().trim();
     if (s.contains('güneş') || s.contains('sun')) return '☉';
-    if (s.contains('ay') || s.contains('moon')) return '☽';
+    if (s.contains('ay') && !s.contains('düğüm') && !s.contains('lilith')) return '☽';
+    if (s.contains('moon') && !s.contains('node') && !s.contains('lilith')) return '☽';
     if (s.contains('merkür') || s.contains('mercury')) return '☿';
     if (s.contains('jüpiter') || s.contains('jupiter')) return '♃';
     if (s.contains('satürn') || s.contains('saturn')) return '♄';
     if (s.contains('uranüs') || s.contains('uranus')) return '♅';
     if (s.contains('neptün') || s.contains('neptune')) return '♆';
     if (s.contains('plüton') || s.contains('pluto')) return '♇';
-    if (s.contains('kuzey') || s.contains('düğüm')) return '☊';
-    if (s.contains('güney')) return '☋';
+    if (s.contains('kuzey') || s.contains('north_node')) return '☊';
+    if (s.contains('güney') || s.contains('south_node')) return '☋';
     if (s.contains('kiron') || s.contains('chiron')) return '⚷';
+    if (s.contains('lilith')) return '⚸';
+    if (s.contains('ceres')) return '⚳';
+    if (s.contains('pallas')) return '⚴';
+    if (s.contains('juno')) return '⚵';
+    if (s.contains('vesta')) return '⚶';
+    if (s.contains('vertex') || s == 'vx') return 'Vx';
+    if (s.contains('amor')) return '♡';
+    if (s.contains('hekate')) return '⚝';
+    if (s.contains('isis')) return '☥';
     return nameOrSym;
   }
 }

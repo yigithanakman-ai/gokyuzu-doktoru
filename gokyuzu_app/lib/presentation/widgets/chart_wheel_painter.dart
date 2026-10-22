@@ -9,6 +9,7 @@ class ChartWheelPainter extends CustomPainter {
   final double ascDegree;
   final String? mcSign;
   final double? mcDegree;
+  final Map<int, double>? houseCusps;
 
   ChartWheelPainter({
     required this.planets,
@@ -16,6 +17,7 @@ class ChartWheelPainter extends CustomPainter {
     this.ascDegree = 15.0,
     this.mcSign,
     this.mcDegree,
+    this.houseCusps,
   });
 
   static const List<String> zodiacSigns = [
@@ -43,12 +45,12 @@ class ChartWheelPainter extends CustomPainter {
     Color(0xFF4DD0E1), // Balık - Su
   ];
 
-  /// Mathematical helper: calculates position on the wheel where:
-  /// wheelDeg 0° is ASC (9 o'clock / East)
-  /// wheelDeg 90° is IC (6 o'clock / Nadir)
-  /// wheelDeg 180° is DSC (3 o'clock / West)
-  /// wheelDeg 270° is MC (12 o'clock / Midheaven)
-  /// Proceeding counter-clockwise in classical Western astrology convention.
+  double _norm(double deg) {
+    final d = deg % 360.0;
+    return d < 0 ? d + 360.0 : d;
+  }
+
+  /// wheelDeg 0° is ASC (9 o'clock / East), proceeding counter-clockwise.
   Offset _getPointOnWheel(Offset center, double r, double wheelDeg) {
     final rad = wheelDeg * math.pi / 180.0;
     return Offset(
@@ -57,54 +59,135 @@ class ChartWheelPainter extends CustomPainter {
     );
   }
 
+  Map<int, double> _resolveHouseCusps(double totalAscDeg, double totalMcDeg) {
+    if (houseCusps != null && houseCusps!.length == 12) {
+      return houseCusps!;
+    }
+    final c1 = _norm(totalAscDeg);
+    final c10 = _norm(totalMcDeg);
+    final c7 = _norm(c1 + 180.0);
+    final c4 = _norm(c10 + 180.0);
+
+    // Porphyry / Placidus quadrant trisection between angles
+    final span10to1 = _norm(c1 - c10);
+    final c11 = _norm(c10 + span10to1 / 3.0);
+    final c12 = _norm(c10 + (span10to1 * 2.0) / 3.0);
+
+    final span1to4 = _norm(c4 - c1);
+    final c2 = _norm(c1 + span1to4 / 3.0);
+    final c3 = _norm(c1 + (span1to4 * 2.0) / 3.0);
+
+    return {
+      1: c1,
+      2: c2,
+      3: c3,
+      4: c4,
+      5: _norm(c11 + 180.0),
+      6: _norm(c12 + 180.0),
+      7: c7,
+      8: _norm(c2 + 180.0),
+      9: _norm(c3 + 180.0),
+      10: c10,
+      11: c11,
+      12: c12,
+    };
+  }
+
+  String _formatCuspCompact(double absLon) {
+    final norm = _norm(absLon);
+    final sIdx = (norm / 30.0).floor() % 12;
+    final degInSign = norm % 30.0;
+    int d = degInSign.floor();
+    int m = ((degInSign - d) * 60).round();
+    if (m >= 60) {
+      m = 0;
+      d = (d + 1) % 30;
+    }
+    return '${d.toString().padLeft(2, '0')}°${zodiacSymbols[sIdx]}${m.toString().padLeft(2, '0')}\'';
+  }
+
   @override
   void paint(Canvas canvas, Size size) {
     final center = Offset(size.width / 2, size.height / 2);
-    final radius = size.width / 2 - 8;
+    final maxR = math.min(size.width, size.height) / 2;
 
-    final outerRingR = radius;
-    final middleRingR = radius * 0.82;
-    final housesRingR = radius * 0.58;
-    final innerAspectsR = radius * 0.44;
+    // Leave outer margin for house cusp degree labels (like Astro Gold / Image 2)
+    final cuspLabelR = maxR - 10;
+    final outerRingR = maxR - 22;
+    final middleRingR = outerRingR * 0.84;
+    final houseNumRingR = outerRingR * 0.48;
+    final innerAspectsR = outerRingR * 0.39;
 
-    final circlePaint = Paint()
-      ..color = Colors.white12
-      ..style = PaintingStyle.stroke
-      ..strokeWidth = 1.0;
-
-    // Background gradient circle
+    // Background radial cosmic disc
     final bgPaint = Paint()
       ..shader = const RadialGradient(
         colors: [
-          Color(0xFF161224),
-          Color(0xFF0C0A14),
+          Color(0xFF19142A),
+          Color(0xFF0D0A18),
         ],
-      ).createShader(Rect.fromCircle(center: center, radius: radius));
-    canvas.drawCircle(center, radius, bgPaint);
+      ).createShader(Rect.fromCircle(center: center, radius: outerRingR));
+    canvas.drawCircle(center, outerRingR, bgPaint);
 
-    // Concentric boundary circles
-    canvas.drawCircle(center, outerRingR, circlePaint);
-    canvas.drawCircle(center, middleRingR, circlePaint);
-    canvas.drawCircle(center, housesRingR, circlePaint);
-    canvas.drawCircle(center, innerAspectsR, circlePaint);
+    // Outer zodiac ring subtle fill
+    final zodiacBandPaint = Paint()
+      ..color = const Color(0xFF211B38).withValues(alpha: 0.75)
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = outerRingR - middleRingR;
+    canvas.drawCircle(center, (outerRingR + middleRingR) / 2, zodiacBandPaint);
 
-    // Ascendant degree offset in absolute zodiac (0° Koç = 0, 30° Boğa = 60, etc.)
+    final circlePaint = Paint()
+      ..color = Colors.white24
+      ..style = PaintingStyle.stroke
+      ..strokeWidth = 1.1;
+
+    canvas.drawCircle(center, outerRingR, circlePaint..color = AppColors.starlightGold.withValues(alpha: 0.45));
+    canvas.drawCircle(center, middleRingR, circlePaint..color = Colors.white30);
+    canvas.drawCircle(center, houseNumRingR, circlePaint..color = Colors.white24);
+    canvas.drawCircle(center, innerAspectsR, circlePaint..color = Colors.white30);
+
     final ascSignIdx = zodiacSigns.indexOf(ascendantSign);
     final totalAscDeg = (ascSignIdx >= 0 ? ascSignIdx * 30.0 : 0.0) + ascDegree;
 
-    // --- 1. DRAW 12 ZODIAC SIGNS ON THE OUTER RING ---
+    double totalMcDeg = _norm(totalAscDeg + 270.0);
+    if (mcSign != null && zodiacSigns.contains(mcSign)) {
+      final mcIdx = zodiacSigns.indexOf(mcSign!);
+      totalMcDeg = (mcIdx * 30.0) + (mcDegree ?? 15.0);
+    }
+
+    // --- 1. DRAW 12 ZODIAC SIGNS & DEGREE TICKS ON THE OUTER RING ---
+    final tickPaint = Paint()
+      ..color = Colors.white30
+      ..strokeWidth = 0.8;
+
+    for (int deg = 0; deg < 360; deg += 2) {
+      final wDeg = _norm(deg - totalAscDeg);
+      final isTen = deg % 10 == 0;
+      final isFive = deg % 5 == 0;
+      final tickLen = isTen ? 5.0 : (isFive ? 3.5 : 1.8);
+      canvas.drawLine(
+        _getPointOnWheel(center, middleRingR, wDeg),
+        _getPointOnWheel(center, middleRingR + tickLen, wDeg),
+        tickPaint..color = isTen ? Colors.white54 : Colors.white24,
+      );
+    }
+
     for (int i = 0; i < 12; i++) {
       final signStartAbsolute = i * 30.0;
-      double signStartWheelDeg = (signStartAbsolute - totalAscDeg) % 360.0;
-      if (signStartWheelDeg < 0) signStartWheelDeg += 360.0;
+      final signStartWheelDeg = _norm(signStartAbsolute - totalAscDeg);
 
-      // Draw sign divider line
+      // Sign divider line
       final divP1 = _getPointOnWheel(center, middleRingR, signStartWheelDeg);
       final divP2 = _getPointOnWheel(center, outerRingR, signStartWheelDeg);
-      canvas.drawLine(divP1, divP2, circlePaint);
+      canvas.drawLine(
+        divP1,
+        divP2,
+        Paint()
+          ..color = Colors.white38
+          ..strokeWidth = 1.2,
+      );
 
-      // Symbol position at midpoint of sign (15° in sign)
-      final midWheelDeg = (signStartWheelDeg + 15.0) % 360.0;
+      // Zodiac Symbol at midpoint of sign (15°)
+      final midWheelDeg = _norm(signStartWheelDeg + 15.0);
       final symbolR = (outerRingR + middleRingR) / 2;
       final symPos = _getPointOnWheel(center, symbolR, midWheelDeg);
 
@@ -113,7 +196,7 @@ class ChartWheelPainter extends CustomPainter {
           text: zodiacSymbols[i],
           style: TextStyle(
             color: elementColors[i],
-            fontSize: 14.5,
+            fontSize: 14.0,
             fontWeight: FontWeight.bold,
           ),
         ),
@@ -125,31 +208,67 @@ class ChartWheelPainter extends CustomPainter {
       );
     }
 
-    // --- 2. DRAW 12 HOUSES (Counter-Clockwise: House 1 is 9 -> 8 o'clock) ---
-    for (int h = 0; h < 12; h++) {
-      final houseStartWheelDeg = h * 30.0;
-      final isAscDsc = (h == 0 || h == 6);
+    // --- 2. DRAW 12 PROMINENT HOUSE CUSPS, OUTER CUSP DEGREES & INNER HOUSE NUMBERS ---
+    final cusps = _resolveHouseCusps(totalAscDeg, totalMcDeg);
+    for (int h = 1; h <= 12; h++) {
+      final cuspLon = cusps[h]!;
+      final nextCuspLon = cusps[h == 12 ? 1 : h + 1]!;
+      final wDeg = _norm(cuspLon - totalAscDeg);
+      final nextWDeg = _norm(nextCuspLon - totalAscDeg);
+
+      final isAngle = (h == 1 || h == 4 || h == 7 || h == 10);
+      final Color lineColor = h == 1
+          ? AppColors.starlightGold
+          : h == 10
+              ? AppColors.pastelMint
+              : h == 7
+                  ? AppColors.pastelLavender
+                  : h == 4
+                      ? AppColors.pastelBlue
+                      : Colors.white38;
 
       final linePaint = Paint()
-        ..color = isAscDsc ? AppColors.starlightGold : Colors.white24
-        ..strokeWidth = isAscDsc ? 1.8 : 0.8;
+        ..color = lineColor
+        ..strokeWidth = isAngle ? 2.2 : 1.1;
 
-      final hp1 = _getPointOnWheel(center, innerAspectsR, houseStartWheelDeg);
-      final hp2 = _getPointOnWheel(center, middleRingR, houseStartWheelDeg);
+      // Prominent cusp line from innerAspectsR through middleRingR to outerRingR
+      final hp1 = _getPointOnWheel(center, innerAspectsR, wDeg);
+      final hp2 = _getPointOnWheel(center, isAngle ? outerRingR + 3 : middleRingR, wDeg);
       canvas.drawLine(hp1, hp2, linePaint);
 
-      // House Number in the middle of house (15° offset)
-      final hNumWheelDeg = houseStartWheelDeg + 15.0;
-      final hNumR = (housesRingR + innerAspectsR) / 2;
-      final hNumPos = _getPointOnWheel(center, hNumR, hNumWheelDeg);
+      // Outer House Cusp Degree Label (e.g. "04°♑17'")
+      final cuspPos = _getPointOnWheel(center, cuspLabelR, wDeg);
+      final cuspLabel = _formatCuspCompact(cuspLon);
+      final cuspPainter = TextPainter(
+        text: TextSpan(
+          text: cuspLabel,
+          style: TextStyle(
+            color: isAngle ? lineColor : Colors.white70,
+            fontSize: isAngle ? 7.8 : 6.8,
+            fontWeight: isAngle ? FontWeight.bold : FontWeight.w600,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      cuspPainter.paint(
+        canvas,
+        Offset(cuspPos.dx - cuspPainter.width / 2, cuspPos.dy - cuspPainter.height / 2),
+      );
+
+      // Inner House Number (1..12) in the house number ring
+      double span = _norm(nextWDeg - wDeg);
+      if (span == 0) span = 30.0;
+      final midHouseWDeg = _norm(wDeg + span / 2.0);
+      final hNumR = (houseNumRingR + innerAspectsR) / 2;
+      final hNumPos = _getPointOnWheel(center, hNumR, midHouseWDeg);
 
       final hPainter = TextPainter(
         text: TextSpan(
-          text: '${h + 1}',
+          text: '$h',
           style: TextStyle(
-            color: isAscDsc ? AppColors.starlightGold : Colors.white38,
-            fontSize: 9.5,
-            fontWeight: isAscDsc ? FontWeight.bold : FontWeight.normal,
+            color: isAngle ? AppColors.starlightGold : Colors.white70,
+            fontSize: 9.0,
+            fontWeight: FontWeight.bold,
           ),
         ),
         textDirection: TextDirection.ltr,
@@ -160,113 +279,76 @@ class ChartWheelPainter extends CustomPainter {
       );
     }
 
-    // --- 3. AXIS LINES & BADGES (ASC, DSC, and true MC / IC angles) ---
-    double mcWheelDeg = 270.0;
-    if (mcSign != null && zodiacSigns.contains(mcSign)) {
-      final mcIdx = zodiacSigns.indexOf(mcSign!);
-      final mcAbsDeg = (mcIdx * 30.0) + (mcDegree ?? 15.0);
-      mcWheelDeg = (mcAbsDeg - totalAscDeg) % 360.0;
-      if (mcWheelDeg < 0) mcWheelDeg += 360.0;
-    }
-    final icWheelDeg = (mcWheelDeg + 180.0) % 360.0;
+    // Angle badges on the outer rim of the middle ring
+    final mcWheelDeg = _norm(totalMcDeg - totalAscDeg);
+    final icWheelDeg = _norm(mcWheelDeg + 180.0);
+    _drawAxisBadge(canvas, center, middleRingR - 9, 0.0, 'ASC', AppColors.starlightGold);
+    _drawAxisBadge(canvas, center, middleRingR - 9, icWheelDeg, 'IC', AppColors.pastelBlue);
+    _drawAxisBadge(canvas, center, middleRingR - 9, 180.0, 'DSC', AppColors.pastelLavender);
+    _drawAxisBadge(canvas, center, middleRingR - 9, mcWheelDeg, 'MC', AppColors.pastelMint);
 
-    // MC & IC Axis Lines
-    final mcLinePaint = Paint()
-      ..color = AppColors.pastelMint.withAlpha(220)
-      ..strokeWidth = 2.0;
-    canvas.drawLine(
-      _getPointOnWheel(center, innerAspectsR, mcWheelDeg),
-      _getPointOnWheel(center, middleRingR, mcWheelDeg),
-      mcLinePaint,
-    );
-
-    final icLinePaint = Paint()
-      ..color = AppColors.pastelBlue.withAlpha(220)
-      ..strokeWidth = 2.0;
-    canvas.drawLine(
-      _getPointOnWheel(center, innerAspectsR, icWheelDeg),
-      _getPointOnWheel(center, middleRingR, icWheelDeg),
-      icLinePaint,
-    );
-
-    _drawAxisBadge(canvas, center, middleRingR + 14, 0.0, 'ASC', AppColors.starlightGold);
-    _drawAxisBadge(canvas, center, middleRingR + 14, icWheelDeg, 'IC', AppColors.pastelBlue);
-    _drawAxisBadge(canvas, center, middleRingR + 14, 180.0, 'DSC', AppColors.pastelLavender);
-    _drawAxisBadge(canvas, center, middleRingR + 14, mcWheelDeg, 'MC', AppColors.pastelMint);
-
-    // --- 4. DRAW PLANETS AT TRUE COUNTER-CLOCKWISE POSITIONS ---
+    // --- 3. DRAW PLANETS & THEIR DEGREES INSIDE THE WHEEL ---
     final planetPositions = <String, Offset>{};
+    final planetTrueLongitudes = <String, double>{};
     _drawPlanetsOnWheel(
       canvas: canvas,
       center: center,
-      r: (middleRingR + housesRingR) / 2,
+      outerPlanetR: middleRingR - 22,
+      degreeLabelR: houseNumRingR + 16,
+      middleRingR: middleRingR,
       totalAscDeg: totalAscDeg,
       outPositions: planetPositions,
+      outLongitudes: planetTrueLongitudes,
     );
 
-    // --- 5. DRAW HARMONIC ASPECTS IN CENTRAL DISC ---
-    _drawInnerAspects(canvas, center, innerAspectsR, planetPositions);
+    // --- 4. DRAW CENTRAL ASPECT LINES & ASPECT GLYPHS (Universal Orbs: 10/10/8/7/7) ---
+    _drawInnerAspects(canvas, center, innerAspectsR, planetPositions, planetTrueLongitudes);
   }
 
-  static const Map<String, String> planetGlyphs = {
-    'Güneş': '☉',
-    'Ay': '☽',
-    'Merkür': '☿',
-    'Venüs': '♀\uFE0E',
-    'Mars': '♂\uFE0E',
-    'Jüpiter': '♃',
-    'Satürn': '♄',
-    'Uranüs': '♅',
-    'Neptün': '♆',
-    'Plüton': '♇',
-    'Kuzey Ay Düğümü': '☊',
-    'Güney Ay Düğümü': '☋',
-    'Chiron': '⚷',
-    'Kiron': '⚷',
-    'Lilith': '⚸',
-    'sun': '☉',
-    'moon': '☽',
-    'mercury': '☿',
-    'venus': '♀\uFE0E',
-    'mars': '♂\uFE0E',
-    'jupiter': '♃',
-    'saturn': '♄',
-    'uranus': '♅',
-    'neptune': '♆',
-    'pluto': '♇',
-    'north_node': '☊',
-    'south_node': '☋',
-    'chiron': '⚷',
-    'lilith': '⚸',
-  };
-
   static const Map<String, Color> planetColors = {
-    'sun': Color(0xFFFFD700), // Altın
-    'moon': Color(0xFFE0E0FF), // Gümüş
-    'mercury': Color(0xFF80D8FF), // Açık Mavi
-    'venus': Color(0xFFFF80AB), // Pembe
-    'mars': Color(0xFFFF5252), // Kırmızı
-    'jupiter': Color(0xFFFFAB40), // Turuncu
-    'saturn': Color(0xFFB0BEC5), // Çelik Grisi
-    'uranus': Color(0xFF40C4FF), // Turkuaz
-    'neptune': Color(0xFF7C4DFF), // Mor
-    'pluto': Color(0xFFB388FF), // Koyu Lavanta
-    'north_node': Color(0xFF69F0AE), // Nane Yeşili
-    'south_node': Color(0xFFFFAB91), // Şeftali
-    'chiron': Color(0xFFFFD54F), // Sarı
+    'sun': Color(0xFFFFD700),
+    'moon': Color(0xFFE0E0FF),
+    'mercury': Color(0xFF80D8FF),
+    'venus': Color(0xFFFF80AB),
+    'mars': Color(0xFFFF5252),
+    'jupiter': Color(0xFFFFAB40),
+    'saturn': Color(0xFFB0BEC5),
+    'uranus': Color(0xFF40C4FF),
+    'neptune': Color(0xFF7C4DFF),
+    'pluto': Color(0xFFB388FF),
+    'north_node': Color(0xFF69F0AE),
+    'true_north_node': Color(0xFF69F0AE),
+    'mean_north_node': Color(0xFF69F0AE),
+    'south_node': Color(0xFFFFAB91),
+    'true_south_node': Color(0xFFFFAB91),
+    'mean_south_node': Color(0xFFFFAB91),
+    'chiron': Color(0xFFFFD54F),
+    'lilith': Color(0xFFCE93D8),
+    'ceres': Color(0xFFA5D6A7),
+    'pallas': Color(0xFF90CAF9),
+    'juno': Color(0xFFF48FB1),
+    'vesta': Color(0xFFFFCC80),
+    'vertex': Color(0xFF80CBC4),
+    'amor': Color(0xFFFF8A80),
+    'hekate': Color(0xFFB39DDB),
+    'isis': Color(0xFFFFF59D),
   };
 
   void _drawPlanetsOnWheel({
     required Canvas canvas,
     required Offset center,
-    required double r,
+    required double outerPlanetR,
+    required double degreeLabelR,
+    required double middleRingR,
     required double totalAscDeg,
     required Map<String, Offset> outPositions,
+    required Map<String, double> outLongitudes,
   }) {
+    final items = <_WheelPlanetItem>[];
+
     planets.forEach((name, p) {
-      // Don't draw angles as planets
       final lowerName = name.toLowerCase();
-      if (lowerName == 'ascendant' || lowerName == 'mc' || lowerName == 'ic' || lowerName == 'descendant') {
+      if (lowerName == 'ascendant' || lowerName == 'rising' || lowerName == 'mc' || lowerName == 'ic' || lowerName == 'descendant') {
         return;
       }
 
@@ -291,57 +373,113 @@ class ChartWheelPainter extends CustomPainter {
 
       final signIdx = zodiacSigns.indexOf(sign);
       if (signIdx >= 0) {
-        final planetAbsDeg = (signIdx * 30.0) + deg;
-        double planetWheelDeg = (planetAbsDeg - totalAscDeg) % 360.0;
-        if (planetWheelDeg < 0) planetWheelDeg += 360.0;
-
-        final pos = _getPointOnWheel(center, r, planetWheelDeg);
-        outPositions[name] = pos;
-
-        final planetColor = planetColors[lowerName] ?? AppColors.starlightGold;
-
-        // Draw planet badge (filled disc with border and prominent glyph)
-        final badgePaint = Paint()
-          ..color = const Color(0xFF140F24)
-          ..style = PaintingStyle.fill;
-        canvas.drawCircle(pos, 9.5, badgePaint);
-
-        final borderPaint = Paint()
-          ..color = planetColor.withValues(alpha: 0.85)
-          ..style = PaintingStyle.stroke
-          ..strokeWidth = 1.2;
-        canvas.drawCircle(pos, 9.5, borderPaint);
-
-        // Draw astrological glyph (Mars and Venus vector, others clean unicode)
-        AstrologicalGlyphPainter.drawPlanet(
-          canvas,
-          planetKeyOrName: displayName,
-          center: pos,
-          size: 13.0,
-          color: planetColor,
-          strokeWidth: 1.5,
-        );
-
-        // If retrograde, draw small '℞' badge
-        if (isRetro) {
-          final rxPainter = TextPainter(
-            text: const TextSpan(
-              text: '℞',
-              style: TextStyle(
-                color: AppColors.savageRed,
-                fontSize: 8.0,
-                fontWeight: FontWeight.bold,
-              ),
-            ),
-            textDirection: TextDirection.ltr,
-          )..layout();
-          rxPainter.paint(
-            canvas,
-            Offset(pos.dx + 4, pos.dy - 10),
-          );
-        }
+        final planetAbsDeg = _norm((signIdx * 30.0) + deg);
+        final trueWheelDeg = _norm(planetAbsDeg - totalAscDeg);
+        items.add(_WheelPlanetItem(
+          key: name,
+          displayName: displayName,
+          signIdx: signIdx,
+          degInSign: deg,
+          absDeg: planetAbsDeg,
+          trueWheelDeg: trueWheelDeg,
+          displayWheelDeg: trueWheelDeg,
+          isRetro: isRetro,
+          color: planetColors[lowerName] ?? AppColors.starlightGold,
+        ));
       }
     });
+
+    if (items.isEmpty) return;
+
+    // Anti-collision angular spreading (so clustered planets & degrees are clearly legible)
+    items.sort((a, b) => a.trueWheelDeg.compareTo(b.trueWheelDeg));
+    const double minSep = 7.5;
+    for (int pass = 0; pass < 4; pass++) {
+      for (int i = 0; i < items.length; i++) {
+        final next = (i + 1) % items.length;
+        double diff = items[next].displayWheelDeg - items[i].displayWheelDeg;
+        if (next == 0) diff += 360.0;
+        if (diff < minSep && diff >= 0) {
+          final push = (minSep - diff) / 2.0;
+          items[i].displayWheelDeg = _norm(items[i].displayWheelDeg - push);
+          items[next].displayWheelDeg = _norm(items[next].displayWheelDeg + push);
+        }
+      }
+    }
+
+    for (final item in items) {
+      outLongitudes[item.key] = item.absDeg;
+      final trueRingPt = _getPointOnWheel(center, middleRingR, item.trueWheelDeg);
+      final pos = _getPointOnWheel(center, outerPlanetR, item.displayWheelDeg);
+      outPositions[item.key] = _getPointOnWheel(center, middleRingR, item.trueWheelDeg);
+
+      // Leader tick from true degree on zodiac ring to planet badge
+      canvas.drawLine(
+        trueRingPt,
+        _getPointOnWheel(center, outerPlanetR + 10, item.displayWheelDeg),
+        Paint()
+          ..color = item.color.withValues(alpha: 0.65)
+          ..strokeWidth = 0.9,
+      );
+
+      // Planet badge
+      final badgePaint = Paint()
+        ..color = const Color(0xFF140F24)
+        ..style = PaintingStyle.fill;
+      canvas.drawCircle(pos, 9.5, badgePaint);
+
+      final borderPaint = Paint()
+        ..color = item.color.withValues(alpha: 0.9)
+        ..style = PaintingStyle.stroke
+        ..strokeWidth = 1.25;
+      canvas.drawCircle(pos, 9.5, borderPaint);
+
+      AstrologicalGlyphPainter.drawPlanet(
+        canvas,
+        planetKeyOrName: item.displayName,
+        center: pos,
+        size: 12.5,
+        color: item.color,
+        strokeWidth: 1.5,
+      );
+
+      // Planet degree & sign label inward along the radial ray (Astro Gold style: "11°♓")
+      final degInt = item.degInSign.floor().clamp(0, 29);
+      final minInt = ((item.degInSign - degInt) * 60).round().clamp(0, 59);
+      final degPos = _getPointOnWheel(center, degreeLabelR, item.displayWheelDeg);
+      final degText = '${degInt.toString().padLeft(2, '0')}°${zodiacSymbols[item.signIdx]}${minInt.toString().padLeft(2, '0')}\'';
+
+      final degPainter = TextPainter(
+        text: TextSpan(
+          text: degText,
+          style: TextStyle(
+            color: item.color.withValues(alpha: 0.95),
+            fontSize: 6.6,
+            fontWeight: FontWeight.w700,
+          ),
+        ),
+        textDirection: TextDirection.ltr,
+      )..layout();
+      degPainter.paint(
+        canvas,
+        Offset(degPos.dx - degPainter.width / 2, degPos.dy - degPainter.height / 2),
+      );
+
+      if (item.isRetro) {
+        final rxPainter = TextPainter(
+          text: const TextSpan(
+            text: '℞',
+            style: TextStyle(
+              color: AppColors.savageRed,
+              fontSize: 7.5,
+              fontWeight: FontWeight.bold,
+            ),
+          ),
+          textDirection: TextDirection.ltr,
+        )..layout();
+        rxPainter.paint(canvas, Offset(pos.dx + 5, pos.dy - 10));
+      }
+    }
   }
 
   void _drawAxisBadge(Canvas canvas, Offset center, double r, double wheelDeg, String text, Color color) {
@@ -351,9 +489,9 @@ class ChartWheelPainter extends CustomPainter {
         text: text,
         style: TextStyle(
           color: color,
-          fontSize: 8.5,
+          fontSize: 8.0,
           fontWeight: FontWeight.bold,
-          letterSpacing: 0.5,
+          letterSpacing: 0.4,
         ),
       ),
       textDirection: TextDirection.ltr,
@@ -361,71 +499,86 @@ class ChartWheelPainter extends CustomPainter {
     painter.paint(canvas, Offset(pos.dx - painter.width / 2, pos.dy - painter.height / 2));
   }
 
-  void _drawInnerAspects(Canvas canvas, Offset center, double r, Map<String, Offset> planetPositions) {
-    final pKeys = planetPositions.keys.toList();
-    if (pKeys.length >= 2) {
-      final planetLongitudes = <String, double>{};
-      planets.forEach((name, p) {
-        String sign = '';
-        double deg = 0.0;
-        if (p is Map) {
-          sign = p['sign']?.toString() ?? '';
-          deg = (p['degree'] as num?)?.toDouble() ?? 0.0;
-        } else {
-          try {
-            sign = (p as dynamic).sign?.toString() ?? '';
-            deg = ((p as dynamic).degree as num?)?.toDouble() ?? 0.0;
-          } catch (_) {}
+  /// Evrensel Açı Orbları: Kavuşum 10°, Karşıt 10°, Üçgen (120°) 8°, Kare (90°) 7°, Sekstil (60°) 7°
+  void _drawInnerAspects(
+    Canvas canvas,
+    Offset center,
+    double r,
+    Map<String, Offset> planetPositions,
+    Map<String, double> planetLongitudes,
+  ) {
+    final pKeys = planetLongitudes.keys.toList();
+    if (pKeys.length < 2) return;
+
+    for (int i = 0; i < pKeys.length; i++) {
+      for (int j = i + 1; j < pKeys.length; j++) {
+        final k1 = pKeys[i];
+        final k2 = pKeys[j];
+        final lon1 = planetLongitudes[k1];
+        final lon2 = planetLongitudes[k2];
+        if (lon1 == null || lon2 == null) continue;
+
+        double diff = (lon1 - lon2).abs() % 360.0;
+        if (diff > 180.0) diff = 360.0 - diff;
+
+        Color? aspectColor;
+        String? aspectSymbol;
+        double strokeW = 1.0;
+
+        if (diff <= 10.0) {
+          aspectColor = AppColors.starlightGold.withValues(alpha: 0.70);
+          aspectSymbol = '☌';
+          strokeW = 1.3;
+        } else if ((diff - 180.0).abs() <= 10.0) {
+          aspectColor = AppColors.savageRed.withValues(alpha: 0.65);
+          aspectSymbol = '☍';
+          strokeW = 1.25;
+        } else if ((diff - 120.0).abs() <= 8.0) {
+          aspectColor = AppColors.pastelMint.withValues(alpha: 0.65);
+          aspectSymbol = '△';
+          strokeW = 1.15;
+        } else if ((diff - 90.0).abs() <= 7.0) {
+          aspectColor = AppColors.warningOrange.withValues(alpha: 0.65);
+          aspectSymbol = '□';
+          strokeW = 1.15;
+        } else if ((diff - 60.0).abs() <= 7.0) {
+          aspectColor = AppColors.pastelBlue.withValues(alpha: 0.60);
+          aspectSymbol = '✶';
+          strokeW = 1.0;
         }
-        final signIdx = zodiacSigns.indexOf(sign);
-        if (signIdx >= 0) {
-          planetLongitudes[name] = (signIdx * 30.0) + deg;
-        }
-      });
 
-      for (int i = 0; i < pKeys.length; i++) {
-        for (int j = i + 1; j < pKeys.length; j++) {
-          final k1 = pKeys[i];
-          final k2 = pKeys[j];
-          final lon1 = planetLongitudes[k1];
-          final lon2 = planetLongitudes[k2];
-          if (lon1 == null || lon2 == null) continue;
+        if (aspectColor == null) continue;
 
-          double diff = (lon1 - lon2).abs() % 360.0;
-          if (diff > 180.0) diff = 360.0 - diff;
+        final p1 = planetPositions[k1]!;
+        final p2 = planetPositions[k2]!;
+        final dir1 = (p1 - center);
+        final dir2 = (p2 - center);
+        final innerP1 = center + (dir1 / dir1.distance) * (r * 0.96);
+        final innerP2 = center + (dir2 / dir2.distance) * (r * 0.96);
 
-          Color? aspectColor;
-          double strokeW = 0.9;
-          if ((diff - 180.0).abs() <= 8.0) {
-            aspectColor = AppColors.starlightGold.withValues(alpha: 0.55);
-            strokeW = 1.15;
-          } else if ((diff - 120.0).abs() <= 7.5) {
-            aspectColor = AppColors.pastelMint.withValues(alpha: 0.50);
-            strokeW = 1.05;
-          } else if ((diff - 90.0).abs() <= 7.5) {
-            aspectColor = AppColors.savageRed.withValues(alpha: 0.50);
-            strokeW = 1.05;
-          } else if ((diff - 60.0).abs() <= 6.0) {
-            aspectColor = AppColors.pastelBlue.withValues(alpha: 0.45);
-            strokeW = 0.85;
-          }
+        canvas.drawLine(
+          innerP1,
+          innerP2,
+          Paint()
+            ..color = aspectColor
+            ..strokeWidth = strokeW,
+        );
 
-          if (aspectColor == null) continue;
-
-          final p1 = planetPositions[k1]!;
-          final p2 = planetPositions[k2]!;
-          final dir1 = (p1 - center);
-          final dir2 = (p2 - center);
-          final innerP1 = center + (dir1 / dir1.distance) * (r * 0.92);
-          final innerP2 = center + (dir2 / dir2.distance) * (r * 0.92);
-
-          canvas.drawLine(
-            innerP1,
-            innerP2,
-            Paint()
-              ..color = aspectColor
-              ..strokeWidth = strokeW,
-          );
+        // Draw small aspect symbol at midpoint of aspect chord (Astro Gold style)
+        if (aspectSymbol != null && (innerP1 - innerP2).distance > 18) {
+          final mid = Offset((innerP1.dx + innerP2.dx) / 2, (innerP1.dy + innerP2.dy) / 2);
+          final symPainter = TextPainter(
+            text: TextSpan(
+              text: aspectSymbol,
+              style: TextStyle(
+                color: aspectColor.withValues(alpha: 0.95),
+                fontSize: 7.5,
+                fontWeight: FontWeight.bold,
+              ),
+            ),
+            textDirection: TextDirection.ltr,
+          )..layout();
+          symPainter.paint(canvas, Offset(mid.dx - symPainter.width / 2, mid.dy - symPainter.height / 2));
         }
       }
     }
@@ -433,4 +586,28 @@ class ChartWheelPainter extends CustomPainter {
 
   @override
   bool shouldRepaint(covariant CustomPainter oldDelegate) => true;
+}
+
+class _WheelPlanetItem {
+  final String key;
+  final String displayName;
+  final int signIdx;
+  final double degInSign;
+  final double absDeg;
+  final double trueWheelDeg;
+  double displayWheelDeg;
+  final bool isRetro;
+  final Color color;
+
+  _WheelPlanetItem({
+    required this.key,
+    required this.displayName,
+    required this.signIdx,
+    required this.degInSign,
+    required this.absDeg,
+    required this.trueWheelDeg,
+    required this.displayWheelDeg,
+    required this.isRetro,
+    required this.color,
+  });
 }

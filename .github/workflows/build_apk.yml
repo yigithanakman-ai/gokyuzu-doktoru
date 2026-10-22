@@ -86,26 +86,21 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.12
-          name: "📱 Gökyüzü Doktoru - v1.0.12 (Sürüm Kodu 13 & Google Play In-App Purchase / Doğrudan Satın Alım ve Gizli Patron Girişi)"
+          tag_name: v1.0.13
+          name: "📱 Gökyüzü Doktoru - v1.0.13 (Sürüm Kodu 14 & Solar Fire Çark, True/Mean Node, 9 Asteroit, Evrensel Orblar, Arka Plan Bildirimleri)"
           body: |
-            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.12 / Sürüm Kodu 13)
+            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.13 / Sürüm Kodu 14)
 
             - **`gokyuzu-doktoru.apk`**: Kendi Android telefonunuzda doğrudan test edip kullanmak için yükleme dosyası (İmzalı).
             - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı).
 
-            #### 🌟 Bu Sürümdeki Yenilikler (v1.0.12):
-            1. **Resmi In-App Purchase (Uygulama İçi Satın Alma)**: Google Play Billing ve Apple StoreKit entegrasyonu tamamlandı; paket seçildiğinde doğrudan mağaza ödeme ekranı açılır.
-            2. **Geçersiz VIP Yönlendirmeleri Düzeltildi**: Arşiv ekranındaki "VIP Ayrıcalıklarını İncele" ve "VIP Yükselt" butonları artık doğrudan satın alma modalini açar.
-            3. **Açık Kod Girişleri Kaldırıldı**: Kullanıcıların gördüğü "Kod Gir", "Promosyon Kodu" butonları ve metinleri tamamen temizlendi.
-            4. **Gizli Patron / Yönetici Aktivasyonu**: Yalnızca Patron'un (proje sahibinin) bileceği gizli yönetici aktivasyonu taç simgesine 5 kez dokunarak açılacak şekilde gizlendi.
-            5. **Doğrudan Mağaza Abonelik Bağlantısı**: Eski mağaza anasayfası yönlendirmesi yerine resmi Google Play Subscriptions / App Store Subscriptions API'si entegre edildi.
-
-            #### 📲 Telefona Nasıl Yüklenir (APK)?
-            1. Aşağıdaki **Assets** bölümünden **`gokyuzu-doktoru.apk`** dosyasına dokunun ve telefonunuza indirin.
-            2. Telefonunuzun bildirim panelinden veya Dosya Yöneticisi'nden indirilen dosyaya dokunun.
-            3. "Bilinmeyen kaynaklardan yüklemeye izin verilsin mi?" uyarısı çıkarsa **İzin Ver / Aç** seçeneğini seçin.
-            4. **Yükle** butonuna basın ve uygulamayı açın!
+            #### 🌟 Bu Sürümdeki Yenilikler (v1.0.13):
+            1. **True Node (Gerçek) & Mean Node (Ortalama) Ay Düğümleri**: Harita üzerinde tek dokunuşla True Node ve Mean Node arasında geçiş ve karşılaştırma.
+            2. **9 Seçilebilir Asteroit & Özel Nokta**: Lilith, Vesta, Juno, Amor, Hekate, Isis, Vertex Noktası, Pallas ve Ceres haritaya eklendi; istenilen noktalar seçilip çıkarılabilir.
+            3. **Astro Gold / Solar Fire Tarzı 360° Çark Tasarımı**: Hem Natal hem Transit çarklarda 12 Placidus ev giriş çizgisi, dış halka kasp dereceleri, iç halka ev numaraları (1..12) ve gezegen dereceleri.
+            4. **Evrensel Açı Orbları**: Tüm haritada Kavuşum (0°): 10°, Karşıt (180°): 10°, Üçgen (120°): 8°, Kare (90°): 7°, Sekstil (60°): 7° orb kuralları standartlaştırıldı.
+            5. **28 Ay Menzili (Sa'd el-Ahbiye) & Hermetik Adımlar Ayrımı**: 11° Balık için 25. Menzil (Sa'd el-Ahbiye) kalibrasyonu, 00°-29° dk derece formatı ve Hermetik Adımların ayrı başlık altında toplanması.
+            6. **14 Günlük Tam Zamanlı Arka Plan Bildirim Motoru**: Uygulamaya girilmese bile sabah 09:30, öğle 14:30 ve akşam 20:30'da bildirim gönderimi.
           files: |
             gokyuzu-doktoru.apk
             gokyuzu-doktoru.aab

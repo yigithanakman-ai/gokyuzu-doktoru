@@ -126,10 +126,12 @@ class AdService {
         finish();
       }
     } else {
+      // Önbellekte henüz hazır değilse anlık yüklemeyi dene ve gelir gelmez göster
       preloadInterstitial();
       finish();
     }
   }
+
   static void preloadInterstitial({String? adUnitId}) {
     if (!_isMobile) return;
     if (_interstitialAd != null || _isInterstitialAdLoading) return;
@@ -160,6 +162,12 @@ class AdService {
           onAdFailedToLoad: (error) {
             _isInterstitialAdLoading = false;
             _interstitialAd = null;
+            // Geçici ağ veya No-Fill durumunda 20 saniye sonra otomatik yeniden dene
+            Future.delayed(const Duration(seconds: 20), () {
+              if (_interstitialAd == null && !_isInterstitialAdLoading) {
+                preloadInterstitial(adUnitId: unitId);
+              }
+            });
           },
         ),
       );
@@ -187,6 +195,11 @@ class AdService {
           onAdFailedToLoad: (error) {
             _isRewardedAdLoading = false;
             _rewardedAd = null;
+            Future.delayed(const Duration(seconds: 20), () {
+              if (_rewardedAd == null && !_isRewardedAdLoading) {
+                preloadRewarded(adUnitId: unitId);
+              }
+            });
           },
         ),
       );

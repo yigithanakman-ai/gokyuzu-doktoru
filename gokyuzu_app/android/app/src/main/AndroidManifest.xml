@@ -5,10 +5,13 @@
     <!-- Anlık Coğrafi Konum ve Astronomik Gezegen Saatleri İzinleri (GPS) -->
     <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION"/>
     <uses-permission android:name="android.permission.ACCESS_COARSE_LOCATION"/>
-    <!-- Android 13+ ve Genel Sistem Bildirim İzinleri -->
+    <!-- Android 13+ ve Genel Sistem Bildirim İzinleri + Tam Zamanlı Arka Plan Alarm İzinleri -->
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS"/>
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
+    <uses-permission android:name="android.permission.WAKE_LOCK"/>
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <uses-permission android:name="android.permission.USE_EXACT_ALARM"/>
 
     <!-- Google Play Fotoğraf/Video Politikası Uyumluluğu: open_filex kütüphanesinin eklediği gereksiz medya izinlerini kaldır -->
     <uses-permission android:name="android.permission.READ_MEDIA_IMAGES" tools:node="remove"/>

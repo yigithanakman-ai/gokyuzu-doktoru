@@ -221,12 +221,15 @@ class AstrologyEngine {
     );
     final ascLon = angles['asc']!;
     final mcLon = angles['mc']!;
+    final vertexLon = angles['vertex'] ?? ((ascLon + 210.0) % 360.0);
     final dscLon = (ascLon + 180.0) % 360.0;
     final icLon = (mcLon + 180.0) % 360.0;
 
     final pLons = SkyTransitsService.calculatePlanetsLongitudes(utcDateTime);
-    final northNodeLon = pLons['node']!;
-    final southNodeLon = (northNodeLon + 180.0) % 360.0;
+    final trueNorthNodeLon = pLons['true_node'] ?? pLons['node']!;
+    final trueSouthNodeLon = (trueNorthNodeLon + 180.0) % 360.0;
+    final meanNorthNodeLon = pLons['mean_node'] ?? trueNorthNodeLon;
+    final meanSouthNodeLon = (meanNorthNodeLon + 180.0) % 360.0;
 
     PlanetPosition buildPos(String key, String label, double lon, {bool forceRetro = false, bool canRetro = true}) {
       final retro = forceRetro || (canRetro && SkyTransitsService.isPlanetRetrograde(key, utcDateTime));
@@ -251,11 +254,24 @@ class AstrologyEngine {
     final nepPos = buildPos('neptune', 'Neptün', pLons['neptune']!);
     final pluPos = buildPos('pluto', 'Plüton', pLons['pluto']!);
     final chiPos = buildPos('chiron', 'Chiron', pLons['chiron']!);
-    final nnPos = buildPos('north_node', 'Kuzey Ay Düğümü', northNodeLon, forceRetro: true);
-    final snPos = buildPos('south_node', 'Güney Ay Düğümü', southNodeLon, forceRetro: true);
+    final nnPos = buildPos('north_node', 'Kuzey Ay Düğümü (True)', trueNorthNodeLon, forceRetro: true);
+    final snPos = buildPos('south_node', 'Güney Ay Düğümü (True)', trueSouthNodeLon, forceRetro: true);
+    final trueNnPos = buildPos('true_north_node', 'Kuzey Ay Düğümü (True)', trueNorthNodeLon, forceRetro: true);
+    final trueSnPos = buildPos('true_south_node', 'Güney Ay Düğümü (True)', trueSouthNodeLon, forceRetro: true);
+    final meanNnPos = buildPos('mean_north_node', 'Kuzey Ay Düğümü (Mean)', meanNorthNodeLon, forceRetro: true);
+    final meanSnPos = buildPos('mean_south_node', 'Güney Ay Düğümü (Mean)', meanSouthNodeLon, forceRetro: true);
     final mcPos = buildPos('mc', 'Tepe Noktası (MC)', mcLon, canRetro: false);
     final icPos = buildPos('ic', 'Dip Noktası (IC)', icLon, canRetro: false);
     final dscPos = buildPos('descendant', 'Alçalan (DSC)', dscLon, canRetro: false);
+    final vertexPos = buildPos('vertex', 'Vertex (Vx)', vertexLon, canRetro: false);
+    final lilithPos = buildPos('lilith', 'Kara Ay Lilith', pLons['lilith']!, canRetro: false);
+    final ceresPos = buildPos('ceres', 'Ceres', pLons['ceres']!);
+    final pallasPos = buildPos('pallas', 'Pallas', pLons['pallas']!);
+    final junoPos = buildPos('juno', 'Juno', pLons['juno']!);
+    final vestaPos = buildPos('vesta', 'Vesta', pLons['vesta']!);
+    final amorPos = buildPos('amor', 'Amor', pLons['amor']!);
+    final hekatePos = buildPos('hekate', 'Hekate', pLons['hekate']!);
+    final isisPos = buildPos('isis', 'Isis', pLons['isis']!);
 
     final planetsMap = <String, PlanetPosition>{
       'sun': sunPos,
@@ -273,9 +289,22 @@ class AstrologyEngine {
       'chiron': chiPos,
       'north_node': nnPos,
       'south_node': snPos,
+      'true_north_node': trueNnPos,
+      'true_south_node': trueSnPos,
+      'mean_north_node': meanNnPos,
+      'mean_south_node': meanSnPos,
       'mc': mcPos,
       'ic': icPos,
       'descendant': dscPos,
+      'vertex': vertexPos,
+      'lilith': lilithPos,
+      'ceres': ceresPos,
+      'pallas': pallasPos,
+      'juno': junoPos,
+      'vesta': vestaPos,
+      'amor': amorPos,
+      'hekate': hekatePos,
+      'isis': isisPos,
     };
 
     final elementsCount = BirthChartModel.calculateElementScores(planetsMap);
