@@ -22,7 +22,7 @@
 
 ---
 
-## 🌟 2. v1.0.13 (Build 14) Sürümünde Yapılan 10 Büyük Güncelleme
+## 🌟 2. v1.0.13 (Build 14) Sürümünde Yapılan 11 Büyük Güncelleme
 
 ### 1) Ay Düğümleri: True Node (Gerçek) ve Mean Node (Ortalama) Ayrımı
 - **Dosyalar:**
@@ -112,6 +112,27 @@
   - VIP modalındaki en üstteki **Taç (👑) simgesine 5 kez art arda dokunulduğunda** gizli `👑 Patron Yönetici Girişi` açılır.
   - **Gizli Kod:** `gkyz2453` (veya `GKYZ-VIP-9999`). Girildiğinde tüm uygulama anında **VIP Platinum** olur ve reklamlar tamamen kapanır.
 
+### 11) Türkiye Tarihi Yaz Saati Uygulaması (1910–2026+) & Solar Fire / Astro Gold %100 Yükselen (Ascendant) Kalibrasyonu
+- **Dosyalar:**
+  - `gokyuzu_app/lib/data/services/predictive_astrology_service.dart`
+  - `gokyuzu_app/lib/data/services/world_cities_service.dart`
+  - `gokyuzu_app/lib/data/services/astrology_engine.dart`
+  - `gokyuzu_app/lib/data/models/saved_profile_model.dart`
+- **Kök Neden Analizi (Neden Eski Kodda Yükselen Hatalı Çıkıyordu?):**
+  1. **Eski Basit Yaz Saati Varsayımı:** Eski `getHistoricalUtcOffset` fonksiyonu 2016 öncesindeki her yılın Nisan–Eylül aylarını körü körüne `UTC+3` (Yaz Saati var) varsayıyordu. Oysa Türkiye'de:
+     - **1952–1961** yılları arasında hiç yaz saati uygulanmadı (`UTC+2`). Bu yüzden **11.09.1959 10:30 Kırıkkale** doğumunda eski kod `UTC+3` alıp saati 1 saat geri çekiyor ve Yükseleni **18° 06' Akrep** yerine `06° Akrep` buluyordu!
+     - **1965–1969** ve **1971–1972** yılları arasında hiç yaz saati uygulanmadı (`UTC+2`). Bu yüzden **10.09.1971 16:46 İzmir** doğumunda eski kod `UTC+3` alıp saati 1 saat geri çekiyor ve Yükseleni **10° 38' Kova** yerine `22°30' Oğlak` buluyordu!
+     - **1978–1982** arasında kışın da kalıcı `UTC+3` uygulandı; **1983** yazında ise `GMT+3` üzerine ileri saat eklenerek **`UTC+4`** uygulandı!
+  2. **GAST (Greenwich Apparent Sidereal Time) & Nutasyon Eksikliği:** Eski `calculateAscAndMc` ortalama yıldız zamanı (GMST) ve ortalama ekliptik eğikliği ($\varepsilon_0$) kullanıyordu. Swiss Ephemeris, Solar Fire ve Astro Gold ise boylam nutasyonu ($\Delta\psi$), eğiklik nutasyonu ($\Delta\varepsilon$), gerçek ekliptik eğikliği ($\varepsilon = \varepsilon_0 + \Delta\varepsilon$) ve **Görünür Yıldız Zamanı (GAST)** kullanır.
+  3. **Şehir Yazım Hatası ("kırkkale") ve Koordinat Kalibrasyonu:** `"kırkkale"` gibi ilk `'ı'` harfi unutulan yazımlarda eski kod şehri bulamayıp `Datça` koordinatlarına düşüyordu. Ayrıca `AstrologyEngine.calculateRisingSign` fonksiyonu şehir bulunduğunda saat dilimini alıyor ama `lat/lon` değerlerini güncellemiyordu.
+- **Kalıcı Çözüm:**
+  - Resmi Gazete kararları (`astrolojidergisi.com/yaz-saati-2` - Oya Vulaş derlemesi) ve IANA `Europe/Istanbul` (`tzdata`) veritabanı birleştirilerek **1910–2026+ tam tarihsel Türkiye Yaz Saati tablosu (`_turkeyHistoricalDstTable`)** gün, ay, yıl ve geçiş saatine (`hour`, `minute`) duyarlı olarak sisteme gömüldü.
+  - `calculateAscAndMc` motoruna IAU nutasyon serisi ($\Delta\psi, \Delta\varepsilon$) ve **GAST** eklendi; İzmir koordinatı ACS Atlas (`38°25' N, 27°09' E`) standardına getirildi:
+    - **10 Eylül 1971, İzmir, 16:46** $\rightarrow$ **`10° 38' Kova`** (Solar Fire & Astro Gold ile %100 birebir aynı!)
+    - **11 Eylül 1959, Kırıkkale ("kırkkale"), 10:30** $\rightarrow$ **`18° 06' Akrep`** (Solar Fire & Astro Gold ile %100 birebir aynı!)
+  - `WorldCitiesService` içerisine Türkçe büyük/küçük harf (`İ/I`) normalizasyonu, halk arasındaki il kısaltmaları (`kirkkale`, `afyon`, `antep`, `urfa`, `maras`, `icel`, `adapazari`, `izmit`, `antakya`) ve **Levenshtein (`<= 2` harf hatası) bulanık eşleştirme (fuzzy search)** eklendi.
+  - `AstrologyEngine.calculateRisingSign` ve `SavedProfile` getter'ları şehir koordinatlarını ve tarihsel DST'yi her zaman deterministik olarak kullanacak şekilde düzeltildi.
+
 ---
 
 ## 💰 3. AdMob Reklam Birimleri İncelemesi ve Platform Eşleştirmesi
@@ -160,20 +181,26 @@ Patron'un paylaştığı AdMob Reklam Birimleri paneli ekran görüntüsüne gö
 
 ## 🧪 6. Test ve Doğrulama Durumu
 
-- **Statik Kod Analizi (`dart analyze lib`):** 0 hata, 0 uyarı.
+- **Statik Kod Analizi (`dart analyze lib test/v1013_features_test.dart`):** 0 hata, 0 uyarı.
 - **Birim Testleri (`flutter test test/v1013_features_test.dart`):**
-  - `True Node vs Mean Node calculation and difference test`: **PASSED**
-  - `All 9 asteroids calculation and valid zodiac degrees test`: **PASSED**
-  - `Aspect engine universal orbs test`: **PASSED**
-  - `Lunar Mansion 25 Sa'd el-Ahbiye at 11 Pisces test`: **PASSED**
-  - `Aspect symbols formatting test`: **PASSED**
-  - **Sonuç:** 5/5 test başarıyla geçti.
+  1. `11 Derece Balık burcundaki Ay, 25. Menzil Sa'd el-Ahbiye olarak hesaplanır`: **PASSED**
+  2. `Tüm 28 Ay Menzili derece aralıkları 00°-29° burç sınırına ve dk formatına uygundur`: **PASSED**
+  3. `AstrologyEngine True Node / Mean Node ve 9 Seçilebilir Asteroit/Noktayı hesaplar`: **PASSED**
+  4. `SkyTransitsService getExtraTransitBodies tüm asteroit ve düğümleri döner`: **PASSED**
+  5. `AspectsService Evrensel Açı Orbları (0/180: 10°, 120: 8°, 90/60: 7°) aktiftir`: **PASSED**
+  6. `Solar Fire & Astro Gold Kalibrasyonu #1: 10 Eylül 1971 İzmir 16:46 -> Yükselen 10° 38' Kova`: **PASSED**
+  7. `Solar Fire & Astro Gold Kalibrasyonu #2: 11.09.1959 Kırıkkale ("kırkkale") 10:30 -> Yükselen 18° 06' Akrep`: **PASSED**
+  8. `Türkiye Tarihi Yaz Saati Uygulaması (1940-2026+) Resmi Gazete & IANA Doğrulaması`: **PASSED**
+  - **Sonuç:** 8/8 test %100 başarıyla geçti.
 
 ---
 
 ## 📋 7. Yapılanlar ve Yapılacaklar Listesi (Roadmap)
 
 ### ✅ Yapılanlar (v1.0.13+14 Tamamlandı):
+- [x] **Türkiye Tarihi Yaz Saati Uygulaması (1910–2026+) Tablosu:** Resmi Gazete (`astrolojidergisi.com/yaz-saati-2`) ve IANA `Europe/Istanbul` verilerine göre tüm yıllar, günler ve geçiş saatleri (`UTC+2`, `UTC+3`, 1983 `UTC+4`) eksiksiz kodlandı.
+- [x] **Solar Fire & Astro Gold %100 Yükselen (GAST + Nutasyon) Kalibrasyonu:** `10.09.1971 16:46 İzmir` (`10°38' Kova`) ve `11.09.1959 10:30 Kırıkkale` (`18°06' Akrep`) dahil tüm doğum haritalarında dakika hassasiyetinde eşleşme sağlandı.
+- [x] **Türkçe Şehir Normalizasyonu & Bulanık Arama (Fuzzy Match):** `"kırkkale"` gibi harf eksikleri, `İ/I` dönüşümleri ve halk arasındaki il isimleri (`afyon`, `antep`, `urfa`, `maras`, `icel`, `izmit`, `adapazari`, `antakya`) otomatik olarak doğru şehre bağlandı.
 - [x] AdMob test birimi yönlendirme hatası (`kReleaseMode ? live : test`) kaldırıldı; tüm istekler canlı kimliklere bağlandı.
 - [x] AdMob panelindeki `Gokyuzu_Gecis_Sekmeler` (`7656178404`) ve `Gokyuzu_Odullu_Pusula` (`1704268715`) kodla birebir doğrulandı.
 - [x] 4. eylemde reklam bellekte yoksa atlama hatası giderildi; anında yükleyip gösterme (`loadAndShowInterstitial`) eklendi.

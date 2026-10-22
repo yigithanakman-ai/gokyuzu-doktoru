@@ -80,7 +80,7 @@ class WorldCitiesService {
     CityLocation(city: 'Iğdır', country: 'Türkiye', latitude: 39.9196, longitude: 44.0450, timezoneOffset: 3.0),
     CityLocation(city: 'Isparta', country: 'Türkiye', latitude: 37.7648, longitude: 30.5566, timezoneOffset: 3.0),
     CityLocation(city: 'İstanbul', country: 'Türkiye', latitude: 41.0082, longitude: 28.9784, timezoneOffset: 3.0),
-    CityLocation(city: 'İzmir', country: 'Türkiye', latitude: 38.4192, longitude: 27.1287, timezoneOffset: 3.0),
+    CityLocation(city: 'İzmir', country: 'Türkiye', latitude: 38.4167, longitude: 27.1500, timezoneOffset: 3.0),
     CityLocation(city: 'Kahramanmaraş', country: 'Türkiye', latitude: 37.5858, longitude: 36.9371, timezoneOffset: 3.0),
     CityLocation(city: 'Karabük', country: 'Türkiye', latitude: 41.2061, longitude: 32.6204, timezoneOffset: 3.0),
     CityLocation(city: 'Karaman', country: 'Türkiye', latitude: 37.1759, longitude: 33.2287, timezoneOffset: 3.0),
@@ -434,29 +434,32 @@ class WorldCitiesService {
     CityLocation(city: 'Karakas (Caracas)', country: 'Venezuela', latitude: 10.4806, longitude: -66.9036, timezoneOffset: -4.0),
   ];
 
-  /// Yerel hızlı arama (Offline öncelikli, anlık 0ms gecikme)
+  /// Yerel hızlı arama (Offline öncelikli, anlık 0ms gecikme + Yazım Hatası Toleranslı)
   static List<CityLocation> search(String query, {int limit = 8}) {
-    final q = _normalize(query.trim().toLowerCase());
+    final q = _normalize(query.trim());
     if (q.isEmpty) return [];
 
     final cityStartsWith = <CityLocation>[];
     final cityContains = <CityLocation>[];
+    final fuzzyMatches = <CityLocation>[];
     final countryMatches = <CityLocation>[];
 
     for (final loc in allCities) {
-      final cityNorm = _normalize(loc.city.toLowerCase());
-      final countryNorm = _normalize(loc.country.toLowerCase());
+      final cityNorm = _normalize(loc.city);
+      final countryNorm = _normalize(loc.country);
 
       if (cityNorm.startsWith(q)) {
         cityStartsWith.add(loc);
       } else if (cityNorm.contains(q)) {
         cityContains.add(loc);
+      } else if (q.length >= 4 && _levenshtein(cityNorm.split(' ').first, q) <= 2) {
+        fuzzyMatches.add(loc);
       } else if (countryNorm.startsWith(q) || countryNorm.contains(q)) {
         countryMatches.add(loc);
       }
     }
 
-    return [...cityStartsWith, ...cityContains, ...countryMatches].take(limit).toList();
+    return [...cityStartsWith, ...cityContains, ...fuzzyMatches, ...countryMatches].take(limit).toList();
   }
 
   /// Canlı Küresel Solar Fire Atlası Arama Motoru (OpenStreetMap / Photon Geocoding Entegrasyonu)
@@ -546,13 +549,22 @@ class WorldCitiesService {
     return (lon / 15.0).roundToDouble();
   }
 
-  /// Şehir adına veya ülke bilgisine göre en uygun koordinatı döner
+  /// Şehir adına veya ülke bilgisine göre en uygun koordinatı döner (Yazım hatası & takma ad toleranslı)
   static CityLocation findCity(String cityName, [String? countryName]) {
-    final cNorm = _normalize(cityName.trim().toLowerCase());
-    
+    final cNorm = _normalize(cityName.trim());
+    if (cNorm.isEmpty) {
+      return const CityLocation(
+        city: 'Datça',
+        country: 'Türkiye',
+        latitude: 36.7265,
+        longitude: 27.6853,
+        timezoneOffset: 3.0,
+      );
+    }
+
     // 1. Birebir veya normalize edilmiş şehir eşleşmesi
     for (final loc in allCities) {
-      final lNorm = _normalize(loc.city.toLowerCase());
+      final lNorm = _normalize(loc.city);
       if (lNorm == cNorm ||
           lNorm.startsWith('$cNorm ') ||
           lNorm.contains('($cNorm)') ||
@@ -562,17 +574,52 @@ class WorldCitiesService {
       }
     }
 
-    // 2. İçerme kontrolü (minimum 3 karakter)
+    // 2. Özel bilinen takma adlar ve sık yapılan yazım hataları (Alias & Typo eşleşmesi)
+    const Map<String, String> turkishAliases = {
+      'kirkkale': 'Kırıkkale',
+      'kinkkale': 'Kırıkkale',
+      'kirikale': 'Kırıkkale',
+      'kirklareli': 'Kırklareli',
+      'kirkareli': 'Kırklareli',
+      'kirsehir': 'Kırşehir',
+      'afyon': 'Afyonkarahisar',
+      'antep': 'Gaziantep',
+      'gantep': 'Gaziantep',
+      'urfa': 'Şanlıurfa',
+      'surfa': 'Şanlıurfa',
+      'maras': 'Kahramanmaraş',
+      'kmaras': 'Kahramanmaraş',
+      'icel': 'Mersin',
+      'adapazari': 'Sakarya',
+      'izmit': 'Kocaeli',
+      'antakya': 'Hatay',
+      'iskenderun': 'Hatay',
+      'diyarbekir': 'Diyarbakır',
+      'tunceli': 'Tunceli',
+      'dersim': 'Tunceli',
+      'artvin': 'Artvin',
+      'hakkari': 'Hakkari',
+      'colemerik': 'Hakkari',
+    };
+
+    if (turkishAliases.containsKey(cNorm)) {
+      final targetName = _normalize(turkishAliases[cNorm]!);
+      for (final loc in allCities) {
+        if (_normalize(loc.city) == targetName) return loc;
+      }
+    }
+
+    // 3. İçerme kontrolü (minimum 3 karakter)
     if (cNorm.length >= 3) {
       for (final loc in allCities) {
-        final lNorm = _normalize(loc.city.toLowerCase());
-        if (lNorm.contains(cNorm)) {
+        final lNorm = _normalize(loc.city);
+        if (lNorm.contains(cNorm) || cNorm.contains(lNorm)) {
           return loc;
         }
       }
     }
 
-    // 3. Özel bilinen takma adlar (Alias eşleşmesi)
+    // 4. Uluslararası özel bilinen takma adlar
     if (cNorm.contains('yevlax') || cNorm.contains('yevlakh') || cNorm.contains('yevlah')) {
       return const CityLocation(city: 'Yevlax (Yevlakh)', country: 'Azerbaycan', latitude: 40.6172, longitude: 47.1500, timezoneOffset: 4.0);
     }
@@ -589,9 +636,26 @@ class WorldCitiesService {
       return const CityLocation(city: 'Astana (Nur-Sultan)', country: 'Kazakistan', latitude: 51.1694, longitude: 71.4491, timezoneOffset: 5.0);
     }
 
-    // 3. Ülkeye göre akıllı başkent fallback'i (Asla rastgele Bolu'ya düşmez)
+    // 5. Levenshtein Yakınlık Eşleşmesi (1-2 harf eksik/fazla/yanlış yazımlar için)
+    if (cNorm.length >= 4) {
+      CityLocation? bestMatch;
+      int bestDist = 999;
+      for (final loc in allCities) {
+        final lNorm = _normalize(loc.city.split('(').first.trim());
+        final dist = _levenshtein(cNorm, lNorm);
+        if (dist < bestDist) {
+          bestDist = dist;
+          bestMatch = loc;
+        }
+      }
+      if (bestMatch != null && bestDist <= 2) {
+        return bestMatch;
+      }
+    }
+
+    // 6. Ülkeye göre akıllı başkent fallback'i
     if (countryName != null && countryName.trim().isNotEmpty) {
-      final countryNorm = _normalize(countryName.trim().toLowerCase());
+      final countryNorm = _normalize(countryName.trim());
       if (countryNorm.contains('azerb') || countryNorm.contains('azer')) {
         return const CityLocation(city: 'Bakü (Baku)', country: 'Azerbaycan', latitude: 40.4093, longitude: 49.8671, timezoneOffset: 4.0);
       }
@@ -631,18 +695,50 @@ class WorldCitiesService {
     );
   }
 
+  static int _levenshtein(String s, String t) {
+    if (s == t) return 0;
+    if (s.isEmpty) return t.length;
+    if (t.isEmpty) return s.length;
+
+    final v0 = List<int>.generate(t.length + 1, (i) => i);
+    final v1 = List<int>.filled(t.length + 1, 0);
+
+    for (int i = 0; i < s.length; i++) {
+      v1[0] = i + 1;
+      for (int j = 0; j < t.length; j++) {
+        final cost = (s[i] == t[j]) ? 0 : 1;
+        int minVal = v1[j] + 1;
+        if (v0[j + 1] + 1 < minVal) minVal = v0[j + 1] + 1;
+        if (v0[j] + cost < minVal) minVal = v0[j] + cost;
+        v1[j + 1] = minVal;
+      }
+      for (int j = 0; j <= t.length; j++) {
+        v0[j] = v1[j];
+      }
+    }
+    return v1[t.length];
+  }
+
   static String _normalize(String input) {
     return input
-        .replaceAll('ı', 'i')
         .replaceAll('İ', 'i')
+        .replaceAll('I', 'i')
+        .replaceAll('ı', 'i')
+        .replaceAll('Ğ', 'g')
         .replaceAll('ğ', 'g')
+        .replaceAll('Ü', 'u')
         .replaceAll('ü', 'u')
+        .replaceAll('Ş', 's')
         .replaceAll('ş', 's')
+        .replaceAll('Ö', 'o')
         .replaceAll('ö', 'o')
+        .replaceAll('Ç', 'c')
         .replaceAll('ç', 'c')
-        .replaceAll('ə', 'e')
         .replaceAll('Ə', 'e')
+        .replaceAll('ə', 'e')
+        .replaceAll('X', 'h')
         .replaceAll('x', 'h')
-        .replaceAll('X', 'h');
+        .toLowerCase()
+        .replaceAll('\u0307', '');
   }
 }

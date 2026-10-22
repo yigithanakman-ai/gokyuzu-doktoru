@@ -78,26 +78,119 @@ class PredictiveAstrologyService {
     }
   }
 
-  /// Tarihsel Zaman Dilimi & Yaz/Kış Saati (DST) Çözümleyici (Solar Fire Standardı)
+  /// Türkiye Resmi Gazete Kararnameleri, Oya Vulaş (Astroloji Dergisi) ve IANA (Europe/Istanbul / Solar Fire / Astro Gold)
+  /// Birebir Tarihsel Yaz/Kış Saati (DST) Tablosu (1916 – 2026+)
+  /// Format: [başlangıçYıl, başlangıçAy, başlangıçGün, başlangıçSaat, bitişYıl, bitişAy, bitişGün, bitişSaat, utcOffset]
+  static const List<List<num>> _turkeyHistoricalDstTable = [
+    // Osmanlı & Mütareke Dönemi (1916 - 1925)
+    [1916, 5, 1, 0, 1916, 10, 1, 0, 3.0],
+    [1920, 3, 28, 0, 1920, 10, 25, 0, 3.0],
+    [1921, 4, 3, 0, 1921, 10, 3, 0, 3.0],
+    [1922, 3, 26, 0, 1922, 10, 8, 0, 3.0],
+    [1924, 5, 13, 0, 1924, 10, 1, 0, 3.0],
+    [1925, 5, 1, 0, 1925, 10, 1, 0, 3.0],
+    // 1926 - Haziran 1940 arası yaz saati uygulanmadı (Standart UTC+2.0)
+    // II. Dünya Savaşı ve 1940'lı Yıllar
+    [1940, 7, 1, 0, 1940, 10, 6, 0, 3.0],
+    [1940, 12, 1, 0, 1941, 9, 21, 0, 3.0],
+    // 01 Nisan 1942 - 08 Ekim 1945 arası kesintisiz (kışın da) ileri saat (UTC+3.0)
+    [1942, 4, 1, 0, 1945, 10, 8, 0, 3.0],
+    [1946, 6, 1, 0, 1946, 10, 1, 0, 3.0],
+    [1947, 4, 20, 0, 1947, 10, 5, 0, 3.0],
+    [1948, 4, 18, 0, 1948, 10, 3, 0, 3.0],
+    [1949, 4, 10, 0, 1949, 10, 2, 0, 3.0],
+    [1950, 4, 16, 0, 1950, 10, 8, 0, 3.0],
+    [1951, 4, 22, 0, 1951, 10, 7, 0, 3.0],
+    // 1952 - 14 Temmuz 1962 arası Türkiye'de YAZ SAATİ YOKTUR (Örn: 11.09.1959 -> UTC+2.0)
+    // 15 Temmuz 1962 - 30 Ekim 1963 arası kışın da kesintisiz ileri saat (UTC+3.0)
+    [1962, 7, 15, 0, 1963, 10, 30, 0, 3.0],
+    [1964, 5, 15, 0, 1964, 10, 1, 0, 3.0],
+    // 1965 - 02 Haziran 1973 arası Türkiye'de YAZ SAATİ YOKTUR (Örn: 10.09.1971 -> UTC+2.0)
+    [1973, 6, 3, 1, 1973, 11, 4, 2, 3.0],
+    [1974, 3, 31, 2, 1974, 11, 3, 2, 3.0],
+    [1975, 3, 22, 2, 1975, 11, 2, 2, 3.0],
+    [1976, 3, 21, 2, 1976, 10, 31, 2, 3.0],
+    [1977, 4, 3, 2, 1977, 10, 16, 2, 3.0],
+    // 1978 - 1984 Boylam Değişikliği & Sürekli İleri Saat Dönemi:
+    // 02 Nisan 1978 saat 02:00'den 31 Temmuz 1983 saat 02:00'ye kadar kesintisiz GMT+3.0
+    [1978, 4, 2, 2, 1983, 7, 31, 2, 3.0],
+    // 31 Temmuz 1983 saat 02:00'den 02 Ekim 1983 saat 02:00'ye kadar ilave 1 saat ileri: GMT+4.0!
+    [1983, 7, 31, 2, 1983, 10, 2, 2, 4.0],
+    // 02 Ekim 1983 saat 02:00'den 01 Kasım 1984 saat 02:00'ye kadar kesintisiz GMT+3.0
+    [1983, 10, 2, 2, 1984, 11, 1, 2, 3.0],
+    // 1985 - 1995 Dönemi (Eylül sonunda kış saatine dönülen yıllar)
+    [1985, 4, 20, 1, 1985, 9, 28, 2, 3.0],
+    [1986, 3, 30, 1, 1986, 9, 28, 2, 3.0],
+    [1987, 3, 29, 1, 1987, 9, 27, 2, 3.0],
+    [1988, 3, 27, 1, 1988, 9, 25, 2, 3.0],
+    [1989, 3, 26, 1, 1989, 9, 24, 2, 3.0],
+    [1990, 3, 25, 1, 1990, 9, 30, 2, 3.0],
+    [1991, 3, 31, 1, 1991, 9, 29, 2, 3.0],
+    [1992, 3, 29, 1, 1992, 9, 27, 2, 3.0],
+    [1993, 3, 28, 1, 1993, 9, 26, 2, 3.0],
+    [1994, 3, 20, 1, 1994, 9, 25, 2, 3.0],
+    [1995, 3, 26, 1, 1995, 9, 24, 2, 3.0],
+    // 1996 - 2015 Avrupa Birliği Uyumlu Dönem (Ekim/Kasım sonunda kış saatine dönüş)
+    [1996, 3, 31, 1, 1996, 10, 27, 2, 3.0],
+    [1997, 3, 30, 1, 1997, 10, 26, 2, 3.0],
+    [1998, 3, 29, 1, 1998, 10, 25, 2, 3.0],
+    [1999, 3, 28, 1, 1999, 10, 31, 2, 3.0],
+    [2000, 3, 26, 1, 2000, 10, 29, 2, 3.0],
+    [2001, 3, 25, 1, 2001, 10, 28, 2, 3.0],
+    [2002, 3, 31, 1, 2002, 10, 27, 2, 3.0],
+    [2003, 3, 30, 1, 2003, 10, 26, 2, 3.0],
+    [2004, 3, 28, 1, 2004, 10, 31, 2, 3.0],
+    [2005, 3, 27, 1, 2005, 10, 30, 2, 3.0],
+    [2006, 3, 26, 1, 2006, 10, 29, 2, 3.0],
+    [2007, 3, 25, 3, 2007, 10, 28, 4, 3.0],
+    [2008, 3, 30, 3, 2008, 10, 26, 4, 3.0],
+    [2009, 3, 29, 3, 2009, 10, 25, 4, 3.0],
+    [2010, 3, 28, 3, 2010, 10, 31, 4, 3.0],
+    // 2011'de YGS sınavı nedeniyle 27 Mart yerine 28 Mart Pazartesi 03:00'te geçildi
+    [2011, 3, 28, 3, 2011, 10, 30, 4, 3.0],
+    [2012, 3, 25, 3, 2012, 10, 28, 4, 3.0],
+    [2013, 3, 31, 3, 2013, 10, 27, 4, 3.0],
+    [2014, 3, 31, 3, 2014, 10, 26, 4, 3.0],
+    // 2015'te 1 Kasım seçimleri nedeniyle kış saatine dönüş 8 Kasım 2015 04:00'e ertelendi
+    [2015, 3, 29, 3, 2015, 11, 8, 4, 3.0],
+  ];
+
+  /// Tarihsel Zaman Dilimi & Yaz/Kış Saati (DST) Çözümleyici (Solar Fire & Astro Gold Standardı)
   static double getHistoricalUtcOffset({
     required CityLocation cityLoc,
     required DateTime dt,
+    int? hour,
+    int? minute,
   }) {
-    if (cityLoc.country == 'Türkiye') {
-      // 7 Eylül 2016 öncesi Türkiye kışın UTC+2, yazın UTC+3 kullanıyordu:
-      if (dt.isBefore(DateTime(2016, 9, 7))) {
-        final m = dt.month;
-        if (m > 3 && m < 10) return 3.0; // Nisan - Eylül arası yaz saati (+3)
-        if (m < 3 || m > 10) return 2.0; // Kasım - Şubat arası kış saati (+2)
-        if (m == 3) {
-          return dt.day >= 25 ? 3.0 : 2.0; // Mart sonu yaz saatine geçiş
-        }
-        if (m == 10) {
-          return dt.day >= 25 ? 2.0 : 3.0; // Ekim sonu kış saatine dönüş
+    final localDt = DateTime(
+      dt.year,
+      dt.month,
+      dt.day,
+      hour ?? dt.hour,
+      minute ?? dt.minute,
+    );
+
+    if (cityLoc.country == 'Türkiye' || cityLoc.country == 'KKTC') {
+      // 1 Ekim 1910 öncesi İstanbul Yerel Ortalama Zamanı (IMT: UTC + 1s 56d 56sn)
+      if (localDt.isBefore(DateTime(1910, 10, 1))) {
+        return 7016.0 / 3600.0;
+      }
+      // 27 Mart 2016 saat 03:00 sonrası Türkiye kalıcı olarak UTC+3.0 saat dilimine geçti
+      if (!localDt.isBefore(DateTime(2016, 3, 27, 3, 0))) {
+        return 3.0;
+      }
+      // 1910 - 2016 arası resmi kararnameler tablosundan tam eşleşme kontrolü:
+      for (final row in _turkeyHistoricalDstTable) {
+        final start = DateTime(row[0].toInt(), row[1].toInt(), row[2].toInt(), row[3].toInt());
+        final end = DateTime(row[4].toInt(), row[5].toInt(), row[6].toInt(), row[7].toInt());
+        if (!localDt.isBefore(start) && localDt.isBefore(end)) {
+          return row[8].toDouble();
         }
       }
-      return 3.0; // 2016 sonrası kalıcı UTC+3
+      // Tablodaki yaz saati aralıkları dışında Türkiye standart kış saati (Doğu Avrupa Saati: UTC+2.0)
+      return 2.0;
     }
+
     return cityLoc.timezoneOffset;
   }
 
@@ -141,6 +234,7 @@ class PredictiveAstrologyService {
   }
 
   /// Koordinatlara Göre Astronomik Ascendant (Yükselen) & MC Hesaplama
+  /// (Jean Meeus / Swiss Ephemeris / Solar Fire / Astro Gold GAST & True Obliquity Standardı)
   static Map<String, double> calculateAscAndMc({
     required DateTime utcDateTime,
     required double latitude,
@@ -163,12 +257,25 @@ class PredictiveAstrologyService {
     double gmst = 280.46061837 + 360.98564736629 * (jd - 2451545.0) + 0.000387933 * t * t - (t * t * t) / 38710000.0;
     gmst = _normalize(gmst);
 
-    // Local Sidereal Time / RAMC
-    final ramc = _normalize(gmst + longitude);
+    // Mean Obliquity of Ecliptic (Laskar / Meeus)
+    final eps0 = 23.43929111 - (46.8150 * t + 0.00059 * t * t - 0.001813 * t * t * t) / 3600.0;
 
-    // Obliquity of Ecliptic
-    final eps = 23.439291 - 0.0130042 * t;
+    // Nutation in Longitude (dPsi) & Nutation in Obliquity (dEps) - Meeus Ch. 22
+    final omega = _rad(_normalize(125.04452 - 1934.136261 * t));
+    final lSun = _rad(_normalize(280.4665 + 36000.7698 * t));
+    final lMoon = _rad(_normalize(218.3165 + 481267.8813 * t));
+    final dPsiArcsec = -17.20 * math.sin(omega) - 1.32 * math.sin(2.0 * lSun) - 0.23 * math.sin(2.0 * lMoon) + 0.21 * math.sin(2.0 * omega);
+    final dEpsArcsec = 9.20 * math.cos(omega) + 0.57 * math.cos(2.0 * lSun) + 0.10 * math.cos(2.0 * lMoon) - 0.09 * math.cos(2.0 * omega);
+
+    // True Obliquity & Greenwich Apparent Sidereal Time (GAST)
+    final eps = eps0 + dEpsArcsec / 3600.0;
     final epsRad = _rad(eps);
+    final eqEquinoxes = (dPsiArcsec / 3600.0) * math.cos(epsRad);
+    final gast = _normalize(gmst + eqEquinoxes);
+
+    // Local Apparent Sidereal Time / RAMC (Solar Fire & Astro Gold Standard)
+    final ramc = _normalize(gast + longitude);
+
     final latRad = _rad(latitude);
     final ramcRad = _rad(ramc);
 
@@ -198,7 +305,7 @@ class PredictiveAstrologyService {
       'mc': mcDeg,
       'vertex': vertexDeg,
       'ramc': ramc,
-      'gmst': gmst,
+      'gmst': gast,
     };
   }
 
@@ -329,7 +436,12 @@ class PredictiveAstrologyService {
     final timeParts = parseBirthTime(profile.birthTime);
     final birthCity = profile.birthCity.isNotEmpty ? profile.birthCity : 'Datça';
     final cityLoc = WorldCitiesService.findCity(birthCity, profile.birthCountry);
-    final birthOffset = getHistoricalUtcOffset(cityLoc: cityLoc, dt: birthDate);
+    final birthOffset = getHistoricalUtcOffset(
+      cityLoc: cityLoc,
+      dt: birthDate,
+      hour: timeParts['hour'],
+      minute: timeParts['minute'],
+    );
     
     final utcDateTime = DateTime.utc(
       birthDate.year,
@@ -353,7 +465,12 @@ class PredictiveAstrologyService {
     final timeParts = parseBirthTime(profile.birthTime);
     final birthCity = profile.birthCity.isNotEmpty ? profile.birthCity : 'Datça';
     final cityLoc = WorldCitiesService.findCity(birthCity, profile.birthCountry);
-    final birthOffset = getHistoricalUtcOffset(cityLoc: cityLoc, dt: birthDate);
+    final birthOffset = getHistoricalUtcOffset(
+      cityLoc: cityLoc,
+      dt: birthDate,
+      hour: timeParts['hour'],
+      minute: timeParts['minute'],
+    );
 
     final utcDateTime = DateTime.utc(
       birthDate.year,
@@ -707,7 +824,12 @@ class PredictiveAstrologyService {
     final cityLoc = WorldCitiesService.findCity(birthCity, profile.birthCountry);
 
     // 1. Doğum UTC Zamanı (Tarihsel Yaz/Kış Saati Hassasiyeti):
-    final birthOffset = getHistoricalUtcOffset(cityLoc: cityLoc, dt: birthDate);
+    final birthOffset = getHistoricalUtcOffset(
+      cityLoc: cityLoc,
+      dt: birthDate,
+      hour: birthTimeMap['hour'],
+      minute: birthTimeMap['minute'],
+    );
     final birthUtc = DateTime.utc(
       birthDate.year,
       birthDate.month,

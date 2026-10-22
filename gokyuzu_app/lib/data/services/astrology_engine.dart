@@ -81,15 +81,32 @@ class AstrologyEngine {
     return isRetrograde ? '$degStr°$minStr\' $sign (r)' : '$degStr°$minStr\' $sign';
   }
 
-  // Güneş Burcu (Jean Meeus Efemeris Boylamına Göre)
-  static String calculateSunSign(DateTime date, [TimeOfDay? time]) {
-    final dt = DateTime.utc(
-      date.year,
-      date.month,
-      date.day,
-      time?.hour ?? 12,
-      time?.minute ?? 0,
+  // Güneş Burcu (Jean Meeus Efemeris Boylamına ve Tarihsel Saat Dilimine Göre)
+  static String calculateSunSign(
+    DateTime date, [
+    TimeOfDay? time,
+    String? city,
+    String? country,
+  ]) {
+    final h = time?.hour ?? 12;
+    final m = time?.minute ?? 0;
+    final cityLoc = (city != null && city.isNotEmpty)
+        ? WorldCitiesService.findCity(city, country)
+        : const CityLocation(
+            city: 'Datça',
+            country: 'Türkiye',
+            latitude: 36.7265,
+            longitude: 27.6853,
+            timezoneOffset: 3.0,
+          );
+    final effectiveOffset = PredictiveAstrologyService.getHistoricalUtcOffset(
+      cityLoc: cityLoc,
+      dt: date,
+      hour: h,
+      minute: m,
     );
+    final dt = DateTime.utc(date.year, date.month, date.day, h, m)
+        .subtract(Duration(minutes: (effectiveOffset * 60).round()));
     final sunLon = SkyTransitsService.calculateSunLongitude(dt);
     return _signFromLongitude(sunLon);
   }
@@ -98,29 +115,37 @@ class AstrologyEngine {
   static String calculateRisingSign(
     DateTime date,
     TimeOfDay time, {
-    double lat = 40.73,
-    double lon = 31.61,
+    double lat = 36.7265,
+    double lon = 27.6853,
     double timezoneOffset = 3.0,
     String? city,
     String? country,
   }) {
+    double effectiveLat = lat;
+    double effectiveLon = lon;
     double effectiveOffset = timezoneOffset;
     if (city != null && city.isNotEmpty) {
       final cityLoc = WorldCitiesService.findCity(city, country);
+      effectiveLat = cityLoc.latitude;
+      effectiveLon = cityLoc.longitude;
       effectiveOffset = PredictiveAstrologyService.getHistoricalUtcOffset(
         cityLoc: cityLoc,
         dt: date,
+        hour: time.hour,
+        minute: time.minute,
       );
     } else if (country == null || country == 'Türkiye') {
       effectiveOffset = PredictiveAstrologyService.getHistoricalUtcOffset(
         cityLoc: CityLocation(
-          city: 'Bolu',
+          city: 'Datça',
           country: 'Türkiye',
-          latitude: lat,
-          longitude: lon,
+          latitude: effectiveLat,
+          longitude: effectiveLon,
           timezoneOffset: timezoneOffset,
         ),
         dt: date,
+        hour: time.hour,
+        minute: time.minute,
       );
     }
 
@@ -134,25 +159,47 @@ class AstrologyEngine {
 
     final angles = PredictiveAstrologyService.calculateAscAndMc(
       utcDateTime: utcDateTime,
-      latitude: lat,
-      longitude: lon,
+      latitude: effectiveLat,
+      longitude: effectiveLon,
     );
     return _signFromLongitude(angles['asc']!);
   }
 
-  // Ay Burcu (Jean Meeus ELP2000-82 Hassas Efemeris Döngüsü)
+  // Ay Burcu (Jean Meeus ELP2000-82 Hassas Efemeris Döngüsü & Tarihsel Saat Dilimi)
   static String calculateMoonSign(
     DateTime date,
     TimeOfDay time, {
-    double timezoneOffset = 2.0,
+    double? timezoneOffset,
+    String? city,
+    String? country,
   }) {
+    double effectiveOffset;
+    if (timezoneOffset != null) {
+      effectiveOffset = timezoneOffset;
+    } else {
+      final cityLoc = (city != null && city.isNotEmpty)
+          ? WorldCitiesService.findCity(city, country)
+          : const CityLocation(
+              city: 'Datça',
+              country: 'Türkiye',
+              latitude: 36.7265,
+              longitude: 27.6853,
+              timezoneOffset: 3.0,
+            );
+      effectiveOffset = PredictiveAstrologyService.getHistoricalUtcOffset(
+        cityLoc: cityLoc,
+        dt: date,
+        hour: time.hour,
+        minute: time.minute,
+      );
+    }
     final utcDateTime = DateTime.utc(
       date.year,
       date.month,
       date.day,
       time.hour,
       time.minute,
-    ).subtract(Duration(minutes: (timezoneOffset * 60).round()));
+    ).subtract(Duration(minutes: (effectiveOffset * 60).round()));
     final moonLon = SkyTransitsService.calculateMoonLongitude(utcDateTime);
     return _signFromLongitude(moonLon);
   }
@@ -202,6 +249,8 @@ class AstrologyEngine {
     final utcOffset = PredictiveAstrologyService.getHistoricalUtcOffset(
       cityLoc: cityLoc,
       dt: resolvedDate,
+      hour: resolvedTime.hour,
+      minute: resolvedTime.minute,
     );
 
     final utcDateTime = DateTime.utc(

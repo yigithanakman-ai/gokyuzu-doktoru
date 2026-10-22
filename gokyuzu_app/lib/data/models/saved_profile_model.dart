@@ -44,32 +44,38 @@ class SavedProfile {
   String get fullName => '$name $surname'.trim();
 
   String get sunSign {
-    final s = _sunSign;
-    if (s != null && s.isNotEmpty) return s;
-    return AstrologyEngine.calculateSunSign(birthDate);
+    final parts = birthTime.split(':');
+    final h = parts.isNotEmpty ? (int.tryParse(parts[0]) ?? 12) : 12;
+    final min = parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
+    return AstrologyEngine.calculateSunSign(
+      birthDate,
+      TimeOfDay(hour: h, minute: min),
+      birthCity,
+      birthCountry,
+    );
   }
 
   String get moonSign {
-    final m = _moonSign;
-    if (m != null && m.isNotEmpty) return m;
     final parts = birthTime.split(':');
     final h = parts.isNotEmpty ? (int.tryParse(parts[0]) ?? 12) : 12;
     final min = parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
     return AstrologyEngine.calculateMoonSign(
       birthDate,
       TimeOfDay(hour: h, minute: min),
+      city: birthCity,
+      country: birthCountry,
     );
   }
 
   String get risingSign {
-    final r = _risingSign;
-    if (r != null && r.isNotEmpty) return r;
     final parts = birthTime.split(':');
     final h = parts.isNotEmpty ? (int.tryParse(parts[0]) ?? 12) : 12;
     final min = parts.length > 1 ? (int.tryParse(parts[1]) ?? 0) : 0;
     return AstrologyEngine.calculateRisingSign(
       birthDate,
       TimeOfDay(hour: h, minute: min),
+      city: birthCity,
+      country: birthCountry,
     );
   }
 
