@@ -10,9 +10,9 @@
     <uses-permission android:name="android.permission.RECEIVE_BOOT_COMPLETED"/>
     <uses-permission android:name="android.permission.VIBRATE"/>
     <uses-permission android:name="android.permission.WAKE_LOCK"/>
-    <!-- Google Play Exact Alarm Politikası: Saat/Takvim uygulaması olmayan uygulamalar tam alarm beyanı veremez.
-         Google Play Console'daki 'Tam alarm izni beyanı' hatasını önlemek için kaldırılır ve bildirimler inexactAllowWhileIdle ile iletilir. -->
-    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" tools:node="remove"/>
+    <!-- Android 12+ ve 13+ Tam Zamanlı Alarm & Kilit Ekranı Uyandırma İzinleri -->
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM"/>
+    <!-- USE_EXACT_ALARM Google Play Console tarafından sadece saat/kronometre uygulamalarıyla kısıtlandığı için engellenir -->
     <uses-permission android:name="android.permission.USE_EXACT_ALARM" tools:node="remove"/>
 
     <!-- Google Play Fotoğraf/Video Politikası Uyumluluğu: open_filex kütüphanesinin eklediği gereksiz medya izinlerini kaldır -->
@@ -38,7 +38,9 @@
             android:theme="@style/LaunchTheme"
             android:configChanges="orientation|keyboardHidden|keyboard|screenSize|smallestScreenSize|locale|layoutDirection|fontScale|screenLayout|density|uiMode"
             android:hardwareAccelerated="true"
-            android:windowSoftInputMode="adjustResize">
+            android:windowSoftInputMode="adjustResize"
+            android:showWhenLocked="true"
+            android:turnScreenOn="true">
             <!-- Specifies an Android theme to apply to this Activity as soon as
                  the Android process has started. This theme is visible to the user
                  while the Flutter UI initializes. After that, this theme continues

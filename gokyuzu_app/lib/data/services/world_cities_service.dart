@@ -621,11 +621,15 @@ class WorldCitiesService {
       }
     }
 
-    // 3. İçerme kontrolü (minimum 3 karakter)
+    // 3. Şehir başlangıç veya kelime bazlı eşleşme
     if (cNorm.length >= 3) {
+      final queryWords = cNorm.split(RegExp(r'\s+')).where((w) => w.length >= 3).toList();
       for (final loc in allCities) {
-        final lNorm = _normalize(loc.city);
-        if (lNorm.contains(cNorm) || cNorm.contains(lNorm)) {
+        final lNorm = _normalize(loc.city.split('(').first.trim());
+        if (lNorm == cNorm || lNorm.startsWith(cNorm)) {
+          return loc;
+        }
+        if (queryWords.contains(lNorm)) {
           return loc;
         }
       }

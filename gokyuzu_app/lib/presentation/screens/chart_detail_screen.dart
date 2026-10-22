@@ -23,6 +23,7 @@ import '../../data/services/app_translation_service.dart';
 import '../widgets/interactive_bi_wheel_modal.dart';
 import '../widgets/astrological_glyph.dart';
 import '../widgets/vip_upgrade_modal.dart';
+import 'chart_zoom_screen.dart';
 
 class ChartDetailScreen extends StatefulWidget {
   final UserProfile profile;
@@ -47,7 +48,6 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
   TimeOfDay _simulatedTransitTime = TimeOfDay.fromDateTime(DateTime.now());
   BirthChartModel? _transitChart;
   String? _selectedBiWheelPlanet;
-  double _biWheelRotationAngle = 0.0;
   BiWheelDisplayMode _wheelDisplayMode = BiWheelDisplayMode.dual;
   bool _useTrueNode = true; // true = True Node (Gerçek), false = Mean Node (Ortalama)
   final Set<String> _enabledAsteroids = {
@@ -1051,7 +1051,6 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
     setState(() {
       _simulatedTransitDate = now;
       _simulatedTransitTime = TimeOfDay.fromDateTime(now);
-      _biWheelRotationAngle = 0.0;
       _selectedBiWheelPlanet = null;
       _calculateTransitChart();
     });
@@ -1454,17 +1453,54 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
         ),
         const SizedBox(height: 16),
 
-        // Wheel Canvas
+        // Wheel Canvas (Dokununca 2 Parmakla Büyütme Ekranına Geçer)
         LayoutBuilder(
           builder: (context, constraints) {
             final canvasSize = constraints.maxWidth.clamp(280.0, 350.0);
             return Center(
-              child: SizedBox(
-                width: canvasSize,
-                height: canvasSize,
-                child: CustomPaint(
-                  painter: ChartWheelPainter(
-                    planets: filteredWheelPlanets,
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (ctx) => ChartZoomScreen.single(
+                        title: '${widget.profile.name.isEmpty ? "Kozmik Yolcu" : widget.profile.name} • Doğum Haritası',
+                        singleWheelPlanets: filteredWheelPlanets,
+                        ascendantSign: _chart!.risingSign,
+                        ascDegree: _parseDegreeFromFormatted(_chart!.risingFormatted),
+                        mcSign: _chart!.planets['mc']?.sign ?? 'Kova',
+                        mcDegree: _parseDegreeFromFormatted(_chart!.planets['mc']?.formatted ?? '14°30\' Kova'),
+                        houseCusps: placidusCusps,
+                      ),
+                    ),
+                  );
+                },
+                child: SizedBox(
+                  width: canvasSize,
+                  height: canvasSize,
+                  child: CustomPaint(
+                    painter: ChartWheelPainter(
+                      planets: filteredWheelPlanets,
+                      ascendantSign: _chart!.risingSign,
+                      ascDegree: _parseDegreeFromFormatted(_chart!.risingFormatted),
+                      mcSign: _chart!.planets['mc']?.sign ?? 'Kova',
+                      mcDegree: _parseDegreeFromFormatted(_chart!.planets['mc']?.formatted ?? '14°30\' Kova'),
+                      houseCusps: placidusCusps,
+                    ),
+                  ),
+                ),
+              ),
+            );
+          },
+        ),
+        const SizedBox(height: 10),
+        Center(
+          child: InkWell(
+            onTap: () {
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (ctx) => ChartZoomScreen.single(
+                    title: '${widget.profile.name.isEmpty ? "Kozmik Yolcu" : widget.profile.name} • Doğum Haritası',
+                    singleWheelPlanets: filteredWheelPlanets,
                     ascendantSign: _chart!.risingSign,
                     ascDegree: _parseDegreeFromFormatted(_chart!.risingFormatted),
                     mcSign: _chart!.planets['mc']?.sign ?? 'Kova',
@@ -1472,9 +1508,37 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                     houseCusps: placidusCusps,
                   ),
                 ),
+              );
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.starlightGold.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.starlightGold.withValues(alpha: 0.4),
+                ),
               ),
-            );
-          },
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.pinch_rounded, size: 18, color: AppColors.starlightGold),
+                  SizedBox(width: 8),
+                  Text(
+                    'Haritayı Büyüt & 2 Parmakla İncele',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.starlightGold,
+                    ),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(Icons.zoom_in_rounded, size: 16, color: AppColors.starlightGold),
+                ],
+              ),
+            ),
+          ),
         ),
         const SizedBox(height: 16),
 
@@ -1864,7 +1928,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
         ),
         const SizedBox(height: 14),
 
-        // 3. Dual Wheel Interactive Canvas with Drag Rotation
+        // 3. Dual Wheel Canvas (Dokununca 2 Parmakla Büyütme Ekranına Geçer)
         LayoutBuilder(
           builder: (context, constraints) {
             final canvasSize = constraints.maxWidth.clamp(280.0, 350.0);
@@ -1872,13 +1936,24 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
             final Map<int, double>? houseCusps = placidusData['cusps'] is Map<int, double>
                 ? (placidusData['cusps'] as Map<int, double>)
                 : null;
-            return GestureDetector(
-              onPanUpdate: (details) {
-                setState(() {
-                  _biWheelRotationAngle += details.delta.dx * 0.01;
-                });
-              },
-              child: Center(
+            return Center(
+              child: GestureDetector(
+                onTap: () {
+                  Navigator.of(context).push(
+                    MaterialPageRoute(
+                      builder: (ctx) => ChartZoomScreen.biWheel(
+                        title: '${widget.profile.name.isEmpty ? "Kozmik Yolcu" : widget.profile.name} • Transit Çift Çark',
+                        natalChart: _chart!,
+                        outerChart: _transitChart!,
+                        isSynastry: false,
+                        displayMode: _wheelDisplayMode,
+                        useTrueNode: _useTrueNode,
+                        enabledExtraBodies: _enabledAsteroids,
+                        houseCusps: houseCusps,
+                      ),
+                    ),
+                  );
+                },
                 child: SizedBox(
                   width: canvasSize,
                   height: canvasSize,
@@ -1887,7 +1962,7 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
                       natalChart: _chart!,
                       outerChart: _transitChart!,
                       selectedPlanet: _selectedBiWheelPlanet,
-                      rotationOffsetRad: _biWheelRotationAngle,
+                      rotationOffsetRad: 0.0,
                       displayMode: _wheelDisplayMode,
                       useTrueNode: _useTrueNode,
                       enabledExtraBodies: _enabledAsteroids,
@@ -1900,36 +1975,60 @@ class _ChartDetailScreenState extends State<ChartDetailScreen> {
             );
           },
         ),
-        const SizedBox(height: 6),
+        const SizedBox(height: 10),
 
-        // Rotate gesture caption & reset
-        Row(
-          mainAxisAlignment: MainAxisAlignment.center,
-          children: [
-            const Icon(Icons.touch_app_outlined, size: 14, color: Colors.white38),
-            const SizedBox(width: 4),
-            const Flexible(
-              child: Text(
-                'Çarkı parmağınızla 360° serbestçe döndürebilirsiniz',
-                style: TextStyle(fontSize: 11, color: Colors.white38),
-                overflow: TextOverflow.ellipsis,
-              ),
-            ),
-            if (_biWheelRotationAngle != 0.0) ...[
-              const SizedBox(width: 8),
-              InkWell(
-                onTap: () => setState(() => _biWheelRotationAngle = 0.0),
-                child: const Text(
-                  '↺ Sıfırla',
-                  style: TextStyle(
-                    fontSize: 11,
-                    color: Color(0xFF00CEC9),
-                    fontWeight: FontWeight.bold,
+        // 2 Parmakla Büyütme Butonu
+        Center(
+          child: InkWell(
+            onTap: () {
+              final placidusData = PredictiveAstrologyService.calculatePlacidusHouses(profile: widget.profile);
+              final Map<int, double>? houseCusps = placidusData['cusps'] is Map<int, double>
+                  ? (placidusData['cusps'] as Map<int, double>)
+                  : null;
+              Navigator.of(context).push(
+                MaterialPageRoute(
+                  builder: (ctx) => ChartZoomScreen.biWheel(
+                    title: '${widget.profile.name.isEmpty ? "Kozmik Yolcu" : widget.profile.name} • Transit Çift Çark',
+                    natalChart: _chart!,
+                    outerChart: _transitChart!,
+                    isSynastry: false,
+                    displayMode: _wheelDisplayMode,
+                    useTrueNode: _useTrueNode,
+                    enabledExtraBodies: _enabledAsteroids,
+                    houseCusps: houseCusps,
                   ),
                 ),
+              );
+            },
+            borderRadius: BorderRadius.circular(16),
+            child: Container(
+              padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
+              decoration: BoxDecoration(
+                color: AppColors.starlightGold.withValues(alpha: 0.12),
+                borderRadius: BorderRadius.circular(16),
+                border: Border.all(
+                  color: AppColors.starlightGold.withValues(alpha: 0.4),
+                ),
               ),
-            ],
-          ],
+              child: const Row(
+                mainAxisSize: MainAxisSize.min,
+                children: [
+                  Icon(Icons.pinch_rounded, size: 18, color: AppColors.starlightGold),
+                  SizedBox(width: 8),
+                  Text(
+                    'Çift Çarkı Büyüt & 2 Parmakla İncele',
+                    style: TextStyle(
+                      fontSize: 12.5,
+                      fontWeight: FontWeight.w600,
+                      color: AppColors.starlightGold,
+                    ),
+                  ),
+                  SizedBox(width: 4),
+                  Icon(Icons.zoom_in_rounded, size: 16, color: AppColors.starlightGold),
+                ],
+              ),
+            ),
+          ),
         ),
         if (_wheelDisplayMode == BiWheelDisplayMode.transitOnly) ...[
           const SizedBox(height: 10),

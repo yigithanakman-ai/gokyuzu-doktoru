@@ -75,27 +75,30 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.14-build17
-          name: "📱 Gökyüzü Doktoru - v1.0.14 (Sürüm Kodu 17 & Siber Güvenlik Kalkanı, ProGuard/R8 Obfuscation, API Rate Limiter)"
+          tag_name: v1.0.14-build18
+          name: "📱 Gökyüzü Doktoru - v1.0.14 (Sürüm Kodu 18 & 2 Parmakla Yakınlaştırma / Pinch-to-Zoom, Arka Plan Tam Zamanlı Bildirimler)"
           body: |
-            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.14 / Sürüm Kodu 17)
+            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.14 / Sürüm Kodu 18)
 
             - **`gokyuzu-doktoru.apk`**: Kendi Android telefonunuzda doğrudan test edip kullanmak için yükleme dosyası (İmzalı, Obfuscated).
-            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı, Sürüm Kodu 17, ProGuard & R8 Korumalı).
+            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı, Sürüm Kodu 18, ProGuard & R8 Korumalı).
 
-            #### 🛡️ Bu Sürümdeki Siber Güvenlik & Tersine Mühendislik Korumaları (Build 17):
-            1. **ProGuard / R8 İleri Seviye Kod Karartma (Obfuscation) & Paket Gizleme**: Android yerel kodları şifrelendi, sınıf ve fonksiyon isimleri anlamsız karakterlere dönüştürüldü, tüm debug logları ikili dosyadan kazındı.
-            2. **Flutter Dart AOT Bytecode Karartma (`--obfuscate --split-debug-info`)**: Dart assembly sembolleri ve değişken isimleri tamamen soyuldu, decompiler (Ghidra, jadx, apktool) saldırılarına karşı %100 koruma sağlandı.
-            3. **API Maskeleme & Aylık/Günlük İstek Limiti (Rate Limiter)**: Harici uç noktalar XOR şifrelemesiyle belleğe alındı, cihaz başına aylık ve günlük istek kotası getirilerek bot ve scraping saldırıları engellendi.
-            4. **Google Play Tam Alarm İzni (Exact Alarm) Düzeltmesi**: Google Play Console'da beyan zorunluluğu çıkaran ve saat/takvim dışı uygulamalar için kısıtlanan `SCHEDULE_EXACT_ALARM` ve `USE_EXACT_ALARM` kaldırıldı; arka plan bildirimleri Google Play politikalarına tam uyumlu `AndroidScheduleMode.inexactAllowWhileIdle` moduna alındı.
-            5. **Türkiye Tarihi Yaz Saati Uygulaması (1910–2026+) & Solar Fire / Astro Gold %100 Yükselen Kalibrasyonu**: GAST ve nutasyon motoru dakika dakikasına Solar Fire ile eşitlendi.
-            3. **True Node (Gerçek) & Mean Node (Ortalama) Ay Düğümleri**: Harita üzerinde tek dokunuşla True Node ve Mean Node arasında geçiş ve karşılaştırma.
-            4. **9 Seçilebilir Asteroit & Özel Nokta**: Lilith, Vesta, Juno, Amor, Hekate, Isis, Vertex Noktası, Pallas ve Ceres haritaya eklendi; istenilen noktalar seçilip çıkarılabilir.
-            5. **Astro Gold / Solar Fire Tarzı 360° Çark Tasarımı**: Hem Natal hem Transit çarklarda 12 Placidus ev giriş çizgisi, dış halka kasp dereceleri, iç halka ev numaraları (1..12) ve gezegen dereceleri.
-            6. **Evrensel Açı Orbları**: Tüm haritada Kavuşum (0°): 10°, Karşıt (180°): 10°, Üçgen (120°): 8°, Kare (90°): 7°, Sekstil (60°): 7° orb kuralları standartlaştırıldı.
-            7. **28 Ay Menzili (Sa'd el-Ahbiye) & Hermetik Adımlar Ayrımı**: 11° Balık için 25. Menzil (Sa'd el-Ahbiye) kalibrasyonu, 00°-29° dk derece formatı ve Hermetik Adımların ayrı başlık altında toplanması.
-            8. **14 Günlük Arka Plan Bildirimleri**: Telefon beklemedeyken bile sabah 09:30, öğle 14:30 ve akşam 20:30'da düzenli bildirim gönderimi.
-            9. **AdMob Canlı Reklam Birimleri & Hızlı Gösterim**: Canlı AdMob kimlikleri ve 4. eylemde anında yükleyip gösterme akışı.
+            #### 🌟 Bu Sürümdeki Yenilikler (Build 18):
+            1. **Haritayı 2 Parmakla Büyütme & Serbest İnceleme (Pinch-to-Zoom / `ChartZoomScreen`)**:
+               - Çarkı parmakla döndürme modu kaldırıldı; harita evrensel astronomik oryantasyonda (ASC = 9 yönü) sabitlendi.
+               - Hem Tekli Doğum Haritasında hem de Çift Çarkta (Transit / Sinastri) haritaya dokunulduğunda veya "Haritayı Büyüt & 2 Parmakla İncele" butonuna tıklandığında açılan tam ekran yakınlaştırma sayfası eklendi.
+               - Kullanıcı iki parmağıyla haritayı 0.6x'den 6.0x'e kadar serbestçe büyütebilir, gezdirebilir (pan), çift dokunarak yakınlaştırıp sıfırlayabilir.
+            2. **Kilitli / Uykuda / Şarjda / Pilde Kesintisiz Tam Zamanlı Bildirim Çözümü**:
+               - `NotificationVisibility.public` ile kilit ekranında gizlenmeyen tam bildirim içeriği sağlandı.
+               - `SCHEDULE_EXACT_ALARM`, `WAKE_LOCK` ve `ScheduledNotificationBootReceiver` ile telefon uykuda, ekran koruyucuda veya şarjda olsa bile CPU uyandırılarak 09:30, 14:30 ve 20:30 alarmları zamanında iletilir.
+               - Uygulama açılışında tetiklenen yapay/anlık bildirim fırlatma davranışı kaldırıldı; yalnızca gerçek zamanlanmış arka plan transit alarmlarının çalışması garantiye alındı.
+               - Cihaz saat dilimiyle tam uyumlu IANA ofset eşleme entegre edildi.
+            3. **Siber Güvenlik & Kod Karartma (ProGuard / R8 & Dart AOT)**:
+               - `--obfuscate --split-debug-info` ile tersine mühendisliğe karşı %100 karartılmış kod mimarisi.
+               - API rate limiter ile bot ve scraping saldırılarına karşı koruma.
+            4. **Türkiye Tarihi Yaz Saati Uygulaması (1910–2026+) & Solar Fire %100 Yükselen Kalibrasyonu**:
+               - Resmi Gazete kararları (1940-2018) ve Swiss Ephemeris GAST/Nutasyon standardında dakika dakikasına doğru yükselen ve ev hesaplamaları.
+            5. **True Node & Mean Node Geçişi ve 9 Asteroit Desteği**: Lilith, Vesta, Juno, Amor, Hekate, Isis, Vertex, Pallas, Ceres.
           files: |
             gokyuzu-doktoru.apk
             gokyuzu-doktoru.aab

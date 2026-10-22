@@ -8,6 +8,8 @@ import 'sky_transits_service.dart';
 import 'storage_service.dart';
 
 /// Gerçek Cihaz Bildirim Servisi (Android 13+ ve iOS Tam Uyumlu)
+/// Cihaz kilitli, uykuda, ekran koruyucuda veya şarjda olsa bile
+/// tam zamanlı (exactAllowWhileIdle & wake_lock) bildirim iletimi sağlar.
 class NotificationService {
   static final FlutterLocalNotificationsPlugin _notificationsPlugin =
       FlutterLocalNotificationsPlugin();
@@ -19,15 +21,29 @@ class NotificationService {
 
   static bool _isInitialized = false;
 
-  /// Servisi başlat ve bildirim kanalını aç
+  /// Servisi başlat, saat dilimini senkronize et ve yüksek öncelikli bildirim kanalını aç
   static Future<void> init() async {
     if (_isInitialized) return;
 
     try {
       tz.initializeTimeZones();
       try {
-        tz.setLocalLocation(tz.getLocation('Europe/Istanbul'));
-      } catch (_) {}
+        final now = DateTime.now();
+        // Cihazın yerel saat dilimi ofsetini otomatik IANA lokasyonuna eşleştir veya Europe/Istanbul varsay
+        String locationName = 'Europe/Istanbul';
+        final offset = now.timeZoneOffset;
+        for (final entry in tz.timeZoneDatabase.locations.entries) {
+          if (entry.value.currentTimeZone.offset == offset) {
+            locationName = entry.key;
+            break;
+          }
+        }
+        tz.setLocalLocation(tz.getLocation(locationName));
+      } catch (_) {
+        try {
+          tz.setLocalLocation(tz.getLocation('Europe/Istanbul'));
+        } catch (_) {}
+      }
 
       const AndroidInitializationSettings initializationSettingsAndroid =
           AndroidInitializationSettings('@mipmap/ic_launcher');
@@ -54,7 +70,7 @@ class NotificationService {
         settings: initializationSettings,
       );
 
-      // Android İçin Yüksek Öncelikli Kanal Oluştur
+      // Android İçin En Yüksek Öncelikli ve Kilit Ekranında Görünen Kanal Oluştur
       final androidImpl = _notificationsPlugin
           .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>();
@@ -67,6 +83,8 @@ class NotificationService {
           importance: Importance.max,
           playSound: true,
           enableVibration: true,
+          showBadge: true,
+          enableLights: true,
         );
         await androidImpl.createNotificationChannel(channel);
       }
@@ -115,9 +133,13 @@ class NotificationService {
         final androidImpl = _notificationsPlugin
             .resolvePlatformSpecificImplementation<
                 AndroidFlutterLocalNotificationsPlugin>();
-        // Android 13+ (API 33+) resmi izin penceresini açar
+        // Android 13+ (API 33+) resmi bildirim izin penceresini açar
         granted =
             await androidImpl?.requestNotificationsPermission() ?? false;
+        // Android 12+ ve 14+ tam zamanlı alarm (Exact Alarm) izni
+        try {
+          await androidImpl?.requestExactAlarmsPermission();
+        } catch (_) {}
       } else if (!kIsWeb &&
           (defaultTargetPlatform == TargetPlatform.iOS ||
               defaultTargetPlatform == TargetPlatform.macOS)) {
@@ -161,6 +183,7 @@ class NotificationService {
 
   /// Uygulamaya hiç girilmese bile 14 gün boyunca her gün 3 farklı saatte (09:30, 14:30, 20:30)
   /// o günün gerçek Ay burcu, derecesi ve fazıyla arka plan bildirimlerini önceden işletim sistemine kaydeder.
+  /// Telefon kilitli, uykuda veya şarjda olsa dahi ekranda görünür.
   static Future<void> scheduleDailyCosmicNotifications(
     UserProfile profile,
   ) async {
@@ -177,6 +200,7 @@ class NotificationService {
     final cleanName =
         profile.name.trim().isEmpty ? 'Kozmik Yolcu' : profile.name.trim();
 
+    // Kilit ekranında açıkça görünmesi (public visibility) ve en yüksek öncelik
     const AndroidNotificationDetails androidDetails =
         AndroidNotificationDetails(
       channelId,
@@ -184,16 +208,21 @@ class NotificationService {
       channelDescription:
           'Günlük gezegen transitleri ve astrolojik rehber bildirimleri.',
       importance: Importance.max,
-      priority: Priority.high,
+      priority: Priority.max,
       icon: '@mipmap/ic_launcher',
       playSound: true,
       enableVibration: true,
+      showWhen: true,
+      visibility: NotificationVisibility.public,
+      category: AndroidNotificationCategory.reminder,
+      audioAttributesUsage: AudioAttributesUsage.notification,
     );
 
     const DarwinNotificationDetails darwinDetails = DarwinNotificationDetails(
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
+      interruptionLevel: InterruptionLevel.timeSensitive,
     );
 
     const NotificationDetails notificationDetails = NotificationDetails(
@@ -270,6 +299,7 @@ class NotificationService {
 
         if (scheduledDate.isBefore(nowTz)) continue;
 
+        // Önce tam zamanlı (exactAllowWhileIdle) kur; cihaz izin vermezse inexactAllowWhileIdle ile düşür
         try {
           await _notificationsPlugin.zonedSchedule(
             id: notificationId,
@@ -277,9 +307,20 @@ class NotificationService {
             body: body,
             scheduledDate: scheduledDate,
             notificationDetails: notificationDetails,
-            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
           );
-        } catch (_) {}
+        } catch (_) {
+          try {
+            await _notificationsPlugin.zonedSchedule(
+              id: notificationId,
+              title: title,
+              body: body,
+              scheduledDate: scheduledDate,
+              notificationDetails: notificationDetails,
+              androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            );
+          } catch (_) {}
+        }
       }
     }
 
@@ -323,10 +364,22 @@ class NotificationService {
           body: item['body'] as String,
           scheduledDate: scheduledTime,
           notificationDetails: notificationDetails,
-          androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
           matchDateTimeComponents: DateTimeComponents.time,
         );
-      } catch (_) {}
+      } catch (_) {
+        try {
+          await _notificationsPlugin.zonedSchedule(
+            id: id,
+            title: item['title'] as String,
+            body: item['body'] as String,
+            scheduledDate: scheduledTime,
+            notificationDetails: notificationDetails,
+            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+            matchDateTimeComponents: DateTimeComponents.time,
+          );
+        } catch (_) {}
+      }
     }
   }
 
@@ -376,10 +429,14 @@ class NotificationService {
       channelDescription:
           'Günlük gezegen transitleri ve astrolojik rehber bildirimleri.',
       importance: Importance.max,
-      priority: Priority.high,
+      priority: Priority.max,
       ticker: 'Kozmik Bildirim',
       playSound: true,
       enableVibration: true,
+      showWhen: true,
+      visibility: NotificationVisibility.public,
+      category: AndroidNotificationCategory.reminder,
+      audioAttributesUsage: AudioAttributesUsage.notification,
       icon: '@mipmap/ic_launcher',
     );
 
@@ -387,6 +444,7 @@ class NotificationService {
       presentAlert: true,
       presentBadge: true,
       presentSound: true,
+      interruptionLevel: InterruptionLevel.timeSensitive,
     );
 
     const NotificationDetails notificationDetails = NotificationDetails(
@@ -427,8 +485,8 @@ class NotificationService {
       }
     }
 
-    // 14 günlük arka plan alarmlarını (09:30, 14:30, 20:30) güncelle
-    // (Uygulamaya girildiğinde anlık bildirim fırlatmaz, sadece zamanlanmış arka plan bildirimlerini senkronize eder)
+    // 14 günlük arka plan alarmlarını (09:30, 14:30, 20:30) sessizce güncelle
+    // (Uygulamaya girildiğinde anlık bildirim fırlatmaz, sadece zamanlanmış arka plan alarmlarını senkronize eder)
     await scheduleDailyCosmicNotifications(profile);
   }
 }

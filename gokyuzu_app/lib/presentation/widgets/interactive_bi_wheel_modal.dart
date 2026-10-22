@@ -8,6 +8,7 @@ import '../../data/models/birth_chart_model.dart';
 import '../../data/models/saved_profile_model.dart';
 import '../../data/services/profile_archive_service.dart';
 import 'astrological_glyph.dart';
+import '../screens/chart_zoom_screen.dart';
 
 enum BiWheelDisplayMode {
   dual, // Dış Çark: Canlı Transitler, İç Çark: Doğum (Natal)
@@ -71,9 +72,6 @@ class _InteractiveBiWheelModalState extends State<InteractiveBiWheelModal> {
   SavedProfile? _synastryPartner;
   bool _isSynastryMode = false;
   List<SavedProfile> _availableSavedProfiles = [];
-
-  // Wheel rotation angle in radians for gesture rotation
-  double _rotationAngle = 0.0;
   BiWheelDisplayMode _displayMode = BiWheelDisplayMode.dual;
 
   @override
@@ -249,6 +247,33 @@ class _InteractiveBiWheelModalState extends State<InteractiveBiWheelModal> {
         centerTitle: true,
         actions: [
           IconButton(
+            icon: const Icon(
+              Icons.zoom_in_rounded,
+              color: AppColors.starlightGold,
+            ),
+            tooltip: '2 Parmakla Büyüt & İncele',
+            onPressed: () {
+              if (_natalChart != null && _transitChart != null) {
+                Navigator.of(context).push(
+                  MaterialPageRoute(
+                    builder: (ctx) => ChartZoomScreen.biWheel(
+                      title: _isSynastryMode
+                          ? 'Sinastri & Çift Çark'
+                          : 'Transit & Çift Çark',
+                      natalChart: _natalChart,
+                      outerChart: _transitChart,
+                      isSynastry: _isSynastryMode,
+                      displayMode: _displayMode,
+                      useTrueNode: _useTrueNode,
+                      enabledExtraBodies: _enabledAsteroids,
+                      houseCusps: _natalPlacidusCusps,
+                    ),
+                  ),
+                );
+              }
+            },
+          ),
+          IconButton(
             icon: Icon(
               _isSynastryMode ? Icons.access_time_filled_rounded : Icons.people_alt_rounded,
               color: AppColors.starlightGold,
@@ -286,36 +311,78 @@ class _InteractiveBiWheelModalState extends State<InteractiveBiWheelModal> {
                 _buildTimeBanner(),
                 _buildNodeAndAsteroidFilterBar(),
 
-                // Bi-Wheel Interactive Canvas
+                // Bi-Wheel Canvas (Dokununca 2 Parmakla Büyütme Ekranına Geçer)
                 Expanded(
                   child: Center(
                     child: GestureDetector(
-                      onPanUpdate: (details) {
-                        setState(() {
-                          _rotationAngle += details.delta.dx * 0.005;
-                        });
-                      },
-                      child: LayoutBuilder(
-                        builder: (context, constraints) {
-                          final canvasSize = math.min(constraints.maxWidth - 12, constraints.maxHeight - 8).clamp(260.0, 430.0);
-                          return SizedBox(
-                            width: canvasSize,
-                            height: canvasSize,
-                            child: CustomPaint(
-                              painter: BiWheelPainter(
-                                natalChart: _natalChart!,
-                                outerChart: _transitChart!,
+                      onTap: () {
+                        if (_natalChart != null && _transitChart != null) {
+                          Navigator.of(context).push(
+                            MaterialPageRoute(
+                              builder: (ctx) => ChartZoomScreen.biWheel(
+                                title: _isSynastryMode
+                                    ? 'Sinastri & Çift Çark'
+                                    : 'Transit & Çift Çark',
+                                natalChart: _natalChart,
+                                outerChart: _transitChart,
                                 isSynastry: _isSynastryMode,
-                                selectedPlanet: _selectedPlanetKey,
-                                isTransitSelected: _isTransitPlanetSelected,
-                                rotationOffsetRad: _rotationAngle,
                                 displayMode: _displayMode,
                                 useTrueNode: _useTrueNode,
                                 enabledExtraBodies: _enabledAsteroids,
                                 houseCusps: _natalPlacidusCusps,
-                                onAspectFound: (aspects) {},
                               ),
                             ),
+                          );
+                        }
+                      },
+                      child: LayoutBuilder(
+                        builder: (context, constraints) {
+                          final canvasSize = math.min(constraints.maxWidth - 12, constraints.maxHeight - 8).clamp(260.0, 430.0);
+                          return Stack(
+                            alignment: Alignment.center,
+                            children: [
+                              SizedBox(
+                                width: canvasSize,
+                                height: canvasSize,
+                                child: CustomPaint(
+                                  painter: BiWheelPainter(
+                                    natalChart: _natalChart!,
+                                    outerChart: _transitChart!,
+                                    isSynastry: _isSynastryMode,
+                                    selectedPlanet: _selectedPlanetKey,
+                                    isTransitSelected: _isTransitPlanetSelected,
+                                    rotationOffsetRad: 0.0,
+                                    displayMode: _displayMode,
+                                    useTrueNode: _useTrueNode,
+                                    enabledExtraBodies: _enabledAsteroids,
+                                    houseCusps: _natalPlacidusCusps,
+                                    onAspectFound: (aspects) {},
+                                  ),
+                                ),
+                              ),
+                              Positioned(
+                                bottom: 6,
+                                child: Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
+                                  decoration: BoxDecoration(
+                                    color: Colors.black.withValues(alpha: 0.65),
+                                    borderRadius: BorderRadius.circular(12),
+                                    border: Border.all(color: AppColors.starlightGold.withValues(alpha: 0.3)),
+                                  ),
+                                  child: const Row(
+                                    mainAxisSize: MainAxisSize.min,
+                                    children: [
+                                      Icon(Icons.pinch_rounded, size: 14, color: AppColors.starlightGold),
+                                      SizedBox(width: 4),
+                                      Text(
+                                        '2 Parmakla Büyütmek İçin Dokunun',
+                                        style: TextStyle(fontSize: 10, color: AppColors.starlightGold),
+                                      ),
+                                    ],
+                                  ),
+                                ),
+                              ),
+                            ],
                           );
                         },
                       ),
