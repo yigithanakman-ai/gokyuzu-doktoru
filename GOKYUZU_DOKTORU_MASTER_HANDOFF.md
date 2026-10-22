@@ -1,4 +1,4 @@
-# 🪐 GÖKYÜZÜ DOKTORU — MASTER PROJE HAFIZASI & YAPAY ZEKA DEVİR (HANDOFF) RAPORU (v1.0.13+14)
+# 🪐 GÖKYÜZÜ DOKTORU — MASTER PROJE HAFIZASI & YAPAY ZEKA DEVİR (HANDOFF) RAPORU (v1.0.14+15)
 
 > **Yeni Bir Yapay Zeka Asistanına Not:**  
 > Bu doküman, **Yiğithan Akman (Patron 👑)** tarafından geliştirilen **Gökyüzü Doktoru** projesinin tüm teknik mimarisini, astronomik motorlarını, para kazanma (AdMob & In-App Purchase) altyapısını, gizli yönetici özelliklerini ve bugüne kadar yapılan tüm güncellemeleri en ince ayrıntısına kadar içerir. Kullanıcıya her zaman **"Patron 👑"** diye hitap et ve buradaki kuralları harfiyen koru.
@@ -9,7 +9,7 @@
 
 - **Uygulama Adı:** Gökyüzü Doktoru
 - **Geliştirici / Kurucu:** Yiğithan Akman (Patron 👑)
-- **Güncel Sürüm:** `v1.0.13+14` (`versionName: 1.0.13`, `versionCode: 14`)
+- **Güncel Sürüm:** `v1.0.14+15` (`versionName: 1.0.14`, `versionCode: 15`)
 - **Android / iOS Paket Adı (Bundle ID):** `com.gokyuzudoktoru.gokyuzu_app`
 - **GitHub Deposu:** `https://github.com/yigithanakman-ai/gokyuzu-doktoru` (`main` dalı)
 - **Çalışma Dizini:** `/Users/yigithanakman/Desktop/Gökyüzü_YapayZeka_Sistemi/gokyuzu_app`

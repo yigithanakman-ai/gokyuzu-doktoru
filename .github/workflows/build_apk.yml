@@ -86,21 +86,26 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.13
-          name: "📱 Gökyüzü Doktoru - v1.0.13 (Sürüm Kodu 14 & Solar Fire Çark, True/Mean Node, 9 Asteroit, Evrensel Orblar, Arka Plan Bildirimleri)"
+          tag_name: v1.0.14
+          name: "📱 Gökyüzü Doktoru - v1.0.14 (Sürüm Kodu 15 & Türkiye Tarihi Yaz Saati 1910-2026+ / Solar Fire %100 Yükselen Kalibrasyonu, True/Mean Node, 9 Asteroit, 360° Çark)"
           body: |
-            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.13 / Sürüm Kodu 14)
+            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.14 / Sürüm Kodu 15)
 
             - **`gokyuzu-doktoru.apk`**: Kendi Android telefonunuzda doğrudan test edip kullanmak için yükleme dosyası (İmzalı).
-            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı).
+            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı, Sürüm Kodu 15).
 
-            #### 🌟 Bu Sürümdeki Yenilikler (v1.0.13):
-            1. **True Node (Gerçek) & Mean Node (Ortalama) Ay Düğümleri**: Harita üzerinde tek dokunuşla True Node ve Mean Node arasında geçiş ve karşılaştırma.
-            2. **9 Seçilebilir Asteroit & Özel Nokta**: Lilith, Vesta, Juno, Amor, Hekate, Isis, Vertex Noktası, Pallas ve Ceres haritaya eklendi; istenilen noktalar seçilip çıkarılabilir.
-            3. **Astro Gold / Solar Fire Tarzı 360° Çark Tasarımı**: Hem Natal hem Transit çarklarda 12 Placidus ev giriş çizgisi, dış halka kasp dereceleri, iç halka ev numaraları (1..12) ve gezegen dereceleri.
-            4. **Evrensel Açı Orbları**: Tüm haritada Kavuşum (0°): 10°, Karşıt (180°): 10°, Üçgen (120°): 8°, Kare (90°): 7°, Sekstil (60°): 7° orb kuralları standartlaştırıldı.
-            5. **28 Ay Menzili (Sa'd el-Ahbiye) & Hermetik Adımlar Ayrımı**: 11° Balık için 25. Menzil (Sa'd el-Ahbiye) kalibrasyonu, 00°-29° dk derece formatı ve Hermetik Adımların ayrı başlık altında toplanması.
-            6. **14 Günlük Tam Zamanlı Arka Plan Bildirim Motoru**: Uygulamaya girilmese bile sabah 09:30, öğle 14:30 ve akşam 20:30'da bildirim gönderimi.
+            #### 🌟 Bu Sürümdeki Yenilikler (v1.0.14 / Build 15):
+            1. **Türkiye Tarihi Yaz Saati Uygulaması (1910–2026+) & Solar Fire / Astro Gold %100 Yükselen Kalibrasyonu**:
+               - Resmi Gazete kararları (1940-2018) ve IANA `Europe/Istanbul` saat dilimi geçişleri gün ve saat hassasiyetinde entegre edildi.
+               - Swiss Ephemeris ve Solar Fire standardında GAST (Görünür Yıldız Zamanı), Nutasyon ve Gerçek Ekliptik Eğikliği hesaplamalarıyla Yükselen (ASC) dereceleri dakika dakikasına eşitlendi.
+               - Türkçe karakter normalizasyonu ve bulanık arama (fuzzy search) ile şehir yazım hataları ("kırkkale" vb.) otomatik düzeltildi.
+            2. **True Node (Gerçek) & Mean Node (Ortalama) Ay Düğümleri**: Harita üzerinde tek dokunuşla True Node ve Mean Node arasında geçiş ve karşılaştırma.
+            3. **9 Seçilebilir Asteroit & Özel Nokta**: Lilith, Vesta, Juno, Amor, Hekate, Isis, Vertex Noktası, Pallas ve Ceres haritaya eklendi; istenilen noktalar seçilip çıkarılabilir.
+            4. **Astro Gold / Solar Fire Tarzı 360° Çark Tasarımı**: Hem Natal hem Transit çarklarda 12 Placidus ev giriş çizgisi, dış halka kasp dereceleri, iç halka ev numaraları (1..12) ve gezegen dereceleri.
+            5. **Evrensel Açı Orbları**: Tüm haritada Kavuşum (0°): 10°, Karşıt (180°): 10°, Üçgen (120°): 8°, Kare (90°): 7°, Sekstil (60°): 7° orb kuralları standartlaştırıldı.
+            6. **28 Ay Menzili (Sa'd el-Ahbiye) & Hermetik Adımlar Ayrımı**: 11° Balık için 25. Menzil (Sa'd el-Ahbiye) kalibrasyonu, 00°-29° dk derece formatı ve Hermetik Adımların ayrı başlık altında toplanması.
+            7. **14 Günlük Tam Zamanlı Arka Plan Bildirim Motoru**: Uygulamaya girilmese bile sabah 09:30, öğle 14:30 ve akşam 20:30'da bildirim gönderimi.
+            8. **AdMob Canlı Reklam Birimleri & Hızlı Gösterim**: Canlı AdMob kimlikleri ve 4. eylemde anında yükleyip gösterme akışı.
           files: |
             gokyuzu-doktoru.apk
             gokyuzu-doktoru.aab
