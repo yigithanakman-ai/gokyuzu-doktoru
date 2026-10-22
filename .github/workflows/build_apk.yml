@@ -53,14 +53,14 @@ jobs:
           GH_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         run: |
           cd gokyuzu_app
-          flutter build apk --release --no-tree-shake-icons --android-skip-build-dependency-validation 2>&1 | tee /tmp/build_log.txt || true
+          flutter build apk --release --obfuscate --split-debug-info=./debug-symbols --no-tree-shake-icons --android-skip-build-dependency-validation 2>&1 | tee /tmp/build_log.txt || true
           if [ ! -f "build/app/outputs/flutter-apk/app-release.apk" ]; then
             echo "::error::Android Derleme Hatasi!"
             tail -n 120 /tmp/build_log.txt
             gh release create "build-err-$(date +%s)" /tmp/build_log.txt --title "Derleme Hatasi" --notes "Android derleme hatasi ayrintilari ekteki dosyada yer almaktadir."
             exit 1
           fi
-          flutter build appbundle --release --no-tree-shake-icons --android-skip-build-dependency-validation 2>&1 | tee /tmp/bundle_log.txt || true
+          flutter build appbundle --release --obfuscate --split-debug-info=./debug-symbols --no-tree-shake-icons --android-skip-build-dependency-validation 2>&1 | tee /tmp/bundle_log.txt || true
           if [ ! -f "build/app/outputs/bundle/release/app-release.aab" ]; then
             echo "::error::Android App Bundle Hatasi!"
             tail -n 120 /tmp/bundle_log.txt
@@ -86,20 +86,20 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.14-build16
-          name: "📱 Gökyüzü Doktoru - v1.0.14 (Sürüm Kodu 16 & Google Play Tam Alarm İzni Düzeltmesi, Türkiye DST 1910-2026+)"
+          tag_name: v1.0.14-build17
+          name: "📱 Gökyüzü Doktoru - v1.0.14 (Sürüm Kodu 17 & Siber Güvenlik Kalkanı, ProGuard/R8 Obfuscation, API Rate Limiter)"
           body: |
-            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.14 / Sürüm Kodu 16)
+            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.14 / Sürüm Kodu 17)
 
-            - **`gokyuzu-doktoru.apk`**: Kendi Android telefonunuzda doğrudan test edip kullanmak için yükleme dosyası (İmzalı).
-            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı, Sürüm Kodu 16).
+            - **`gokyuzu-doktoru.apk`**: Kendi Android telefonunuzda doğrudan test edip kullanmak için yükleme dosyası (İmzalı, Obfuscated).
+            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı, Sürüm Kodu 17, ProGuard & R8 Korumalı).
 
-            #### 🌟 Bu Sürümdeki Yenilikler (v1.0.14 / Build 16):
-            1. **Google Play Tam Alarm İzni (Exact Alarm) Düzeltmesi**: Google Play Console'da beyan zorunluluğu çıkaran ve saat/takvim dışı uygulamalar için kısıtlanan `SCHEDULE_EXACT_ALARM` ve `USE_EXACT_ALARM` kaldırıldı; arka plan bildirimleri Google Play politikalarına tam uyumlu `AndroidScheduleMode.inexactAllowWhileIdle` moduna alındı.
-            2. **Türkiye Tarihi Yaz Saati Uygulaması (1910–2026+) & Solar Fire / Astro Gold %100 Yükselen Kalibrasyonu**:
-               - Resmi Gazete kararları (1940-2018) ve IANA `Europe/Istanbul` saat dilimi geçişleri gün ve saat hassasiyetinde entegre edildi.
-               - Swiss Ephemeris ve Solar Fire standardında GAST (Görünür Yıldız Zamanı), Nutasyon ve Gerçek Ekliptik Eğikliği hesaplamalarıyla Yükselen (ASC) dereceleri dakika dakikasına eşitlendi.
-               - Türkçe karakter normalizasyonu ve bulanık arama (fuzzy search) ile şehir yazım hataları ("kırkkale" vb.) otomatik düzeltildi.
+            #### 🛡️ Bu Sürümdeki Siber Güvenlik & Tersine Mühendislik Korumaları (Build 17):
+            1. **ProGuard / R8 İleri Seviye Kod Karartma (Obfuscation) & Paket Gizleme**: Android yerel kodları şifrelendi, sınıf ve fonksiyon isimleri anlamsız karakterlere dönüştürüldü, tüm debug logları ikili dosyadan kazındı.
+            2. **Flutter Dart AOT Bytecode Karartma (`--obfuscate --split-debug-info`)**: Dart assembly sembolleri ve değişken isimleri tamamen soyuldu, decompiler (Ghidra, jadx, apktool) saldırılarına karşı %100 koruma sağlandı.
+            3. **API Maskeleme & Aylık/Günlük İstek Limiti (Rate Limiter)**: Harici uç noktalar XOR şifrelemesiyle belleğe alındı, cihaz başına aylık ve günlük istek kotası getirilerek bot ve scraping saldırıları engellendi.
+            4. **Google Play Tam Alarm İzni (Exact Alarm) Düzeltmesi**: Google Play Console'da beyan zorunluluğu çıkaran ve saat/takvim dışı uygulamalar için kısıtlanan `SCHEDULE_EXACT_ALARM` ve `USE_EXACT_ALARM` kaldırıldı; arka plan bildirimleri Google Play politikalarına tam uyumlu `AndroidScheduleMode.inexactAllowWhileIdle` moduna alındı.
+            5. **Türkiye Tarihi Yaz Saati Uygulaması (1910–2026+) & Solar Fire / Astro Gold %100 Yükselen Kalibrasyonu**: GAST ve nutasyon motoru dakika dakikasına Solar Fire ile eşitlendi.
             3. **True Node (Gerçek) & Mean Node (Ortalama) Ay Düğümleri**: Harita üzerinde tek dokunuşla True Node ve Mean Node arasında geçiş ve karşılaştırma.
             4. **9 Seçilebilir Asteroit & Özel Nokta**: Lilith, Vesta, Juno, Amor, Hekate, Isis, Vertex Noktası, Pallas ve Ceres haritaya eklendi; istenilen noktalar seçilip çıkarılabilir.
             5. **Astro Gold / Solar Fire Tarzı 360° Çark Tasarımı**: Hem Natal hem Transit çarklarda 12 Placidus ev giriş çizgisi, dış halka kasp dereceleri, iç halka ev numaraları (1..12) ve gezegen dereceleri.

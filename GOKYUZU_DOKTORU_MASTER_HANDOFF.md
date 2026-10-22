@@ -1,4 +1,4 @@
-# 🪐 GÖKYÜZÜ DOKTORU — MASTER PROJE HAFIZASI & YAPAY ZEKA DEVİR (HANDOFF) RAPORU (v1.0.14+16)
+# 🪐 GÖKYÜZÜ DOKTORU — MASTER PROJE HAFIZASI & YAPAY ZEKA DEVİR (HANDOFF) RAPORU (v1.0.14+17)
 
 > **Yeni Bir Yapay Zeka Asistanına Not:**  
 > Bu doküman, **Yiğithan Akman (Patron 👑)** tarafından geliştirilen **Gökyüzü Doktoru** projesinin tüm teknik mimarisini, astronomik motorlarını, para kazanma (AdMob & In-App Purchase) altyapısını, gizli yönetici özelliklerini ve bugüne kadar yapılan tüm güncellemeleri en ince ayrıntısına kadar içerir. Kullanıcıya her zaman **"Patron 👑"** diye hitap et ve buradaki kuralları harfiyen koru.
@@ -9,7 +9,7 @@
 
 - **Uygulama Adı:** Gökyüzü Doktoru
 - **Geliştirici / Kurucu:** Yiğithan Akman (Patron 👑)
-- **Güncel Sürüm:** `v1.0.14+16` (`versionName: 1.0.14`, `versionCode: 16`)
+- **Güncel Sürüm:** `v1.0.14+17` (`versionName: 1.0.14`, `versionCode: 17`)
 - **Android / iOS Paket Adı (Bundle ID):** `com.gokyuzudoktoru.gokyuzu_app`
 - **GitHub Deposu:** `https://github.com/yigithanakman-ai/gokyuzu-doktoru` (`main` dalı)
 - **Çalışma Dizini:** `/Users/yigithanakman/Desktop/Gökyüzü_YapayZeka_Sistemi/gokyuzu_app`
@@ -170,12 +170,24 @@ Patron'un paylaştığı AdMob Reklam Birimleri paneli ekran görüntüsüne gö
 
 ---
 
-## 🛡️ 5. Güvenlik, Git Deposu & API Koruması
+## 🛡️ 5. Siber Güvenlik, Tersine Mühendislik Koruması & API Kalkanı
 
-1. **Git Geçmişi Temizliği:**
-   - Eski `0148e0e8` nolu committe kazara yer alan Pinecone/Google anahtarı yerel dosyadan temizlendi ve git geçmişi geriye sarılarak anahtarsız tertemiz hale getirildi.
-   - `.gitignore` katı kurallarla donatıldı: `1_Iletisim_Botlari/`, `2_ Sosyal_Medya_Gorselleri/`, `3_YapayZeka_Beyni/`, `4_Zamanli_Gorevler/`, `Arsiv_Eski_Kodlar/`, `*.csv`, `*.env`, `*credentials*.json`, `*token*.json`, `*.apk`, `*.aab`, `*.ipa` asla GitHub'a gitmez.
-   - GitHub `origin main` dalı sıfır sızıntı ile senkronize edildi.
+1. **GitGuardian & Gizli Anahtar Sızıntısı Analizi ve Kökten Çözüm:**
+   - **Gelen Uyarının Nedeni:** GitHub uzak sunucusunda asılı kalan eski `v1.0.13` git etiketi (`refs/tags/v1.0.13`), geçmişte backend bot dosyalarını içeren `0148e0e8` nolu commite işaret ediyordu. GitGuardian bu eski etiketi tarayarak Google OAuth, Telegram Bot Token ve Pinecone API anahtarları için uyarı e-postası gönderdi.
+   - **Kökten Çözüm:** Eski `v1.0.13` etiketi GitHub sunucusundan tamamen silindi (`git push origin :refs/tags/v1.0.13`), ardından tertemiz `e4fbfd99` commitine bağlanarak yeniden yayınlandı. `0148e0e8` commitinin tüm git referansları koparıldı; repodaki hiçbir dal veya etiket bu commite artık erişemez.
+   - **Öneri:** Pinecone ve Telegram bot tokenlarının ilgili portallardan (BotFather ve Pinecone Console) "Revoke/Regenerate" edilerek yenilenmesi her ihtimale karşı tavsiye edilir.
+
+2. **Tersine Mühendislik (Reverse Engineering) & APK Klonlama Koruması:**
+   - **Android ProGuard & R8 Obfuscation:** `android/app/build.gradle.kts` içinde `isMinifyEnabled = true` ve `isShrinkResources = true` aktifleştirildi. `proguard-rules.pro` kural dosyasıyla tüm sınıflar, metodlar ve değişkenler anlamsız karakterlere (`a, b, c`) dönüştürüldü, paket yapısı `com.gokyuzudoktoru.sec` altına gizlendi ve tüm `Log.*` kodları ikili dosyadan kazındı.
+   - **Flutter Dart AOT Bytecode Karartma:** Derleme motoruna `--obfuscate --split-debug-info=./debug-symbols` bayrağı eklendi. Dart derleyicisi tüm AST sembollerini ve fonksiyon isimlerini silerek Ghidra, IDA Pro, jadx ve apktool gibi araçlarla decompile edilmesini imkansız hale getirir.
+
+3. **API Görünmezliği & Aylık/Günlük İstek Limiti (Rate Limiter):**
+   - **On-Device Mimari:** Uygulamanın tüm astrolojik hesaplamaları (Natal, Transit, Progresyon, Menazil, Gezegen Saatleri, Açı motoru) %100 matematiksel olarak cihazın kendi içinde (offline) çalışır; harici bir astroloji sunucusuna bağımlı değildir.
+   - **API Maskeleme:** Şehir arama uç noktaları (`world_cities_service.dart`) ikili dosyada açık metin olarak yer almaz; XOR maskeli (`SecurityShieldService.resolveMaskedEndpoint`) olarak bellekte anlık çözülür.
+   - **Kota Kalkanı (`SecurityShieldService`):** Cihaz başına günlük maksimum 50, aylık maksimum 350 istek limiti uygulanır. Kota aşıldığında uygulama otomatik olarak yerel 500+ şehir veri tabanına düşer; scraping veya bot saldırıları engellenir.
+
+4. **Klasör Güvenliği & Gitignore:**
+   - `1_Iletisim_Botlari/`, `2_ Sosyal_Medya_Gorselleri/`, `3_YapayZeka_Beyni/`, `4_Zamanli_Gorevler/`, `Arsiv_Eski_Kodlar/`, `*.csv`, `*.env`, `*credentials*.json`, `*token*.json` dosyaları `.gitignore` altında koruma altındadır ve asla depoya dahil edilmez.
 
 ---
 

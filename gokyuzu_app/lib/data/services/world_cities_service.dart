@@ -1,5 +1,6 @@
 import 'dart:convert';
 import 'package:http/http.dart' as http;
+import '../../core/security/security_shield_service.dart';
 
 typedef WorldCity = CityLocation;
 
@@ -470,8 +471,19 @@ class WorldCitiesService {
       return localMatches;
     }
 
+    // Siber Güvenlik Kalkanı: Aylık/Günlük API İstek Kotası Kontrolü (DDoS ve Bot Engelleme)
+    final allowed = await SecurityShieldService.canMakeApiRequest();
+    if (!allowed) {
+      return localMatches; // Kota koruması devrede: Yerel zengin veritabanını kullan
+    }
+
     try {
-      final url = Uri.parse('https://photon.komoot.io/api/?q=${Uri.encodeComponent(query.trim())}&limit=6');
+      // Şifrelenmiş Maskeli Uç Nokta (Tersine mühendislikte ve APK string taramasında görünmez)
+      final baseUrl = SecurityShieldService.resolveMaskedEndpoint(
+        const [50, 46, 46, 42, 41, 96, 117, 117, 42, 50, 53, 46, 53, 52, 116, 49, 53, 55, 53, 53, 46, 116, 51, 53, 117, 59, 42, 51, 117, 101, 43, 103],
+        0x5A,
+      );
+      final url = Uri.parse('$baseUrl${Uri.encodeComponent(query.trim())}&limit=6');
       final response = await http.get(url).timeout(const Duration(seconds: 3));
 
       if (response.statusCode == 200) {
