@@ -7,21 +7,13 @@ class AdService {
   // Resmi AdMob Uygulama Kimliği
   static const String appId = 'ca-app-pub-1133172251227471~4078534665';
 
-  // Canlı Reklam Birim Kimlikleri (AdMob Üretim Ortamı)
+  // Canlı Reklam Birim Kimlikleri (AdMob Üretim Ortamı - Doğrudan Canlı İstek)
   static const String liveRewardedAdId = 'ca-app-pub-1133172251227471/1704268715';
   static const String liveInterstitialAdId = 'ca-app-pub-1133172251227471/7656178404';
 
-  // Google Resmi Test Reklam Birim Kimlikleri
-  static const String testInterstitialAdId = 'ca-app-pub-3940256099942544/1033173712';
-  static const String testRewardedAdId = 'ca-app-pub-3940256099942544/5224354917';
-  static const String testBannerAdId = 'ca-app-pub-3940256099942544/6300978111';
-
-  // Canlı/Test Akıllı Seçici (Canlı yayında gerçek reklam, geliştirmede test reklamı)
-  static String get rewardedAdUnitId =>
-      kReleaseMode ? liveRewardedAdId : testRewardedAdId;
-
-  static String get interstitialAdUnitId =>
-      kReleaseMode ? liveInterstitialAdId : testInterstitialAdId;
+  // TÜM İSTEKLER DOĞRUDAN CANLI HESABA GÖNDERİLİR (Test ID'leri AdMob panelinde İstek: 0 yapar!)
+  static String get rewardedAdUnitId => liveRewardedAdId;
+  static String get interstitialAdUnitId => liveInterstitialAdId;
 
   static InterstitialAd? _interstitialAd;
   static bool _isInterstitialAdLoading = false;
@@ -114,6 +106,7 @@ class AdService {
           finish();
         },
         onAdFailedToShowFullScreenContent: (adInstance, error) {
+          debugPrint('AdMob: Interstitial gösterim hatası: ${error.message}');
           adInstance.dispose();
           preloadInterstitial();
           finish();
@@ -121,14 +114,48 @@ class AdService {
       );
       try {
         await ad.show();
-      } catch (_) {
+      } catch (e) {
+        debugPrint('AdMob: Interstitial show exception: $e');
         preloadInterstitial();
         finish();
       }
     } else {
-      // Önbellekte henüz hazır değilse anlık yüklemeyi dene ve gelir gelmez göster
-      preloadInterstitial();
-      finish();
+      // Önbellekte hazır değilse anlık canlı yükle ve doğrudan ekranda göster
+      _isInterstitialAdLoading = true;
+      try {
+        await InterstitialAd.load(
+          adUnitId: interstitialAdUnitId,
+          request: const AdRequest(),
+          adLoadCallback: InterstitialAdLoadCallback(
+            onAdLoaded: (ad) {
+              _isInterstitialAdLoading = false;
+              ad.fullScreenContentCallback = FullScreenContentCallback(
+                onAdDismissedFullScreenContent: (adInstance) {
+                  adInstance.dispose();
+                  preloadInterstitial();
+                  finish();
+                },
+                onAdFailedToShowFullScreenContent: (adInstance, error) {
+                  debugPrint('AdMob: Anlık Interstitial gösterim hatası: ${error.message}');
+                  adInstance.dispose();
+                  preloadInterstitial();
+                  finish();
+                },
+              );
+              ad.show();
+            },
+            onAdFailedToLoad: (error) {
+              _isInterstitialAdLoading = false;
+              debugPrint('AdMob: Anlık Interstitial yükleme hatası: ${error.message} (Kod: ${error.code})');
+              finish();
+            },
+          ),
+        );
+      } catch (e) {
+        _isInterstitialAdLoading = false;
+        debugPrint('AdMob: Anlık Interstitial exception: $e');
+        finish();
+      }
     }
   }
 
@@ -280,10 +307,11 @@ class AdService {
               },
             );
           },
-          onAdFailedToLoad: (LoadAdError error) {
-            preloadRewarded();
-            onRewardGranted(); // Ağ hatası durumunda ödülü aç
-          },
+            onAdFailedToLoad: (LoadAdError error) {
+              debugPrint('AdMob: Rewarded yükleme hatası: ${error.message} (Kod: ${error.code}, Alan: ${error.domain})');
+              preloadRewarded();
+              onRewardGranted(); // Ağ hatası durumunda ödülü aç
+            },
         ),
       );
       return true;
