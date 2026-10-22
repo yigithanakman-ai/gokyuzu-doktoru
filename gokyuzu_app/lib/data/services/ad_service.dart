@@ -4,16 +4,35 @@ import 'storage_service.dart';
 
 /// Akıllı Reklam & Monetizasyon Yöneticisi (Google AdMob Canlı Entegrasyonlu)
 class AdService {
-  // Resmi AdMob Uygulama Kimliği
-  static const String appId = 'ca-app-pub-1133172251227471~4078534665';
+  // Resmi AdMob Uygulama Kimlikleri
+  static const String androidAppId = 'ca-app-pub-1133172251227471~4078534665';
+  static const String iosAppId = 'ca-app-pub-1133172251227471~4078534665';
+  static String get appId => defaultTargetPlatform == TargetPlatform.iOS ? iosAppId : androidAppId;
 
-  // Canlı Reklam Birim Kimlikleri (AdMob Üretim Ortamı - Doğrudan Canlı İstek)
-  static const String liveRewardedAdId = 'ca-app-pub-1133172251227471/1704268715';
-  static const String liveInterstitialAdId = 'ca-app-pub-1133172251227471/7656178404';
+  // Android Canlı Reklam Birimleri (AdMob Paneli ile Birebir Doğrulandı)
+  // Gokyuzu_Odullu_Pusula
+  static const String androidRewardedAdId = 'ca-app-pub-1133172251227471/1704268715';
+  // Gokyuzu_Gecis_Sekmeler
+  static const String androidInterstitialAdId = 'ca-app-pub-1133172251227471/7656178404';
 
-  // TÜM İSTEKLER DOĞRUDAN CANLI HESABA GÖNDERİLİR (Test ID'leri AdMob panelinde İstek: 0 yapar!)
-  static String get rewardedAdUnitId => liveRewardedAdId;
-  static String get interstitialAdUnitId => liveInterstitialAdId;
+  // iOS Canlı Reklam Birimleri (AdMob Paneli & iOS Çapraz Uyumluluk)
+  static const String iosRewardedAdId = 'ca-app-pub-1133172251227471/1704268715';
+  static const String iosInterstitialAdId = 'ca-app-pub-1133172251227471/7656178404';
+
+  // Platforma Göre Doğru Reklam Birimini Döndürür (Android & iOS Senkronize)
+  static String get rewardedAdUnitId {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return iosRewardedAdId;
+    }
+    return androidRewardedAdId;
+  }
+
+  static String get interstitialAdUnitId {
+    if (defaultTargetPlatform == TargetPlatform.iOS) {
+      return iosInterstitialAdId;
+    }
+    return androidInterstitialAdId;
+  }
 
   static InterstitialAd? _interstitialAd;
   static bool _isInterstitialAdLoading = false;
@@ -189,6 +208,7 @@ class AdService {
           onAdFailedToLoad: (error) {
             _isInterstitialAdLoading = false;
             _interstitialAd = null;
+            debugPrint('AdMob: Interstitial ön yükleme hatası: ${error.message} (Kod: ${error.code})');
             // Geçici ağ veya No-Fill durumunda 20 saniye sonra otomatik yeniden dene
             Future.delayed(const Duration(seconds: 20), () {
               if (_interstitialAd == null && !_isInterstitialAdLoading) {
@@ -222,6 +242,7 @@ class AdService {
           onAdFailedToLoad: (error) {
             _isRewardedAdLoading = false;
             _rewardedAd = null;
+            debugPrint('AdMob: Rewarded ön yükleme hatası: ${error.message} (Kod: ${error.code})');
             Future.delayed(const Duration(seconds: 20), () {
               if (_rewardedAd == null && !_isRewardedAdLoading) {
                 preloadRewarded(adUnitId: unitId);

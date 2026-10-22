@@ -100,15 +100,10 @@
 
 ### 9) AdMob Canlı Reklam ve Anında Gösterim Motoru (Root-Cause Çözümü)
 - **Dosya:** `gokyuzu_app/lib/data/services/ad_service.dart`
-- **Kök Neden:**
-  1. Eski kodda `rewardedAdUnitId` ve `interstitialAdUnitId` tanımlarında `kReleaseMode ? live : test` şartı bulunuyordu. Test cihazlarında, yerel denemelerde veya mod kontrolünün false düştüğü durumlarda tüm istekler Google'ın örnek test reklam birimlerine (`ca-app-pub-3940256099942544/...`) gidiyordu. Bu istekler Google'ın test havuzunda yutulduğundan Patron'un AdMob hesabında `İstekler: 0` ve `Kazanç: ₺0,00` kalıyordu.
-  2. `showInterstitialIfReady` fonksiyonunda 4. tıklamada eğer önceden yüklenmiş `_interstitialAd` henüz hazır değilse (`null`), sayaç sıfırlanıyor ve reklam gösterilmeden geçiliyordu.
-- **Kesin Çözüm:**
-  1. `kReleaseMode ? live : test` ayrımı tamamen kaldırıldı. Kod artık doğrudan Patron'un canlı reklam birimlerini çağırır:
-     - **Canlı Ödüllü:** `ca-app-pub-1133172251227471/1704268715`
-     - **Canlı Geçiş:** `ca-app-pub-1133172251227471/7656178404`
-  2. 4. eylemde reklam bellekte hazır değilse fırsat kaçırılmaz; `loadAndShowInterstitial` çağrılarak anında yüklenir ve yüklenir yüklenmez ekranda açılır.
-  3. Başarısız isteklerde 20 saniyede bir otomatik yeniden deneme (retry) döngüsü çalışır.
+- **Kök Neden & Çözüm:**
+  1. Kod içerisindeki `kReleaseMode ? live : test` koşulu kaldırıldı; tüm istekler doğrudan Patron'un AdMob hesabına bağlandı.
+  2. 4. eylemde önceden yüklenmiş reklam yoksa atlanmıyordu; `loadAndShowInterstitial` çağrılarak ekranda gösterim güvenceye alındı.
+  3. Android ve iOS platformları için ayrı değişkenler ve platform-aware getter'lar (`interstitialAdUnitId` ve `rewardedAdUnitId`) kurgulandı.
 
 ### 10) Gizli Patron Yönetici Girişi
 - **Dosya:** `gokyuzu_app/lib/presentation/widgets/vip_upgrade_modal.dart`
@@ -119,7 +114,24 @@
 
 ---
 
-## 📱 3. Platform Uyumluluğu: Android & iOS Senkronizasyonu
+## 💰 3. AdMob Reklam Birimleri İncelemesi ve Platform Eşleştirmesi
+
+Patron'un paylaştığı AdMob Reklam Birimleri paneli ekran görüntüsüne göre doğrulamalar:
+
+| AdMob Birim Adı | Tür | AdMob Panelindeki ID | Kod Tarafındaki Değişken (`ad_service.dart`) | Sıklık Sınırı (Frequency) | Durum |
+| :--- | :--- | :--- | :--- | :--- | :--- |
+| **Gokyuzu_Gecis_Sekmeler** | Geçiş (Interstitial) | `ca-app-pub-1133172251227471/7656178404` | `androidInterstitialAdId` | Sınır Yok (Uygulama kontrolünde) | ✅ %100 Eşleşti |
+| **Gokyuzu_Odullu_Pusula** | Ödüllü (Rewarded) | `ca-app-pub-1133172251227471/1704268715` | `androidRewardedAdId` | Sınır Yok (Uygulama kontrolünde) | ✅ %100 Eşleşti |
+
+### Kritik Notlar:
+1. **Sıklık Sınırının "Sınır Yok" Olması:**  
+   AdMob panelinde sıklık sınırının "Sınır yok" olması mükemmel bir tercihtir. Eğer AdMob tarafında günlük 2-3 sınır konulsaydı, uygulamadaki 4-aksiyon kuralımız Google tarafından engellenebilirdi. Kontrol tamamen bizim akıllı sayacımızdadır.
+2. **Android vs. iOS AdMob Ayrımı:**  
+   Ekran görüntüsünde görünen uygulama **Gökyüzü Doktoru Android**'dir. Google AdMob, Android ve iOS platformlarını iki ayrı uygulama olarak kabul eder. Kodumuzda `ad_service.dart` hem Android hem iOS kimliklerini bağımsız yönetecek şekilde ayrılmıştır. iOS için App Store yayını öncesinde AdMob panelinden `Uygulamalar -> Uygulama ekle -> iOS` seçilerek 2 birim açılması yeterlidir.
+
+---
+
+## 📱 4. Platform Uyumluluğu: Android & iOS Senkronizasyonu
 
 ### Android Yapılandırması (`android/app/src/main/AndroidManifest.xml`)
 - **AdMob App ID:** `ca-app-pub-1133172251227471~4078534665`
@@ -137,7 +149,7 @@
 
 ---
 
-## 🛡️ 4. Güvenlik, Git Deposu & API Koruması
+## 🛡️ 5. Güvenlik, Git Deposu & API Koruması
 
 1. **Git Geçmişi Temizliği:**
    - Eski `0148e0e8` nolu committe kazara yer alan Pinecone/Google anahtarı yerel dosyadan temizlendi ve git geçmişi geriye sarılarak anahtarsız tertemiz hale getirildi.
@@ -146,7 +158,7 @@
 
 ---
 
-## 🧪 5. Test ve Doğrulama Durumu
+## 🧪 6. Test ve Doğrulama Durumu
 
 - **Statik Kod Analizi (`dart analyze lib`):** 0 hata, 0 uyarı.
 - **Birim Testleri (`flutter test test/v1013_features_test.dart`):**
@@ -159,7 +171,26 @@
 
 ---
 
-## 🚀 6. Sürüm Dağıtım Notları (Google Play & App Store v1.0.13+14)
+## 📋 7. Yapılanlar ve Yapılacaklar Listesi (Roadmap)
+
+### ✅ Yapılanlar (v1.0.13+14 Tamamlandı):
+- [x] AdMob test birimi yönlendirme hatası (`kReleaseMode ? live : test`) kaldırıldı; tüm istekler canlı kimliklere bağlandı.
+- [x] AdMob panelindeki `Gokyuzu_Gecis_Sekmeler` (`7656178404`) ve `Gokyuzu_Odullu_Pusula` (`1704268715`) kodla birebir doğrulandı.
+- [x] 4. eylemde reklam bellekte yoksa atlama hatası giderildi; anında yükleyip gösterme (`loadAndShowInterstitial`) eklendi.
+- [x] Android `AndroidManifest.xml` (`APPLICATION_ID`, `AD_ID`, alarmlar) tam uyarlandı.
+- [x] iOS `Info.plist` (`GADApplicationIdentifier`, `SKAdNetworkItems`) eklendi.
+- [x] True Node / Mean Node, 9 Asteroit, Astro Gold 360 Çark, Evrensel Orblar, Sa'd el-Ahbiye ve Hermetik Adımlar teslim edildi.
+- [x] Gizli Patron yönetici girişi kuruldu.
+
+### 📌 Yapılacaklar (Gelecek Adımlar):
+- [ ] **Google Play Console Kapalı Teste Yeni AAB Yükleme:** Canlı AdMob düzeltmelerini içeren `v1.0.13+14` bundle'ının kapalı test kanalına yüklenmesi.
+- [ ] **AdMob Paneli İzleme:** Güncelleme yüklendikten 24-48 saat sonra AdMob panelindeki "İstekler" ve "Eşleşme Oranı" istatistiklerinin sıfırdan yukarı tırmandığının kontrol edilmesi.
+- [ ] **AdMob iOS Uygulaması Oluşturma:** iOS App Store sürümü öncesinde AdMob panelinden `Uygulama Ekle -> iOS` adımıyla iOS için özel 2 reklam birimi alınıp `ad_service.dart` içindeki `iosInterstitialAdId` ve `iosRewardedAdId` değişkenlerine yazılması.
+- [ ] **Google Play In-App Purchase Aboneliklerini Etkinleştirme:** Play Console -> Para Kazanma -> Abonelikler altındaki 4 abonelik ID'sinin aktifleştirilmesi.
+
+---
+
+## 🚀 8. Sürüm Dağıtım Notları (Google Play & App Store v1.0.13+14)
 
 ```text
 Gökyüzü Doktoru v1.0.13 Yayında! 🪐✨
