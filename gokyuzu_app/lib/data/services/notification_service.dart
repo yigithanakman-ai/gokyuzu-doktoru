@@ -17,8 +17,8 @@ class NotificationService {
 
   static const String _prefEnabledKey = 'cosmic_notifications_enabled';
   static const String _prefAskedKey = 'cosmic_notifications_prompted';
-  static const String channelId = 'gokyuzu_cosmic_channel';
-  static const String channelName = 'Gökyüzü Doktoru Kozmik Bildirimler';
+  static const String channelId = 'gokyuzu_cosmic_v3';
+  static const String channelName = 'Gökyüzü Doktoru Canlı Bildirimler';
 
   static bool _isInitialized = false;
 
@@ -71,21 +71,27 @@ class NotificationService {
         settings: initializationSettings,
       );
 
-      // Android İçin En Yüksek Öncelikli ve Kilit Ekranında Görünen Kanal Oluştur
+      // Android İçin En Yüksek Öncelikli, Kilit Ekranında ve Uyku Modunda Uyanan Kanal Oluştur
       final androidImpl = _notificationsPlugin
           .resolvePlatformSpecificImplementation<
               AndroidFlutterLocalNotificationsPlugin>();
       if (androidImpl != null) {
+        try {
+          await androidImpl.deleteNotificationChannel(channelId: 'gokyuzu_cosmic_channel');
+          await androidImpl.deleteNotificationChannel(channelId: 'gokyuzu_cosmic_channel_v2');
+          await androidImpl.deleteNotificationChannel(channelId: 'gokyuzu_cosmic_v2');
+        } catch (_) {}
         const AndroidNotificationChannel channel = AndroidNotificationChannel(
           channelId,
           channelName,
           description:
-              'Günlük gezegen transitleri, Ay fazı ve kişisel astrolojik rehber bildirimleri.',
+              'Günlük gezegen transitleri, Ay burç geçişleri ve kozmik rehber bildirimleri.',
           importance: Importance.max,
           playSound: true,
           enableVibration: true,
           showBadge: true,
           enableLights: true,
+          audioAttributesUsage: AudioAttributesUsage.alarm,
         );
         await androidImpl.createNotificationChannel(channel);
       }
@@ -137,9 +143,12 @@ class NotificationService {
         // Android 13+ (API 33+) resmi bildirim izin penceresini açar
         granted =
             await androidImpl?.requestNotificationsPermission() ?? false;
-        // Android 12+ ve 14+ tam zamanlı alarm (Exact Alarm) izni
+        // Android 12+ ve 14+ tam zamanlı alarm (Exact Alarm) izni kontrolü ve talebi
         try {
-          await androidImpl?.requestExactAlarmsPermission();
+          final canExact = await androidImpl?.canScheduleExactNotifications() ?? false;
+          if (!canExact) {
+            await androidImpl?.requestExactAlarmsPermission();
+          }
         } catch (_) {}
       } else if (!kIsWeb &&
           (defaultTargetPlatform == TargetPlatform.iOS ||
@@ -215,8 +224,10 @@ class NotificationService {
       enableVibration: true,
       showWhen: true,
       visibility: NotificationVisibility.public,
-      category: AndroidNotificationCategory.reminder,
-      audioAttributesUsage: AudioAttributesUsage.notification,
+      category: AndroidNotificationCategory.alarm,
+      audioAttributesUsage: AudioAttributesUsage.alarm,
+      autoCancel: true,
+      ongoing: false,
     );
 
     const DarwinNotificationDetails darwinDetails = DarwinNotificationDetails(
@@ -300,28 +311,13 @@ class NotificationService {
 
         if (scheduledDate.isBefore(nowTz)) continue;
 
-        // Önce tam zamanlı (exactAllowWhileIdle) kur; cihaz izin vermezse inexactAllowWhileIdle ile düşür
-        try {
-          await _notificationsPlugin.zonedSchedule(
-            id: notificationId,
-            title: title,
-            body: body,
-            scheduledDate: scheduledDate,
-            notificationDetails: notificationDetails,
-            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          );
-        } catch (_) {
-          try {
-            await _notificationsPlugin.zonedSchedule(
-              id: notificationId,
-              title: title,
-              body: body,
-              scheduledDate: scheduledDate,
-              notificationDetails: notificationDetails,
-              androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-            );
-          } catch (_) {}
-        }
+        await _scheduleSafeZoned(
+          id: notificationId,
+          title: title,
+          body: body,
+          scheduledDate: scheduledDate,
+          notificationDetails: notificationDetails,
+        );
       }
     }
 
@@ -337,27 +333,13 @@ class NotificationService {
         if (scheduledDate.isBefore(nowTz)) continue;
 
         final notificationId = 2000 + i;
-        try {
-          await _notificationsPlugin.zonedSchedule(
-            id: notificationId,
-            title: ev.title,
-            body: ev.body,
-            scheduledDate: scheduledDate,
-            notificationDetails: notificationDetails,
-            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          );
-        } catch (_) {
-          try {
-            await _notificationsPlugin.zonedSchedule(
-              id: notificationId,
-              title: ev.title,
-              body: ev.body,
-              scheduledDate: scheduledDate,
-              notificationDetails: notificationDetails,
-              androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-            );
-          } catch (_) {}
-        }
+        await _scheduleSafeZoned(
+          id: notificationId,
+          title: ev.title,
+          body: ev.body,
+          scheduledDate: scheduledDate,
+          notificationDetails: notificationDetails,
+        );
       }
     } catch (_) {}
 
@@ -374,27 +356,13 @@ class NotificationService {
         if (scheduledDate.isBefore(nowTz)) continue;
 
         final notificationId = 3000 + i;
-        try {
-          await _notificationsPlugin.zonedSchedule(
-            id: notificationId,
-            title: ev.title,
-            body: ev.body,
-            scheduledDate: scheduledDate,
-            notificationDetails: notificationDetails,
-            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          );
-        } catch (_) {
-          try {
-            await _notificationsPlugin.zonedSchedule(
-              id: notificationId,
-              title: ev.title,
-              body: ev.body,
-              scheduledDate: scheduledDate,
-              notificationDetails: notificationDetails,
-              androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-            );
-          } catch (_) {}
-        }
+        await _scheduleSafeZoned(
+          id: notificationId,
+          title: ev.title,
+          body: ev.body,
+          scheduledDate: scheduledDate,
+          notificationDetails: notificationDetails,
+        );
       }
     } catch (_) {}
 
@@ -411,27 +379,13 @@ class NotificationService {
         if (scheduledDate.isBefore(nowTz)) continue;
 
         final notificationId = 4000 + i;
-        try {
-          await _notificationsPlugin.zonedSchedule(
-            id: notificationId,
-            title: ev.title,
-            body: ev.body,
-            scheduledDate: scheduledDate,
-            notificationDetails: notificationDetails,
-            androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          );
-        } catch (_) {
-          try {
-            await _notificationsPlugin.zonedSchedule(
-              id: notificationId,
-              title: ev.title,
-              body: ev.body,
-              scheduledDate: scheduledDate,
-              notificationDetails: notificationDetails,
-              androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-            );
-          } catch (_) {}
-        }
+        await _scheduleSafeZoned(
+          id: notificationId,
+          title: ev.title,
+          body: ev.body,
+          scheduledDate: scheduledDate,
+          notificationDetails: notificationDetails,
+        );
       }
     } catch (_) {}
 
@@ -468,30 +422,66 @@ class NotificationService {
       final hour = item['hour'] as int;
       final minute = item['minute'] as int;
       final scheduledTime = _nextInstanceOfTime(hour, minute);
-      try {
-        await _notificationsPlugin.zonedSchedule(
-          id: id,
-          title: item['title'] as String,
-          body: item['body'] as String,
-          scheduledDate: scheduledTime,
-          notificationDetails: notificationDetails,
-          androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
-          matchDateTimeComponents: DateTimeComponents.time,
-        );
-      } catch (_) {
-        try {
-          await _notificationsPlugin.zonedSchedule(
-            id: id,
-            title: item['title'] as String,
-            body: item['body'] as String,
-            scheduledDate: scheduledTime,
-            notificationDetails: notificationDetails,
-            androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
-            matchDateTimeComponents: DateTimeComponents.time,
-          );
-        } catch (_) {}
-      }
+      await _scheduleSafeZoned(
+        id: id,
+        title: item['title'] as String,
+        body: item['body'] as String,
+        scheduledDate: scheduledTime,
+        notificationDetails: notificationDetails,
+        matchDateTimeComponents: DateTimeComponents.time,
+      );
     }
+  }
+
+  /// Android AlarmClock ve Exact Alarm katmanlı zamanlama mekanizması
+  /// 1. AlarmClock: Android Doze uyku modunu ve kilit ekranını delerek tam saniyesinde çalar
+  /// 2. ExactAllowWhileIdle: Exact alarm izni varsa kilit ekranında tam zamanında çalar
+  /// 3. InexactAllowWhileIdle: Son çare işletim sistemi optimizasyonlu fallback
+  static Future<void> _scheduleSafeZoned({
+    required int id,
+    required String title,
+    required String body,
+    required tz.TZDateTime scheduledDate,
+    required NotificationDetails notificationDetails,
+    DateTimeComponents? matchDateTimeComponents,
+  }) async {
+    try {
+      await _notificationsPlugin.zonedSchedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: scheduledDate,
+        notificationDetails: notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.alarmClock,
+        matchDateTimeComponents: matchDateTimeComponents,
+      );
+      return;
+    } catch (_) {}
+
+    try {
+      await _notificationsPlugin.zonedSchedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: scheduledDate,
+        notificationDetails: notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.exactAllowWhileIdle,
+        matchDateTimeComponents: matchDateTimeComponents,
+      );
+      return;
+    } catch (_) {}
+
+    try {
+      await _notificationsPlugin.zonedSchedule(
+        id: id,
+        title: title,
+        body: body,
+        scheduledDate: scheduledDate,
+        notificationDetails: notificationDetails,
+        androidScheduleMode: AndroidScheduleMode.inexactAllowWhileIdle,
+        matchDateTimeComponents: matchDateTimeComponents,
+      );
+    } catch (_) {}
   }
 
   static tz.TZDateTime _nextInstanceOfTime(int hour, int minute) {
@@ -547,8 +537,8 @@ class NotificationService {
       enableVibration: true,
       showWhen: true,
       visibility: NotificationVisibility.public,
-      category: AndroidNotificationCategory.reminder,
-      audioAttributesUsage: AudioAttributesUsage.notification,
+      category: AndroidNotificationCategory.alarm,
+      audioAttributesUsage: AudioAttributesUsage.alarm,
       icon: '@mipmap/ic_launcher',
     );
 
@@ -595,6 +585,12 @@ class NotificationService {
         );
         return;
       }
+      try {
+        final canExact = await androidImpl?.canScheduleExactNotifications() ?? false;
+        if (!canExact) {
+          await androidImpl?.requestExactAlarmsPermission();
+        }
+      } catch (_) {}
     }
 
     // 14 günlük arka plan alarmlarını (09:30, 14:30, 20:30) sessizce güncelle

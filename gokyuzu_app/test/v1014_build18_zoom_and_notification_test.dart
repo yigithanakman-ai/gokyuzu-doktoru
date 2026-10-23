@@ -1,6 +1,5 @@
 import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
-import 'package:gokyuzu_app/data/models/birth_chart_model.dart';
 import 'package:gokyuzu_app/data/services/astrology_engine.dart';
 import 'package:gokyuzu_app/data/services/notification_service.dart';
 import 'package:gokyuzu_app/data/services/storage_service.dart';

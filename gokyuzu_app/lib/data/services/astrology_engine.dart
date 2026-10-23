@@ -66,8 +66,9 @@ class AstrologyEngine {
     int signIdx = (norm / 30.0).floor() % 12;
     final degInSign = norm % 30.0;
     int deg = degInSign.floor();
-    int min = ((degInSign - deg) * 60.0).round();
-    if (min == 60) {
+    // Solar Fire & Astro Gold standardı: Yay dakikaları aşağı yuvarlanır (truncation/floor)
+    int min = ((degInSign - deg) * 60.0).floor();
+    if (min >= 60) {
       deg += 1;
       min = 0;
       if (deg >= 30) {

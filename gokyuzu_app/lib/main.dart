@@ -9,13 +9,22 @@ import 'data/services/ad_service.dart';
 import 'data/services/app_translation_service.dart';
 import 'data/services/notification_service.dart';
 import 'data/services/in_app_purchase_service.dart';
+import 'data/services/asteroid_ephemeris_service.dart';
+import 'data/services/storage_service.dart';
 import 'presentation/screens/splash_screen.dart';
 
 void main() async {
   WidgetsFlutterBinding.ensureInitialized();
   await AppTranslationService.init();
   try {
+    await AsteroidEphemerisService.init();
+  } catch (_) {}
+  try {
     await NotificationService.init();
+    final profile = await StorageService.getProfile();
+    if (profile != null) {
+      await NotificationService.syncDailyNotificationsIfEnabled(profile);
+    }
   } catch (_) {}
   if (!kIsWeb &&
       (defaultTargetPlatform == TargetPlatform.android ||

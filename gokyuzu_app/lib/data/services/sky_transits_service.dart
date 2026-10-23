@@ -1,5 +1,6 @@
 import 'dart:math' as math;
 import 'fixed_stars_service.dart';
+import 'asteroid_ephemeris_service.dart';
 
 class TransitPlanet {
   final String name;
@@ -239,6 +240,11 @@ class SkyTransitsService {
       _calculatePlanetsLongitudes(dt);
 
   static bool isPlanetRetrograde(String key, DateTime dt) {
+    final k = key.toLowerCase();
+    if (k == 'ceres' || k == 'pallas' || k == 'juno' || k == 'vesta' || k == 'chiron' || k == 'lilith') {
+      final epheRetro = AsteroidEphemerisService.isRetrograde(k, dt.toUtc());
+      if (epheRetro != null) return epheRetro;
+    }
     final nowP = _calculatePlanetsLongitudes(dt);
     final nextP = _calculatePlanetsLongitudes(dt.add(const Duration(hours: 12)));
     if (!nowP.containsKey(key) || !nextP.containsKey(key)) return false;
@@ -410,10 +416,10 @@ class SkyTransitsService {
           0.0801 * math.sin(2 * (mMoon - fMoon)),
     );
 
-    // Kara Ay Lilith (Mean Lunar Apogee - Jean Meeus)
-    final lilith = _normalize(83.3532465 + 4069.0137287 * t - 0.0103200 * t * t);
+    // Kara Ay Lilith (Mean Lunar Apogee - Jean Meeus analitik formülü)
+    final lilith = _normalize(83.3532465 + 180.0 + 4069.0137287 * t - 0.0103200 * t * t);
 
-    // Asteroitler (JPL / Minor Planet Center J2000 Keplerian Elements)
+    // Asteroitler (JPL / Minor Planet Center J2000 Keplerian Elements - Fallback)
     // 1 Ceres
     final ceres = keplerGeo(
       a: 2.7675,
@@ -484,6 +490,15 @@ class SkyTransitsService {
       lDeg: 198.810 + 0.258365 * d,
     );
 
+    // Swiss Ephemeris / Solar Fire Kalibrasyon Tablosu (1900 - 2100)
+    final dtUtc = dt.toUtc();
+    final epheCeres = AsteroidEphemerisService.getLongitude('ceres', dtUtc);
+    final ephePallas = AsteroidEphemerisService.getLongitude('pallas', dtUtc);
+    final epheJuno = AsteroidEphemerisService.getLongitude('juno', dtUtc);
+    final epheVesta = AsteroidEphemerisService.getLongitude('vesta', dtUtc);
+    final epheChiron = AsteroidEphemerisService.getLongitude('chiron', dtUtc);
+    final epheLilith = AsteroidEphemerisService.getLongitude('lilith', dtUtc);
+
     return {
       'mercury': merc,
       'venus': ven,
@@ -493,15 +508,15 @@ class SkyTransitsService {
       'uranus': ura,
       'neptune': nep,
       'pluto': plu,
-      'chiron': chiron,
+      'chiron': epheChiron ?? chiron,
       'node': trueNode,
       'true_node': trueNode,
       'mean_node': meanNode,
-      'lilith': lilith,
-      'ceres': ceres,
-      'pallas': pallas,
-      'juno': juno,
-      'vesta': vesta,
+      'lilith': epheLilith ?? lilith,
+      'ceres': epheCeres ?? ceres,
+      'pallas': ephePallas ?? pallas,
+      'juno': epheJuno ?? juno,
+      'vesta': epheVesta ?? vesta,
       'amor': amor,
       'hekate': hekate,
       'isis': isis,
