@@ -9,7 +9,14 @@ class InAppPurchaseService {
   static final InAppPurchaseService instance = InAppPurchaseService._internal();
   InAppPurchaseService._internal();
 
-  final InAppPurchase _inAppPurchase = InAppPurchase.instance;
+  InAppPurchase? _iap;
+  InAppPurchase get _inAppPurchase {
+    try {
+      return _iap ??= InAppPurchase.instance;
+    } catch (_) {
+      rethrow;
+    }
+  }
   StreamSubscription<List<PurchaseDetails>>? _subscription;
 
   // Google Play ve Apple App Store Resmi Ürün & Abonelik Kimlikleri

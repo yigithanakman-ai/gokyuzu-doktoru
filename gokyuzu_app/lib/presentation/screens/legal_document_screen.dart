@@ -61,17 +61,17 @@ class LegalDocumentScreen extends StatelessWidget {
           {
             'title': '2. İşlenen Kişisel Verileriniz',
             'body':
-                'Uygulamamızı kullanırken sağladığınız;\n• Kimlik Verileri: Ad, soyad, rumuz ve cinsiyet bilgisi.\n• Doğum Bilgileri: Doğum tarihi, kesin doğum saati, doğum yeri (ülke ve şehir) ve coğrafi enlem/boylam koordinatları.\n• İletişim Verileri: E-posta adresi (üyelik ve arşiv senkronizasyonu için).\n• Harita & Tercih Verileri: Hesaplanan doğum haritası gezegen konumları, açılar, notlar ve arşivlenmiş profiller.',
+                'Uygulamamızı kullanırken sağladığınız;\n• Kimlik Verileri: Ad, soyad, rumuz ve cinsiyet bilgisi.\n• Doğum Bilgileri: Doğum tarihi, kesin doğum saati, doğum yeri (ülke ve şehir) ve coğrafi enlem/boylam koordinatları.\n• İletişim & Bulut Senkronizasyon Verileri: E-posta adresi ve Google hesap eşleme bilgisi (isteğe bağlı: cihaz değişikliğinde veya Android ➔ iOS geçişinde harita ve VIP lisans haklarını korumak için).\n• Harita & Tercih Verileri: Hesaplanan doğum haritası gezegen konumları, açılar, notlar ve arşivlenmiş profiller.',
           },
           {
             'title': '3. Kişisel Verilerin İşlenme Amaçları',
             'body':
-                'Kişisel verileriniz aşağıdaki amaçlarla sınırlı olarak işlenmektedir:\n• Geocentric ve Placidus efemeris algoritmaları üzerinden kişiselleştirilmiş doğum haritası, yükselen burç ve gezegen transitlerinin hesaplanması.\n• Solar Return, Lunar Return, İkincil İlerletim ve Rektifikasyon gibi astrolojik hesaplamaların yapılması.\n• VIP üyelik ve arşivleme özelliklerinin kişiye özel olarak sunulması.\n• Yasal mevzuattan kaynaklanan bilgi saklama ve güvenlik yükümlülüklerinin yerine getirilmesi.',
+                'Kişisel verileriniz aşağıdaki amaçlarla sınırlı olarak işlenmektedir:\n• Geocentric ve Placidus efemeris algoritmaları üzerinden kişiselleştirilmiş doğum haritası, yükselen burç ve gezegen transitlerinin hesaplanması.\n• Solar Return, Lunar Return, İkincil İlerletim ve Rektifikasyon gibi astrolojik hesaplamaların yapılması.\n• VIP üyelik ve arşivleme özelliklerinin kişiye özel olarak sunulması.\n• İsteğe bağlı olarak Google hesabı ile bağlanan kullanıcıların cihaz değişikliği (Android ➔ iPhone vb.) durumunda harita arşivini ve VIP lisans haklarını tek tıkla geri yükleyebilmesi.\n• Yasal mevzuattan kaynaklanan bilgi saklama ve güvenlik yükümlülüklerinin yerine getirilmesi.',
           },
           {
             'title': '4. Verilerin Aktarımı ve Üçüncü Taraflar',
             'body':
-                'Kişisel verileriniz, astrolojik doğum bilgileriniz ve haritanız KESİNLİKLE hiçbir ticari amaçla satılmaz, pazarlama şirketleriyle paylaşılmaz ve üçüncü kişilere devredilmez. Verileriniz yalnızca güvenli yerel hafızada (cihazınızda) ve şifrelenmiş altyapıda saklanır.',
+                'Kişisel verileriniz, astrolojik doğum bilgileriniz ve haritanız KESİNLİKLE hiçbir ticari amaçla satılmaz, pazarlama şirketleriyle paylaşılmaz ve üçüncü kişilere devredilmez. Verileriniz yalnızca güvenli yerel hafızada (cihazınızda) ve kullanıcının talep ettiği şifrelenmiş bulut eşleme altyapısında saklanır.',
           },
           {
             'title': '5. KVKK Kapsamındaki Haklarınız (Madde 11)',
@@ -84,7 +84,7 @@ class LegalDocumentScreen extends StatelessWidget {
           {
             'title': '1. Hangi Verileri Topluyoruz?',
             'body':
-                '• Hesap Bilgileri: E-posta adresi ve şifre (şifreler şifrelenerek saklanır, bize dahi görünmez).\n'
+                '• Hesap & Bulut Yedekleme Bilgileri: E-posta adresi ve isteğe bağlı Google hesabı eşlemesi (telefon değişiminde veya Android ➔ iOS geçişinde harita ve VIP haklarınızı kurtarabilmek için).\n'
                 '• Profil ve Doğum Bilgileri: Adınız/rumuzunuz, cinsiyetiniz, doğum tarihiniz, doğum saatiniz, doğum şehriniz ve coğrafi koordinatlarınız (Placidus haritası ve efemeris için zorunludur).\n'
                 '• Kullanıcı İçerikleri: Rektifikasyon geçmiş yaşam olay notları ve harita niyet metinleri.\n'
                 '• Kullanım Verileri: Kayıtlı harita profilleri (arşiv), tercihler ve VIP üyelik durumu.\n'

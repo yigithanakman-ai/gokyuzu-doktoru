@@ -20,7 +20,7 @@ class KvkkDialog {
           title: '2. İşlenen Kişisel Veriler',
           content:
               '• Kimlik Bilgileri: Ad, soyad, rumuz ve cinsiyet.\n'
-              '• İletişim Bilgileri: E-posta adresi (hesap eşleme ve arşiv için).\n'
+              '• İletişim & Senkronizasyon Bilgileri: E-posta adresi ve isteğe bağlı Google hesabı eşleme bilgisi (telefon değişiminde veya Android ➔ iOS geçişinde harita ve VIP lisans haklarını korumak için).\n'
               '• Kozmik & Doğum Verileri: Doğum tarihi, kesin doğum saati, doğum yeri şehri ve ülkesi (enlem/boylam koordinatları).\n'
               '• Tercih & Not Verileri: Harita arşivi kayıtları, günlük astrolojik notlar ve hatırlatıcılar.',
           icon: Icons.person_pin_rounded,
@@ -31,7 +31,7 @@ class KvkkDialog {
               '• Geocentric, Placidus ve Tropikal Batı efemeris algoritmalarıyla hassas doğum haritanızı hesaplamak,\n'
               '• Günlük transitler, anlık Ay fazı, Yanık Yol takvimi ve sabit yıldız etkilerini kişiselleştirmek,\n'
               '• Rektifikasyon ve öngörü analizlerini gerçekleştirmek,\n'
-              '• Kullanıcı hesap güvenliğini ve arşivlenmiş profilleri yönetmek.',
+              '• Kullanıcı hesap güvenliğini, arşivlenmiş profilleri ve cihazlar arası bulut senkronizasyonunu yönetmek.',
           icon: Icons.auto_awesome_rounded,
         ),
         _SectionData(

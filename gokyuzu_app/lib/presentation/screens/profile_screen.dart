@@ -5,6 +5,7 @@ import '../../data/services/app_translation_service.dart';
 import '../../data/services/notification_service.dart';
 import 'legal_document_screen.dart';
 import 'auth_screen.dart';
+import 'settings_screen.dart';
 
 class ProfileScreen extends StatefulWidget {
   final UserProfile profile;
@@ -494,6 +495,21 @@ class _ProfileScreenState extends State<ProfileScreen> {
               icon: const Icon(Icons.arrow_back_ios_new, color: Colors.white),
               onPressed: () => Navigator.pop(context, true),
             ),
+            actions: [
+              IconButton(
+                icon: const Icon(Icons.settings_rounded, color: Color(0xFF00E5FF)),
+                tooltip: AppTranslationService.tr('Ayarlar & Bulut Senkronizasyonu'),
+                onPressed: () async {
+                  await Navigator.push(
+                    context,
+                    MaterialPageRoute(
+                      builder: (_) => SettingsScreen(profile: widget.profile),
+                    ),
+                  );
+                  _loadState();
+                },
+              ),
+            ],
           ),
       body: SingleChildScrollView(
         padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 12),
@@ -502,6 +518,10 @@ class _ProfileScreenState extends State<ProfileScreen> {
           children: [
             // 1. PROFİL ÖZET KARTI (Gizli 5 dokunuş ile Yönetici VIP Konsolu açılır)
             _buildProfileSummaryCard(),
+            const SizedBox(height: 16),
+
+            // AYARLAR & BULUT SENKRONİZASYONU BANNERI
+            _buildSettingsAndCloudSyncBanner(),
             const SizedBox(height: 16),
 
             // DİL SEÇİMİ (Language Selector)
@@ -682,6 +702,84 @@ class _ProfileScreenState extends State<ProfileScreen> {
           ),
         ),
       ],
+    );
+  }
+
+  // AYARLAR & BULUT SENKRONİZASYONU BANNERI
+  Widget _buildSettingsAndCloudSyncBanner() {
+    return InkWell(
+      onTap: () async {
+        await Navigator.push(
+          context,
+          MaterialPageRoute(
+            builder: (_) => SettingsScreen(profile: widget.profile),
+          ),
+        );
+        _loadState();
+      },
+      borderRadius: BorderRadius.circular(18),
+      child: Container(
+        padding: const EdgeInsets.all(16),
+        decoration: BoxDecoration(
+          gradient: const LinearGradient(
+            colors: [Color(0xFF1E1738), Color(0xFF151936)],
+            begin: Alignment.topLeft,
+            end: Alignment.bottomRight,
+          ),
+          borderRadius: BorderRadius.circular(18),
+          border: Border.all(
+            color: const Color(0xFF4285F4).withAlpha(120),
+            width: 1.2,
+          ),
+        ),
+        child: Row(
+          children: [
+            Container(
+              padding: const EdgeInsets.all(10),
+              decoration: BoxDecoration(
+                color: const Color(0xFF4285F4).withAlpha(35),
+                shape: BoxShape.circle,
+              ),
+              child: const Icon(
+                Icons.settings_suggest_rounded,
+                color: Color(0xFF4285F4),
+                size: 24,
+              ),
+            ),
+            const SizedBox(width: 12),
+            Expanded(
+              child: Column(
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Text(
+                    AppTranslationService.tr('Ayarlar & Bulut Senkronizasyonu'),
+                    style: const TextStyle(
+                      color: Colors.white,
+                      fontSize: 14.5,
+                      fontWeight: FontWeight.bold,
+                    ),
+                  ),
+                  const SizedBox(height: 2),
+                  Text(
+                    AppTranslationService.tr(
+                      'Google ile bağla, Android ➔ iOS VIP transfer anahtarını yönet',
+                    ),
+                    style: const TextStyle(
+                      color: Colors.white60,
+                      fontSize: 11,
+                    ),
+                  ),
+                ],
+              ),
+            ),
+            const Icon(
+              Icons.arrow_forward_ios_rounded,
+              color: Colors.white30,
+              size: 15,
+            ),
+          ],
+        ),
+      ),
     );
   }
 

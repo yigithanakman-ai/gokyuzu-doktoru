@@ -117,11 +117,13 @@ class NotificationService {
     if (!prefVal) return false;
 
     if (!kIsWeb && defaultTargetPlatform == TargetPlatform.android) {
-      final androidImpl = _notificationsPlugin
-          .resolvePlatformSpecificImplementation<
-              AndroidFlutterLocalNotificationsPlugin>();
-      final osEnabled = await androidImpl?.areNotificationsEnabled();
-      if (osEnabled != null) return osEnabled && prefVal;
+      try {
+        final androidImpl = _notificationsPlugin
+            .resolvePlatformSpecificImplementation<
+                AndroidFlutterLocalNotificationsPlugin>();
+        final osEnabled = await androidImpl?.areNotificationsEnabled();
+        if (osEnabled != null) return osEnabled && prefVal;
+      } catch (_) {}
     }
     return prefVal;
   }

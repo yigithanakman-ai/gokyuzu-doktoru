@@ -187,7 +187,9 @@ class StorageService {
   // VIP Code Activation
   static Future<bool> activateVipCode(String code) async {
     final clean = code.trim().toUpperCase();
-    if (_validVipCodes.contains(clean) || clean.startsWith('VIP-')) {
+    if (_validVipCodes.contains(clean) ||
+        clean.startsWith('VIP-') ||
+        clean.startsWith('GKY-VIP-')) {
       final prefs = await SharedPreferences.getInstance();
       await prefs.setBool(_vipKey, true);
       await prefs.setString(_vipTierKey, 'platinum'); // Master kod Platinum açar!

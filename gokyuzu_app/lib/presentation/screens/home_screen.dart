@@ -17,6 +17,7 @@ import 'onboarding_input_screen.dart';
 import 'archive_screen.dart';
 import 'cosmic_notes_screen.dart';
 import 'profile_screen.dart';
+import 'settings_screen.dart';
 import '../widgets/synastry_modal.dart';
 import '../widgets/solar_return_modal.dart';
 import 'package:shared_preferences/shared_preferences.dart';
@@ -885,6 +886,33 @@ class _HomeScreenState extends State<HomeScreen> {
                       ),
                     ),
                     tooltip: AppTranslationService.tr('Profil & Üyelik İşlemleri'),
+                  ),
+                  const SizedBox(width: 6),
+                  IconButton(
+                    padding: EdgeInsets.zero,
+                    constraints: const BoxConstraints(),
+                    onPressed: () async {
+                      await Navigator.of(context).push(
+                        MaterialPageRoute(
+                          builder: (_) => SettingsScreen(profile: widget.profile),
+                        ),
+                      );
+                      _checkVipStatus();
+                    },
+                    icon: Container(
+                      padding: const EdgeInsets.all(8),
+                      decoration: BoxDecoration(
+                        shape: BoxShape.circle,
+                        color: Colors.white10,
+                        border: Border.all(color: Colors.white24),
+                      ),
+                      child: const Icon(
+                        Icons.settings_rounded,
+                        size: 20,
+                        color: Color(0xFF00E5FF),
+                      ),
+                    ),
+                    tooltip: AppTranslationService.tr('Ayarlar & Bulut Yedekleme'),
                   ),
                 ],
               ),
