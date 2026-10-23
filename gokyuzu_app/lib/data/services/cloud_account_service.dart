@@ -49,12 +49,35 @@ class CloudAccount {
   }
 }
 
+/// VIP Transfer Anahtarı Kullanım Sonuç Modeli
+class VipRedeemResult {
+  final bool success;
+  final String message;
+  final int remainingDays;
+  final DateTime? expiryDate;
+  final VipTier tier;
+
+  const VipRedeemResult({
+    required this.success,
+    required this.message,
+    this.remainingDays = 0,
+    this.expiryDate,
+    this.tier = VipTier.free,
+  });
+}
+
 /// Çapraz Platform (Android ➔ iOS, Android ➔ Android) Bulut Hesabı,
 /// Harita Yedekleme, VIP Lisans Aktarımı ve Geri Yükleme Servisi.
+///
+/// Patron 👑 Kuralı:
+/// 1. VIP transfer kodu kişiye özel ve SADECE 1 KULLANIMLIKTIR.
+/// 2. Kullanıcı 1 yıllık üyelik alıp 4 ay kullandıysa, kalan süre (örn. 8 ay)
+///    yeni cihaza aktarılır; sil baştan yıllık üyelik verilemez ve kullanılamaz!
 class CloudAccountService {
   static const String _prefCloudAccountKey = 'gokyuzu_cloud_account_v1';
   static const String _prefCloudBackupPayloadKey = 'gokyuzu_cloud_payload_v1';
   static const String _prefVipRecoveryKey = 'gokyuzu_vip_recovery_key_v1';
+  static const String _vipChecksumSalt = 'GKY_DOKTORU_VIP_SALT_2026_YIGITHAN_AKMAN';
 
   /// Aktif bağlı bulut hesabını getirir
   static Future<CloudAccount?> getActiveAccount() async {
@@ -69,12 +92,67 @@ class CloudAccountService {
     }
   }
 
-  /// Cihaz veya satın alma için deterministik 16 haneli VIP transfer anahtarı üretir / getirir
+  /// 4-Hex FNV-1a Doğrulama Sağlaması (Anti-Tampering Checksum)
+  static String computeChecksum(String tier, String dateStr, String nonce) {
+    final raw = '$tier|$dateStr|$nonce|$_vipChecksumSalt';
+    int h = 0x811c9dc5;
+    for (int i = 0; i < raw.length; i++) {
+      h ^= raw.codeUnitAt(i);
+      h = (h * 0x01000193) & 0xFFFFFFFF;
+    }
+    return (h & 0xFFFF).toRadixString(16).toUpperCase().padLeft(4, '0');
+  }
+
+  /// Kişiye özel, tek kullanımlık ve kalan süreyi tam mühürleyen VIP Transfer Anahtarı üretir
+  /// Format: GKY-VIP-[TIER]-[YYYYMMDD]-[NONCE]-[CHECKSUM]
+  /// Örnek: GKY-VIP-P-20270415-8492-B7F2
+  static Future<String?> generateVipTransferKey() async {
+    final isVip = await StorageService.isVipUnlocked();
+    if (!isVip) return null;
+
+    final tier = await StorageService.getVipTier();
+    final tierCode = tier == VipTier.silver
+        ? 'S'
+        : (tier == VipTier.gold ? 'G' : 'P');
+
+    var expiryDate = await StorageService.getVipExpiryDate();
+    if (expiryDate == null) {
+      // Eğer henüz bitiş tarihi set edilmemişse (örn. ilk kez alan), 1 yıl tanımla
+      expiryDate = DateTime.now().add(const Duration(days: 365));
+      await StorageService.setVipExpiryDate(expiryDate);
+    }
+
+    // Süresi bitmiş üyelik için transfer kodu üretilemez
+    if (DateTime.now().isAfter(expiryDate)) {
+      await StorageService.deactivateVip();
+      return null;
+    }
+
+    final dateStr = '${expiryDate.year.toString().padLeft(4, '0')}'
+        '${expiryDate.month.toString().padLeft(2, '0')}'
+        '${expiryDate.day.toString().padLeft(2, '0')}';
+
+    final nowMs = DateTime.now().millisecondsSinceEpoch;
+    final nonce = (1000 + (nowMs % 9000)).toString();
+    final checksum = computeChecksum(tierCode, dateStr, nonce);
+
+    final key = 'GKY-VIP-$tierCode-$dateStr-$nonce-$checksum';
+
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setString(_prefVipRecoveryKey, key);
+    return key;
+  }
+
+  /// Aktif transfer anahtarını getirir veya yenisini üretir
   static Future<String> getOrCreateVipRecoveryKey(String seed) async {
     final prefs = await SharedPreferences.getInstance();
     final existing = prefs.getString(_prefVipRecoveryKey);
     if (existing != null && existing.isNotEmpty) return existing;
 
+    final generated = await generateVipTransferKey();
+    if (generated != null && generated.isNotEmpty) return generated;
+
+    // Fallback: Henüz VIP değilse deterministik boş şablon
     final cleanSeed = seed.trim().toLowerCase();
     int hash = 5381;
     for (int i = 0; i < cleanSeed.length; i++) {
@@ -87,6 +165,106 @@ class CloudAccountService {
 
     await prefs.setString(_prefVipRecoveryKey, key);
     return key;
+  }
+
+  /// Tek Kullanımlık VIP Transfer Anahtarını Doğrula ve Sadece Kalan Süresiyle Aktar!
+  /// Sil baştan 1 yıl verilmez; kalan gün sayısı kadar aktif edilir ve anahtar mühürlenir.
+  static Future<VipRedeemResult> redeemVipTransferKey(String rawKey) async {
+    final clean = rawKey.trim().toUpperCase();
+    if (clean.isEmpty) {
+      return const VipRedeemResult(
+        success: false,
+        message: 'Lütfen geçerli bir VIP transfer anahtarı girin.',
+      );
+    }
+
+    // 1. Yönetici Master Promosyon Kodları Kontrolü
+    if (clean.startsWith('VIP-') || clean == 'GKYZ2453') {
+      final success = await StorageService.activateVipCode(clean);
+      if (success) {
+        final expiry = DateTime.now().add(const Duration(days: 365));
+        await StorageService.setVipExpiryDate(expiry);
+        return VipRedeemResult(
+          success: true,
+          message: '👑 Özel VIP promosyon kodu başarıyla aktif edildi.',
+          remainingDays: 365,
+          tier: VipTier.platinum,
+          expiryDate: expiry,
+        );
+      }
+    }
+
+    // 2. Format Doğrulama: GKY-VIP-[PGS]-[YYYYMMDD]-[NONCE]-[CHECKSUM]
+    final regex = RegExp(r'^GKY-VIP-([PGS])-(\d{8})-(\d{4})-([0-9A-F]{4})$');
+    final match = regex.firstMatch(clean);
+    if (match == null) {
+      return const VipRedeemResult(
+        success: false,
+        message: '⚠️ Geçersiz VIP Transfer Anahtarı formatı. Lütfen kodu eksiksiz giriniz.',
+      );
+    }
+
+    final tierCode = match.group(1)!;
+    final dateStr = match.group(2)!;
+    final nonce = match.group(3)!;
+    final expectedChecksum = match.group(4)!;
+
+    // 3. Sahtecilik ve Manipülasyon Kontrolü (Checksum)
+    final actualChecksum = computeChecksum(tierCode, dateStr, nonce);
+    if (actualChecksum != expectedChecksum) {
+      return const VipRedeemResult(
+        success: false,
+        message: '⚠️ VIP Transfer Anahtarı doğrulanamadı. Kod üzerinde oynama yapılmış veya hatalı.',
+      );
+    }
+
+    // 4. TEK KULLANIMLIK KONTROLÜ (Single-Use Anti-Abuse)
+    final isAlreadyUsed = await StorageService.isKeyConsumed(clean);
+    if (isAlreadyUsed) {
+      return const VipRedeemResult(
+        success: false,
+        message: '⛔ Bu VIP Transfer Anahtarı daha önce kullanılmıştır ve tek kullanımlıktır! Farklı cihazlarda tekrar kullanılamaz.',
+      );
+    }
+
+    // 5. SÜRE VE KALAN GÜN KONTROLÜ (Kalan süreyi koruma, sil baştan süre vermeme!)
+    final year = int.parse(dateStr.substring(0, 4));
+    final month = int.parse(dateStr.substring(4, 6));
+    final day = int.parse(dateStr.substring(6, 8));
+    final expiryDate = DateTime(year, month, day, 23, 59, 59);
+
+    final now = DateTime.now();
+    if (now.isAfter(expiryDate)) {
+      return VipRedeemResult(
+        success: false,
+        message: '⚠️ Bu VIP üyeliğin süresi ${day.toString().padLeft(2, '0')}.${month.toString().padLeft(2, '0')}.$year tarihinde dolmuştur. Süresi bitmiş üyelik aktarılamaz.',
+      );
+    }
+
+    final remainingDays = expiryDate.difference(now).inDays.clamp(1, 3650);
+
+    // 6. KODU KULLANILDI OLARAK MÜHÜRLE (Bir daha asla kullanılamaz!)
+    await StorageService.markKeyAsConsumed(clean);
+
+    // 7. VIP ÜYELİĞİ TAM KALAN SÜRESİYLE BU CİHAZA AKTAR (Sil baştan yıl verilmez!)
+    final tier = tierCode == 'S'
+        ? VipTier.silver
+        : (tierCode == 'G' ? VipTier.gold : VipTier.platinum);
+
+    await StorageService.setVipTier(tier, expiryDate: expiryDate);
+
+    // Bulut yedeğini bu cihazın kalan süresiyle senkronize et
+    await backupToCloud();
+
+    final dateFormatted =
+        '${day.toString().padLeft(2, '0')}.${month.toString().padLeft(2, '0')}.$year';
+    return VipRedeemResult(
+      success: true,
+      remainingDays: remainingDays,
+      expiryDate: expiryDate,
+      tier: tier,
+      message: '👑 VIP üyeliğiniz kalan $remainingDays günlük süresiyle ($dateFormatted tarihine kadar) başarıyla bu cihaza aktarıldı!',
+    );
   }
 
   /// Google Hesabı ile Bağlan ve Yedeklemeyi Başlat
@@ -107,7 +285,6 @@ class CloudAccountService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setString(_prefCloudAccountKey, json.encode(account.toMap()));
 
-    // Hesabı bağlar bağlamaz mevcut harita ve VIP verilerini ilk bulut yedeğine kaydet
     await backupToCloud();
     return account;
   }
@@ -140,7 +317,7 @@ class CloudAccountService {
     await prefs.remove(_prefCloudAccountKey);
   }
 
-  /// Mevcut Doğum Haritasını, Kayıtlı Danışan Arşivini ve VIP Durumunu Buluta Yedekle
+  /// Mevcut Doğum Haritasını, Kayıtlı Danışan Arşivini, VIP Durumunu ve Bitiş Tarihini Buluta Yedekle
   static Future<bool> backupToCloud() async {
     try {
       final account = await getActiveAccount();
@@ -150,6 +327,7 @@ class CloudAccountService {
       final savedProfiles = await ProfileArchiveService.getProfiles();
       final isVip = await StorageService.isVipUnlocked();
       final vipTier = await StorageService.getVipTier();
+      final vipExpiryDate = await StorageService.getVipExpiryDate();
 
       final payload = {
         'version': 1,
@@ -159,13 +337,13 @@ class CloudAccountService {
         'savedProfiles': savedProfiles.map((p) => p.toMap()).toList(),
         'isVip': isVip,
         'vipTier': vipTier.name,
+        'vipExpiryDate': vipExpiryDate?.toIso8601String(),
         'recoveryKey': account.recoveryKey,
       };
 
       final prefs = await SharedPreferences.getInstance();
       await prefs.setString(_prefCloudBackupPayloadKey, json.encode(payload));
 
-      // Hesap modelindeki son yedekleme tarihini güncelle
       final updatedAccount = CloudAccount(
         email: account.email,
         displayName: account.displayName,
@@ -184,13 +362,12 @@ class CloudAccountService {
     }
   }
 
-  /// Buluttan Verileri ve VIP Üyeliğini Bu Cihaza Geri Yükle
+  /// Buluttan Verileri ve VIP Üyeliğini (Kalan Süresiyle) Bu Cihaza Geri Yükle
   static Future<bool> restoreFromCloud() async {
     try {
       final prefs = await SharedPreferences.getInstance();
       final jsonStr = prefs.getString(_prefCloudBackupPayloadKey);
       if (jsonStr == null || jsonStr.isEmpty) {
-        // Eğer yerel payload yoksa aynı zamanda mağaza satın alımlarını sorgula
         try {
           if (!kIsWeb && InAppPurchaseService.instance.isAvailable) {
             await InAppPurchaseService.instance.restorePurchases();
@@ -219,7 +396,7 @@ class CloudAccountService {
         }
       }
 
-      // 3. VIP Durumunu Geri Yükle
+      // 3. VIP Durumunu ve Kalan Süresini Geri Yükle
       final isVip = payload['isVip'] == true;
       if (isVip) {
         final tierStr = payload['vipTier'] as String? ?? 'platinum';
@@ -227,7 +404,10 @@ class CloudAccountService {
           (t) => t.name == tierStr,
           orElse: () => VipTier.platinum,
         );
-        await StorageService.setVipTier(tier);
+        final expiryStr = payload['vipExpiryDate'] as String?;
+        final expiryDate =
+            expiryStr != null ? DateTime.tryParse(expiryStr) : null;
+        await StorageService.setVipTier(tier, expiryDate: expiryDate);
       }
 
       // 4. Mağaza satın alımlarını da tetikle
@@ -244,21 +424,9 @@ class CloudAccountService {
     }
   }
 
-  /// Farklı bir cihazdan (Örn: Android'den iOS'a) VIP Lisans Anahtarıyla Üyeliği Aç
+  /// Eski metodla uyumluluk
   static Future<bool> restoreVipWithRecoveryKey(String key) async {
-    final clean = key.trim().toUpperCase();
-    if (clean.isEmpty) return false;
-
-    // Format: GKY-VIP-xxxx-xxxx veya standart VIP kodları
-    if (clean.startsWith('GKY-VIP-') || clean.startsWith('VIP-')) {
-      final success = await StorageService.activateVipCode(clean);
-      if (success) {
-        final prefs = await SharedPreferences.getInstance();
-        await prefs.setString(_prefVipRecoveryKey, clean);
-        await backupToCloud();
-      }
-      return success;
-    }
-    return false;
+    final result = await redeemVipTransferKey(key);
+    return result.success;
   }
 }

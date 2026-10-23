@@ -106,23 +106,70 @@ void main() {
       expect(recoveredArchives.first.name, equals('Ahmet Danışan'));
     });
 
-    test('3. Cross-platform VIP License Key unlocks Platinum on new device', () async {
-      final key = await CloudAccountService.getOrCreateVipRecoveryKey('test_device_seed');
-      expect(key.startsWith('GKY-VIP-'), isTrue);
+    test('3. Cross-platform VIP License Key carries exact remaining duration (NO full year reset)', () async {
+      // User on Android has VIP with exactly 180 days remaining (started 6 months ago)
+      final targetExpiry = DateTime.now().add(const Duration(days: 180));
+      await StorageService.setVipTier(VipTier.platinum, expiryDate: targetExpiry);
 
-      // New device: VIP initially false
+      // Generate VIP Transfer Key on Android
+      final key = await CloudAccountService.generateVipTransferKey();
+      expect(key, isNotNull);
+      expect(key!.startsWith('GKY-VIP-P-'), isTrue);
+
+      // Simulate switching to new iOS device (wipe local storage, VIP initially false)
+      await StorageService.clearAll();
       final initialVip = await StorageService.isVipUnlocked();
       expect(initialVip, isFalse);
 
-      // Enter VIP Recovery Key
-      final success = await CloudAccountService.restoreVipWithRecoveryKey(key);
-      expect(success, isTrue);
+      // Redeem on iOS
+      final result = await CloudAccountService.redeemVipTransferKey(key);
+      expect(result.success, isTrue);
+      expect(result.tier, equals(VipTier.platinum));
+      // Remaining days must be ~180 days, NOT 365 days!
+      expect(result.remainingDays, inInclusiveRange(179, 180));
 
-      final unlockedVip = await StorageService.isVipUnlocked();
-      expect(unlockedVip, isTrue);
+      final activeVip = await StorageService.isVipUnlocked();
+      expect(activeVip, isTrue);
 
-      final tier = await StorageService.getVipTier();
-      expect(tier, equals(VipTier.platinum));
+      final recoveredExpiry = await StorageService.getVipExpiryDate();
+      expect(recoveredExpiry, isNotNull);
+      expect(recoveredExpiry!.year, equals(targetExpiry.year));
+      expect(recoveredExpiry.month, equals(targetExpiry.month));
+      expect(recoveredExpiry.day, equals(targetExpiry.day));
+    });
+
+    test('4. VIP Transfer Key is strictly single-use (Cannot be redeemed twice)', () async {
+      final targetExpiry = DateTime.now().add(const Duration(days: 90));
+      await StorageService.setVipTier(VipTier.gold, expiryDate: targetExpiry);
+
+      final key = await CloudAccountService.generateVipTransferKey();
+      expect(key, isNotNull);
+
+      // 1st redemption on Device B
+      final firstAttempt = await CloudAccountService.redeemVipTransferKey(key!);
+      expect(firstAttempt.success, isTrue);
+
+      // 2nd redemption attempt with the same key (e.g. sharing with friend or reuse)
+      final secondAttempt = await CloudAccountService.redeemVipTransferKey(key);
+      expect(secondAttempt.success, isFalse);
+      expect(secondAttempt.message.contains('tek kullanımlıktır'), isTrue);
+    });
+
+    test('5. Tampered or expired VIP keys are rejected immediately', () async {
+      // Expired date key (in the past: 2020-01-01)
+      const expiredDateStr = '20200101';
+      final expiredChecksum = CloudAccountService.computeChecksum('P', expiredDateStr, '1234');
+      final expiredKey = 'GKY-VIP-P-$expiredDateStr-1234-$expiredChecksum';
+
+      final expiredResult = await CloudAccountService.redeemVipTransferKey(expiredKey);
+      expect(expiredResult.success, isFalse);
+      expect(expiredResult.message.contains('dolmuştur'), isTrue);
+
+      // Tampered checksum
+      final tamperedKey = 'GKY-VIP-P-20271231-1234-FFFF';
+      final tamperedResult = await CloudAccountService.redeemVipTransferKey(tamperedKey);
+      expect(tamperedResult.success, isFalse);
+      expect(tamperedResult.message.contains('doğrulanamadı'), isTrue);
     });
   });
 

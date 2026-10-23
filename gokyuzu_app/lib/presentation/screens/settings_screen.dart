@@ -25,6 +25,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
   String _vipRecoveryKey = '';
   bool _isVip = false;
   VipTier _vipTier = VipTier.free;
+  DateTime? _vipExpiryDate;
   bool _notificationsEnabled = true;
   bool _isLoading = false;
 
@@ -39,10 +40,12 @@ class _SettingsScreenState extends State<SettingsScreen> {
     final isVip = await StorageService.isVipUnlocked();
     final tier = await StorageService.getVipTier();
     final notif = await NotificationService.isEnabled();
+    final expiry = await StorageService.getVipExpiryDate();
 
     final profile = widget.profile ?? await StorageService.getProfile();
     final seed = account?.email ?? profile?.name ?? 'gokyuzu_cosmic_user';
-    final key = await CloudAccountService.getOrCreateVipRecoveryKey(seed);
+    final key = await CloudAccountService.generateVipTransferKey() ??
+        await CloudAccountService.getOrCreateVipRecoveryKey(seed);
 
     if (mounted) {
       setState(() {
@@ -51,6 +54,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
         _vipTier = tier;
         _notificationsEnabled = notif;
         _vipRecoveryKey = key;
+        _vipExpiryDate = expiry;
       });
     }
   }
@@ -345,23 +349,18 @@ class _SettingsScreenState extends State<SettingsScreen> {
                         }
                         Navigator.pop(ctx);
                         setState(() => _isLoading = true);
-                        final success = await CloudAccountService
-                            .restoreVipWithRecoveryKey(key);
+                        final result = await CloudAccountService
+                            .redeemVipTransferKey(key);
                         await _loadState();
                         setState(() => _isLoading = false);
                         if (mounted) {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
-                              content: Text(
-                                success
-                                    ? AppTranslationService.tr(
-                                        '👑 Tebrikler! VIP üyeliğiniz bu cihazda başarıyla aktif edildi.')
-                                    : AppTranslationService.tr(
-                                        '⚠️ Anahtar doğrulanamadı. Lütfen kodu kontrol edin veya destekle iletişime geçin.'),
-                              ),
-                              backgroundColor: success
+                              content: Text(result.message),
+                              backgroundColor: result.success
                                   ? const Color(0xFF6C5CE7)
                                   : Colors.redAccent,
+                              duration: const Duration(seconds: 5),
                             ),
                           );
                         }
@@ -711,6 +710,35 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ),
             ],
           ),
+          if (_isVip && _vipExpiryDate != null) ...[
+            const SizedBox(height: 6),
+            Container(
+              padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 6),
+              decoration: BoxDecoration(
+                color: AppColors.starlightGold.withAlpha(20),
+                borderRadius: BorderRadius.circular(10),
+                border:
+                    Border.all(color: AppColors.starlightGold.withAlpha(50)),
+              ),
+              child: Row(
+                children: [
+                  const Icon(Icons.timer_outlined,
+                      color: AppColors.starlightGold, size: 16),
+                  const SizedBox(width: 8),
+                  Expanded(
+                    child: Text(
+                      '${AppTranslationService.tr("Kalan Süre:")} ${_vipExpiryDate!.difference(DateTime.now()).inDays.clamp(0, 3650)} ${AppTranslationService.tr("gün")} (${_vipExpiryDate!.day.toString().padLeft(2, "0")}.${_vipExpiryDate!.month.toString().padLeft(2, "0")}.${_vipExpiryDate!.year})',
+                      style: const TextStyle(
+                        color: AppColors.starlightGold,
+                        fontSize: 11,
+                        fontWeight: FontWeight.bold,
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          ],
           const SizedBox(height: 6),
           Container(
             padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -726,7 +754,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     _vipRecoveryKey.isEmpty ? 'GKY-VIP-...' : _vipRecoveryKey,
                     style: const TextStyle(
                       color: AppColors.starlightGold,
-                      fontSize: 13,
+                      fontSize: 12.5,
                       fontWeight: FontWeight.bold,
                       letterSpacing: 1.1,
                       fontFamily: 'monospace',
@@ -742,7 +770,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     ScaffoldMessenger.of(context).showSnackBar(
                       SnackBar(
                         content: Text(AppTranslationService.tr(
-                            'VIP transfer anahtarı panoya kopyalandı! Yeni telefonunuzda bu anahtarı girerek üyeliğinizi açabilirsiniz.')),
+                            'VIP transfer anahtarı panoya kopyalandı! Yeni telefonunuzda bu anahtarı girerek kalan sürenizi aktarabilirsiniz.')),
                         backgroundColor: const Color(0xFF6C5CE7),
                       ),
                     );
@@ -750,6 +778,14 @@ class _SettingsScreenState extends State<SettingsScreen> {
                 ),
               ],
             ),
+          ),
+          const SizedBox(height: 6),
+          Text(
+            AppTranslationService.tr(
+              '⚠️ Bu anahtar kişiye özel ve tek kullanımlıktır. Yeni cihazınıza aktarıldığında üyeliğiniz tam kalan süresiyle aktif edilir (sil baştan yıl verilmez) ve anahtar kullanılmış olarak mühürlenir.',
+            ),
+            style: const TextStyle(
+                color: Colors.white54, fontSize: 10.5, height: 1.35),
           ),
           const SizedBox(height: 6),
           Row(

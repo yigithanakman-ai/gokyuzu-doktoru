@@ -161,7 +161,14 @@ class InAppPurchaseService {
     } else if (purchase.status == PurchaseStatus.purchased ||
         purchase.status == PurchaseStatus.restored) {
       final tier = _mapProductIdToTier(purchase.productID);
-      await StorageService.setVipTier(tier);
+      final isYearly = purchase.productID == platinumYearId;
+      final duration = isYearly ? const Duration(days: 365) : const Duration(days: 30);
+      final existingExpiry = await StorageService.getVipExpiryDate();
+      final base = (existingExpiry != null && existingExpiry.isAfter(DateTime.now()))
+          ? existingExpiry
+          : DateTime.now();
+      final expiryDate = base.add(duration);
+      await StorageService.setVipTier(tier, expiryDate: expiryDate);
       _purchaseCompletedController.add(tier);
 
       if (purchase.pendingCompletePurchase) {

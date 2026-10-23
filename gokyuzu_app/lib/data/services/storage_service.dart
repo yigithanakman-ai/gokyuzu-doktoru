@@ -72,6 +72,8 @@ class StorageService {
   static const _chartKey = 'gokyuzu_cached_chart';
   static const _vipKey = 'gokyuzu_vip_status';
   static const _vipTierKey = 'gokyuzu_vip_tier';
+  static const _vipExpiryDateKey = 'gokyuzu_vip_expiry_date_ms';
+  static const _consumedVipKeysKey = 'gokyuzu_consumed_vip_keys';
   static const _languageKey = 'gokyuzu_selected_language';
 
   // Valid VIP promotional & sharing codes (Master VIP Code: gkyz2453)
@@ -219,12 +221,56 @@ class StorageService {
   static Future<bool> isVip() async {
     final prefs = await SharedPreferences.getInstance();
     final localVip = prefs.getBool(_vipKey);
-    if (localVip == true) return true;
-    final profile = await getProfile();
-    return profile?.isVip ?? false;
+    bool active = localVip == true;
+    if (!active) {
+      final profile = await getProfile();
+      active = profile?.isVip ?? false;
+    }
+    if (!active) return false;
+
+    // Süre dolumu kontrolü: Eğer tanımlanmış bir bitiş tarihi varsa ve geçmişse VIP pasife alınır
+    final expiryMs = prefs.getInt(_vipExpiryDateKey);
+    if (expiryMs != null && expiryMs > 0) {
+      final expiryDate = DateTime.fromMillisecondsSinceEpoch(expiryMs);
+      if (DateTime.now().isAfter(expiryDate)) {
+        await deactivateVip();
+        return false;
+      }
+    }
+    return true;
   }
 
   static Future<bool> isVipUnlocked() => isVip();
+
+  static Future<DateTime?> getVipExpiryDate() async {
+    final prefs = await SharedPreferences.getInstance();
+    final expiryMs = prefs.getInt(_vipExpiryDateKey);
+    if (expiryMs != null && expiryMs > 0) {
+      return DateTime.fromMillisecondsSinceEpoch(expiryMs);
+    }
+    return null;
+  }
+
+  static Future<void> setVipExpiryDate(DateTime expiry) async {
+    final prefs = await SharedPreferences.getInstance();
+    await prefs.setInt(_vipExpiryDateKey, expiry.millisecondsSinceEpoch);
+  }
+
+  static Future<bool> isKeyConsumed(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = prefs.getStringList(_consumedVipKeysKey) ?? [];
+    return list.contains(key.trim().toUpperCase());
+  }
+
+  static Future<void> markKeyAsConsumed(String key) async {
+    final prefs = await SharedPreferences.getInstance();
+    final list = prefs.getStringList(_consumedVipKeysKey) ?? [];
+    final clean = key.trim().toUpperCase();
+    if (!list.contains(clean)) {
+      list.add(clean);
+      await prefs.setStringList(_consumedVipKeysKey, list);
+    }
+  }
 
   static Future<VipTier> getVipTier() async {
     final isVipActive = await isVip();
@@ -243,13 +289,16 @@ class StorageService {
     }
   }
 
-  static Future<void> setVipTier(VipTier tier) async {
+  static Future<void> setVipTier(VipTier tier, {DateTime? expiryDate}) async {
     final prefs = await SharedPreferences.getInstance();
     if (tier == VipTier.free) {
       await deactivateVip();
     } else {
       await prefs.setBool(_vipKey, true);
       await prefs.setString(_vipTierKey, tier.name);
+      if (expiryDate != null) {
+        await prefs.setInt(_vipExpiryDateKey, expiryDate.millisecondsSinceEpoch);
+      }
       final currentProfile = await getProfile();
       if (currentProfile != null && !currentProfile.isVip) {
         await saveProfile(UserProfile(
@@ -303,6 +352,7 @@ class StorageService {
     final prefs = await SharedPreferences.getInstance();
     await prefs.setBool(_vipKey, false);
     await prefs.remove(_vipTierKey);
+    await prefs.remove(_vipExpiryDateKey);
     final currentProfile = await getProfile();
     if (currentProfile != null) {
       final updated = UserProfile(
