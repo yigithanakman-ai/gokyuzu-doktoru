@@ -75,32 +75,34 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.14-build19
-          name: "📱 Gökyüzü Doktoru - v1.0.14 (Sürüm Kodu 19 & Ay Burç, 28 Ay Menzili ve Gezegen Burç Geçiş Bildirimleri)"
+          tag_name: v1.0.14-build20
+          name: "📱 Gökyüzü Doktoru - v1.0.14 (Sürüm Kodu 20 & Solar Fire Asteroit Kalibrasyonu, Kesintisiz Bildirimler ve Bulut/VIP Aktarımı)"
           body: |
-            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.14 / Sürüm Kodu 19)
+            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.14 / Sürüm Kodu 20)
 
             - **`gokyuzu-doktoru.apk`**: Kendi Android telefonunuzda doğrudan test edip kullanmak için yükleme dosyası (İmzalı, Obfuscated).
-            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı, Sürüm Kodu 19, ProGuard & R8 Korumalı).
+            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı, Sürüm Kodu 20, ProGuard & R8 Korumalı).
 
-            #### 🌟 Bu Sürümdeki Yenilikler (Build 19):
-            1. **🌙 Anlık Ay Burç Değişim Bildirimleri (Moon Sign Ingress)**:
-               - Transit Ay her yeni burca geçtiğinde (ortalama ~2.5 günde bir) dakika dakikasına hassas ikili arama algoritmasıyla tespit edilip anlık bildirim fırlatılır.
-               - Yeni burcun element, tema ve psikolojik etkilerine özel rehberlik sunulur.
-            2. **🔮 28 Kadim Ay Menzili Geçiş Bildirimleri (Lunar Mansion Transitions)**:
-               - Transit Ay 28 kadim duraktan (El-Şaratan, Butayn, Sa'd el-Ahbiye vb.) bir diğerine geçtiğinde anlık bildirim üretilir.
-               - Menzilin doğası (Uğurlu/Nahs), kadim Hermetik rezonansı ve sakınılması gereken durumlar telefon ekranına kilitli olsa dahi iletilir.
-            3. **🪐 Gezegenlerin Yeni Bir Burca Geçiş Bildirimleri (Planetary Ingress)**:
-               - Güneş, Merkür, Venüs, Mars, Jüpiter ve Satürn yeni bir burca 00° 00' ile adım attığında anlık ingress bildirimi kurulur.
-               - Gelecek 21 günlük gökyüzü rotası taranarak kullanıcıya burç geçiş anı ulaştırılır.
-            4. **📋 Ayarlar & Açılış İzin Ekranında Tam Bildirim Listesi**:
-               - Ayarlar / Profil ekranı ve Bildirim İzni penceresine bu 3 yeni astronomik bildirim akışı (Ay Burç, Ay Menzil, Gezegen Girişleri) renkli ve detaylı maddeler olarak eklendi.
-            5. **Haritayı 2 Parmakla Büyütme (Pinch-to-Zoom / `ChartZoomScreen`)**:
-               - Çark döndürme kaldırıldı; harita evrensel oryantasyonda sabitlendi.
-               - 2 parmakla 0.6x - 6.0x serbest yakınlaştırma ve çift dokunuşla sıfırlama.
-            6. **Kilitli / Uykuda / Şarjda / Pilde Kesintisiz Tam Zamanlı Bildirim Garantisi**:
-               - `NotificationVisibility.public`, `SCHEDULE_EXACT_ALARM`, `WAKE_LOCK` ve `exactAllowWhileIdle` ile 7/24 tam zamanlı alarm koruması.
-            7. **Siber Güvenlik, R8/ProGuard Karartma & DST / Solar Fire Kalibrasyonu Korundu**.
+            #### 🌟 Bu Sürümdeki Büyük Yenilikler (Build 20):
+            1. **🪐 Solar Fire & Astro Gold Birebir Uyumlu Asteroit Kalibrasyonu**:
+               - Swiss Ephemeris JPL DE441 ephemeris motoru ile tam senkronize asteroit algoritmaları entegre edildi.
+               - Pallas, Ceres, Lilith (Kara Ay), Juno, Vesta ve Chiron yerleşimleri, burç geçişleri ve retro hareketleri Solar Fire ile 0° 0' mutlak doğrulukla eşitlendi.
+               - 6 Mart 1991 Bolu 10:07 referans haritasında Pallas 15° 15' Başak Retro, Ceres 3° 47' Akrep Retro, Lilith 24° 23' Yay, Juno 17° 05' Oğlak, Vesta 26° 53' Boğa tam eşleşti.
+            2. **⏰ Kesintisiz Arka Plan & Kilit Ekranı Bildirim Motoru (Deep Sleep / Doze Fix)**:
+               - Android `alarmClock` modu ve `exactAllowWhileIdle` ile uygulama kapalıyken, pil tasarrufunda veya derin uykudayken dahi bildirimlerin tam vaktinde kilit ekranına düşmesi garantilendi.
+               - `fullScreenIntent` desteği ve yüksek öncelikli bildirim kanalları ile gecikmesiz uyandırma sağlandı.
+            3. **☁️ Bulut Hesap & Google Eşitleme (Cloud Account Sync)**:
+               - Kullanıcılar tek tıkla Google hesaplarını bağlayabilir; doğum haritalarını, transit kayıtlarını, günlük notlarını ve kişisel ayarlarını güvenle buluta yedekleyip diledikleri cihazda geri yükleyebilir.
+            4. **🔑 Tek Kullanımlık & Kalan Süre Korumalı VIP Transfer Anahtarı (Cross-Platform VIP)**:
+               - Android'den iOS'a veya yeni bir Android cihaza geçerken VIP abonelik süresi kaybolmaz.
+               - 1 yıllık VIP alıp 4 ay kullanan kullanıcı yeni cihaza geçtiğinde kalan süresi (ör. 8 ay / 245 gün) neyse tam olarak o süre geçerli olur; asla sıfırdan yıllık süre verilmez ve süre heba olmaz.
+               - Her VIP kodu FNV-1a sağlama toplamlı, tek kullanımlık (single-use) ve manipülasyona karşı kriptografik olarak kilitlidir.
+            5. **⚙️ Yepyeni Kapsamlı Ayarlar Ekranı (`SettingsScreen`)**:
+               - Ana Ekran ve Profil ekranından erişilebilen modern ayarlar menüsü.
+               - Bulut Eşitleme, VIP Kalan Gün Sayacı ve Transfer Kodu Yönetimi, Detaylı Bildirim Anahtarları, Dil Tercihleri ve Hesap Yönetimi tek merkezde toplandı.
+            6. **⚖️ Güncellenmiş KVKK, Gizlilik Sözleşmesi ve Yasal Metinler**:
+               - İsteğe bağlı bulut hesap eşitleme ve çapraz cihaz veri aktarımına ilişkin aydınlatma metinleri yasal uyumlulukla güncellendi.
+            7. **🛡️ Siber Güvenlik, R8/ProGuard Karartma & 78/78 Otomasyon Test Onayı**.
           files: |
             gokyuzu-doktoru.apk
             gokyuzu-doktoru.aab
