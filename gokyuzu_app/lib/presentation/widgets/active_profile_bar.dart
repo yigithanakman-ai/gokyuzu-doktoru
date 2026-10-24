@@ -3,6 +3,7 @@ import '../../core/constants/app_colors.dart';
 import '../../data/services/storage_service.dart';
 import '../../data/services/active_profile_service.dart';
 import '../../data/services/profile_archive_service.dart';
+import '../../data/services/ad_service.dart';
 import '../screens/archive_screen.dart';
 
 class ActiveProfileBar extends StatelessWidget {
@@ -359,7 +360,9 @@ class ActiveProfileBar extends StatelessWidget {
                   tapTargetSize: MaterialTapTargetSize.shrinkWrap,
                   shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
                 ),
-                onPressed: () => _showProfilePicker(context),
+                onPressed: () => AdService.registerActionAndShowInterstitial(
+                  onDone: () => _showProfilePicker(context),
+                ),
                 child: Row(
                   mainAxisSize: MainAxisSize.min,
                   children: [

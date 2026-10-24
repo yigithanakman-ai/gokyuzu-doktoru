@@ -39,6 +39,9 @@ class AdService {
   static RewardedAd? _rewardedAd;
   static bool _isRewardedAdLoading = false;
   static int _globalActionCounter = 0;
+  static int get globalActionCounter => _globalActionCounter;
+  @visibleForTesting
+  static set globalActionCounter(int val) => _globalActionCounter = val;
   static DateTime? _lastAdShownTime;
   static DateTime? get lastAdShownTime => _lastAdShownTime;
 
@@ -69,6 +72,7 @@ class AdService {
     }
 
     _globalActionCounter++;
+    debugPrint('[AdService] Action registered: $_globalActionCounter / 4');
     if (_globalActionCounter >= 4) {
       _globalActionCounter = 0;
       _lastAdShownTime = DateTime.now();
@@ -142,23 +146,44 @@ class AdService {
       // Önbellekte hazır değilse anlık canlı yükle ve doğrudan ekranda göster
       _isInterstitialAdLoading = true;
       try {
+        bool hasFinished = false;
+        void safeFinish() {
+          if (!hasFinished) {
+            hasFinished = true;
+            finish();
+          }
+        }
+
+        // 2.5 saniye emniyet zaman aşımı (kullanıcı asla kilitlenmez)
+        Future.delayed(const Duration(milliseconds: 2500), () {
+          if (!hasFinished) {
+            debugPrint('AdMob: Anlık Interstitial zaman aşımı (2.5s), akışa devam ediliyor.');
+            safeFinish();
+          }
+        });
+
         await InterstitialAd.load(
           adUnitId: interstitialAdUnitId,
           request: const AdRequest(),
           adLoadCallback: InterstitialAdLoadCallback(
             onAdLoaded: (ad) {
               _isInterstitialAdLoading = false;
+              if (hasFinished) {
+                // Zaman aşımına uğradıysa bir sonraki tıklama için önbelleğe al
+                _interstitialAd = ad;
+                return;
+              }
               ad.fullScreenContentCallback = FullScreenContentCallback(
                 onAdDismissedFullScreenContent: (adInstance) {
                   adInstance.dispose();
                   preloadInterstitial();
-                  finish();
+                  safeFinish();
                 },
                 onAdFailedToShowFullScreenContent: (adInstance, error) {
                   debugPrint('AdMob: Anlık Interstitial gösterim hatası: ${error.message}');
                   adInstance.dispose();
                   preloadInterstitial();
-                  finish();
+                  safeFinish();
                 },
               );
               ad.show();
@@ -166,7 +191,7 @@ class AdService {
             onAdFailedToLoad: (error) {
               _isInterstitialAdLoading = false;
               debugPrint('AdMob: Anlık Interstitial yükleme hatası: ${error.message} (Kod: ${error.code})');
-              finish();
+              safeFinish();
             },
           ),
         );

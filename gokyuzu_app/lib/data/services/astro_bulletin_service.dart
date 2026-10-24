@@ -3,6 +3,11 @@ import 'package:flutter/foundation.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'eclipses_service.dart';
 import 'sky_transits_service.dart';
+import 'storage_service.dart';
+import 'predictive_astrology_service.dart';
+import 'astrology_engine.dart';
+import 'aspects_service.dart';
+import 'app_translation_service.dart';
 
 /// Gökyüzü Olayı veya Gezegen Açısı Modeli
 class AstroBulletinEvent {
@@ -109,6 +114,88 @@ class WeeklyCosmicSummary {
     required this.weeklyStrategy,
     required this.highlightAspects,
     required this.probabilities,
+  });
+}
+
+/// Transit Ay'ın Natal Gezegenlere Yaptığı Açı Modeli
+class PersonalTransitAspect {
+  final String aspectName; // 'Kavuşum (0°)', 'Üçgen (120°)', 'Kare (90°)', 'Sekstil (60°)', 'Karşıt (180°)'
+  final String aspectSymbol; // '☌', '△', '□', '⚹', '☍'
+  final double aspectDegree;
+  final String natalPlanet; // 'Güneş', 'Ay', 'Merkür', 'Venüs', 'Mars', 'Jüpiter', 'Satürn', 'Uranüs', 'Neptün', 'Plüton', 'Chiron', 'Kuzey Düğüm', 'Yükselen (ASC)', 'Tepe Noktası (MC)'
+  final String natalPlanetSign;
+  final String natalPlanetDegree;
+  final double orb;
+  final String orbStr;
+  final bool isHarmonious; // true: Üçgen, Sekstil; false: Kare, Karşıt; null: Kavuşum
+  final String interpretation;
+  final String strategicTip;
+
+  const PersonalTransitAspect({
+    required this.aspectName,
+    required this.aspectSymbol,
+    required this.aspectDegree,
+    required this.natalPlanet,
+    required this.natalPlanetSign,
+    required this.natalPlanetDegree,
+    required this.orb,
+    required this.orbStr,
+    required this.isHarmonious,
+    required this.interpretation,
+    required this.strategicTip,
+  });
+}
+
+/// Kişiselleştirilmiş Günlük Astro Bülten Modeli (Transit Ay & Natal Placidus Ev + Açı Sentezi)
+class PersonalizedDailyBulletin {
+  final String sign; // Koç, Boğa...
+  final String signSymbol;
+  final String signElement;
+  final DateTime date;
+  final String dateStr;
+  final String transitMoonSign;
+  final String transitMoonSymbol;
+  final String transitMoonDegree; // e.g. "14°28'"
+  final String transitMoonFormatted; // e.g. "14°28' Koç"
+  final double transitMoonLongitude;
+  final int natalHouse; // 1..12 (derece hesabı ile Placidus ev)
+  final String natalHouseName; // e.g. "11. Ev"
+  final String natalHouseTheme; // e.g. "Gelecek Hedefleri, Sosyal Çevre & Vizyonlar"
+  final String natalHouseDescription;
+  final String natalHouseCuspRange; // e.g. "12°20' Balık - 22°14' Koç"
+  final List<PersonalTransitAspect> activeAspects;
+  final String compiledDailySynthesis;
+  final String dailyTheme;
+  final String dailyFocus;
+  final String dailyLuckyHours;
+  final String dailyCompatibleSign;
+  final int cosmicEnergyScore;
+  final bool isPersonalChart;
+
+  const PersonalizedDailyBulletin({
+    required this.sign,
+    required this.signSymbol,
+    required this.signElement,
+    required this.date,
+    required this.dateStr,
+    required this.transitMoonSign,
+    required this.transitMoonSymbol,
+    required this.transitMoonDegree,
+    required this.transitMoonFormatted,
+    required this.transitMoonLongitude,
+    required this.natalHouse,
+    required this.natalHouseName,
+    required this.natalHouseTheme,
+    required this.natalHouseDescription,
+    required this.natalHouseCuspRange,
+    required this.activeAspects,
+    required this.compiledDailySynthesis,
+    required this.dailyTheme,
+    required this.dailyFocus,
+    required this.dailyLuckyHours,
+    required this.dailyCompatibleSign,
+    required this.cosmicEnergyScore,
+    this.isPersonalChart = true,
   });
 }
 
@@ -564,6 +651,542 @@ class AstroBulletinService {
     'Koç', 'Boğa', 'İkizler', 'Yengeç', 'Aslan', 'Başak',
     'Terazi', 'Akrep', 'Yay', 'Oğlak', 'Kova', 'Balık'
   ];
+
+  static const Map<String, String> signSymbols = {
+    'Koç': '♈', 'Boğa': '♉', 'İkizler': '♊', 'Yengeç': '♋',
+    'Aslan': '♌', 'Başak': '♍', 'Terazi': '♎', 'Akrep': '♏',
+    'Yay': '♐', 'Oğlak': '♑', 'Kova': '♒', 'Balık': '♓',
+  };
+
+  static const Map<String, String> signElements = {
+    'Koç': 'Ateş', 'Boğa': 'Toprak', 'İkizler': 'Hava', 'Yengeç': 'Su',
+    'Aslan': 'Ateş', 'Başak': 'Toprak', 'Terazi': 'Hava', 'Akrep': 'Su',
+    'Yay': 'Ateş', 'Oğlak': 'Toprak', 'Kova': 'Hava', 'Balık': 'Su',
+  };
+
+  static const Map<int, (String, String, String)> _placidusHouseMetadata = {
+    1: (
+      'Kişisel Benlik, Yaşam Enerjisi & Yeni Başlangıçlar',
+      'Transit Ay haritanızın 1. evinden geçerken duygusal odağınız doğrudan kendi benliğinize, beden enerjinize ve kişisel kararlarınıza yönelir. Dış dünyaya karşı kendinizi daha görünür kılmak ve yeni niyetler başlatmak için güçlü bir kozmik etki altındasınız.',
+      'Kendi ihtiyaçlarınızı ertelemeyin. İnisiyatif alın ve sezgilerinize güvenerek ilk adımı cesaretle atın.',
+    ),
+    2: (
+      'Maddi Kaynaklar, Bütçe Yönetimi & Özdeğer',
+      'Transit Ay 2. evinizi aydınlatırken finansal kararlar, birikimler, kişisel yeteneklerin maddi karşılığı ve güvenlik arayışı ön plana çıkar. Duygusal tatmini sağlam ve somut temeller üzerinde ararsınız.',
+      'Dürtüsel harcamalardan kaçının; bütçe planlaması yapın ve sahip olduğunuz öz yeteneklerin kıymetini bilin.',
+    ),
+    3: (
+      'Zihinsel Odak, İletişim Trafiği & Yakın Çevre',
+      'Transit Ay 3. evinizden geçerken zihinsel merakınız artar; yazışmalar, aramalar, görüşmeler, kardeşler/yakın dostlarla diyaloglar ve kısa yolculuklar hız kazanır. Fikir alışverişi ve bilgi üretimi oldukça akıcıdır.',
+      'Önemli fikirlerinizi not alın; yapıcı ve net bir dille iletişim kurarak görüşmelerinizi başarıyla sonuçlandırın.',
+    ),
+    4: (
+      'Yuva, Aile Kökleri & İçsel Huzur Sığınağı',
+      'Transit Ay 4. evinizi (Dip Noktası / IC aksı) tetiklerken iç dünyanıza çekilme, sevdiklerinizle ev ortamında vakit geçirme ve duygusal köklerinizi güçlendirme ihtiyacı duyarsınız. Dinlenmek ve enerjinizi tazelemek için ideal bir gündür.',
+      'Evinizi düzenleyin, ailenize ve iç sesinize zaman ayırın; dış dünyanın gürültüsünden biraz uzaklaşarak şarj olun.',
+    ),
+    5: (
+      'Aşk, Yaratıcılık, Yaşam Neşesi & Tutkular',
+      'Transit Ay 5. evinizde dans ederken kalbiniz neşeyle dolar; romantizm, hobiler, sanatsal üretim, çocuklarla ilişkiler ve hayattan keyif alma arzusu zirveye çıkar. İçinizdeki çocuğu özgür bırakma vaktidir.',
+      'Yeteneklerinizi sergilemekten çekinmeyin; partnerinize sevginizi gösterin ve size ilham veren yaratıcı uğraşlara vakit ayırın.',
+    ),
+    6: (
+      'Günlük Rutinler, Sağlık, Verimlilik & Hizmet',
+      'Transit Ay 6. evinizi düzenlerken çalışma ortamınızdaki ayrıntılar, yarım kalmış görevler, beslenme ve beden sağlığı odak noktası haline gelir. Hayatınızdaki pratik aksaklıkları optimize etmek için harika bir gündür.',
+      'İşlerinizi öncelik sırasına koyun; sağlıklı beslenin ve bedeninize iyi gelecek hafif egzersizleri ihmal etmeyin.',
+    ),
+    7: (
+      'İkili İlişkiler, Ortaklıklar, Evlilik & Diplomasi',
+      'Transit Ay 7. evinizde (Alçalan / DSC aksı) ilerlerken birebir ilişkiler, partnerle diyaloglar, sözleşmeler ve ortaklaşa kararlar merkeze oturur. Karşı tarafın duygularını anlama ve ortak bir zeminde buluşma zamanıdır.',
+      'Ben-sen dengesini koruyun; dinleyici olun, empati kurun ve uzlaşma gerektiren adımlarda adil davranın.',
+    ),
+    8: (
+      'Ortaklaşa Finans, Sezgisel Simya & Derin Dönüşüm',
+      'Transit Ay 8. evinizin derin sularında seyrederken gizli kalmış meseleler, psikolojik arınma, paylaşılan paralar (banka, kredi, prim) ve sezgisel uyanış yoğunlaşır. Yüzeysel olanı aşıp hakikate inme isteği baskındır.',
+      'Korkularınızla yüzleşin; gereksiz duygusal yükleri bırakın ve içsel dönüşüm gücünüzü serbest bırakın.',
+    ),
+    9: (
+      'Büyük Vizyon, Hayat Felsefesi, Eğitim & Seyahat',
+      'Transit Ay 9. evinizi genişletirken ufkunuzu açacak yeni fikirler, yabancı kültürler, yüksek öğrenim, hukuki veya felsefi araştırmalar ve uzak seyahat planları ilham kaynağınız olur. Dar kalıplardan sıyrılma günüdür.',
+      'Büyük resme odaklanın; vizyonunuzu genişletecek yeni bir kitap, eğitim veya seyahat planına odaklanın.',
+    ),
+    10: (
+      'Kariyer, Toplumsal Görünürlük & Tepe Hedefler',
+      'Transit Ay 10. evinizde (Tepe Noktası / MC aksı) parıldarken toplum önündeki duruşunuz, kariyer sorumluluklarınız ve yöneticilerle ilişkileriniz öne çıkar. Başarılarınızın ve yetkinliğinizin fark edilmesi için önemli bir penceredir.',
+      'Disiplinli ve profesyonel bir duruş sergileyin; uzun vadeli hedefleriniz için stratejik inisiyatif alın.',
+    ),
+    11: (
+      'Gelecek Vizyonları, Sosyal Çevre & Kolektif Hedefler',
+      'Transit Ay 11. evinizi aktive ederken dostluklar, sosyal cemiyetler, ekip çalışmaları, idealler ve geleceğe dair umutlar kalbinizi ısıtır. Benzer vizyona sahip insanlarla bir araya gelmek motivasyonunuzu katlar.',
+      'Dostlarınızla fikir alışverişi yapın; ekip ruhuna katkı verin ve geleceğe dair hayallerinizi somut projelere dönüştürün.',
+    ),
+    12: (
+      'Bilinçaltı, Ruhsal Arınma & Perde Arkası Hazırlık',
+      'Transit Ay 12. evinizin dingin limanında ilerlerken iç sesinizi dinleme, meditasyon, manevi teslimiyet, rüyaların rehberliği ve perde arkasında stratejik hazırlıklar yapma isteği ağır basar. Ruhunuzu dinlendirme fazıdır.',
+      'Aceleci dışsal eylemlerden kaçının; sakin kalın, sezgilerinize kulak verin ve zihninizi dinlendirerek yeni döngüye hazırlanın.',
+    ),
+  };
+
+  /// Kullanıcının Gerçek Doğum Haritası ve Güncel Gökyüzü Transit Ay Konumuna Göre
+  /// Dinamik, Günlük, Ev ve Açı Bazlı Astro Bülten Üretici
+  static PersonalizedDailyBulletin getPersonalizedDailyBulletin({
+    required UserProfile profile,
+    String? selectedSign,
+    DateTime? customNow,
+  }) {
+    final now = customNow ?? DateTime.now();
+    final utcNow = now.toUtc();
+    final dateStr = '${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year}';
+
+    // 1. Güncel Transit Ay Konumunu Astronomik Efemeris ile Hesapla
+    final moonLon = SkyTransitsService.calculateMoonLongitude(utcNow);
+    final normMoonLon = (moonLon % 360.0 + 360.0) % 360.0;
+    final moonSignIdx = (normMoonLon / 30.0).floor() % 12;
+    final transitMoonSign = SkyTransitsService.signs[moonSignIdx];
+    final transitMoonSymbol = signSymbols[transitMoonSign] ?? '🌙';
+    final degInSign = normMoonLon % 30.0;
+    final deg = degInSign.floor();
+    final min = ((degInSign - deg) * 60.0).floor();
+    final transitMoonDegStr = "${deg.toString().padLeft(2, '0')}°${min.toString().padLeft(2, '0')}'";
+    final transitMoonFormatted = "$transitMoonDegStr $transitMoonSign";
+
+    // 2. Seçili Burç Kontrolü
+    final userRising = profile.risingSign.trim();
+    final userSun = profile.sunSign.trim();
+    final targetSign = (selectedSign != null && selectedSign.isNotEmpty)
+        ? selectedSign
+        : (userRising.isNotEmpty ? userRising : (userSun.isNotEmpty ? userSun : 'Koç'));
+    final signSymbol = signSymbols[targetSign] ?? '⭐';
+    final signElement = signElements[targetSign] ?? 'Ateş';
+
+    // Kullanıcının kendi haritası mı görüntüleniyor?
+    final isPersonalChart = (selectedSign == null ||
+        selectedSign == userRising ||
+        selectedSign == userSun ||
+        (userRising.isEmpty && userSun.isEmpty));
+
+    // 3. Placidus Evini Derece Hesabıyla Belirle
+    int natalHouse = 1;
+    String cuspRange = '';
+    Map<int, double> cusps = {};
+
+    try {
+      final placidusData = PredictiveAstrologyService.calculatePlacidusHouses(profile: profile);
+      cusps = placidusData['cusps'] as Map<int, double>;
+
+      if (isPersonalChart) {
+        for (int h = 1; h <= 12; h++) {
+          final start = cusps[h]!;
+          final nextH = h == 12 ? 1 : h + 1;
+          final end = cusps[nextH]!;
+          final span = (end - start + 360.0) % 360.0;
+          final diff = (normMoonLon - start + 360.0) % 360.0;
+          if (diff < span) {
+            natalHouse = h;
+            break;
+          }
+        }
+        final startFmt = PredictiveAstrologyService.formatLongitude(cusps[natalHouse]!, includeSymbol: true);
+        final nextH = natalHouse == 12 ? 1 : natalHouse + 1;
+        final endFmt = PredictiveAstrologyService.formatLongitude(cusps[nextH]!, includeSymbol: true);
+        cuspRange = '$startFmt → $endFmt';
+      } else {
+        // Seçili farklı bir burç için Güneş evi (Solar Derived House)
+        final targetIdx = SkyTransitsService.signs.indexOf(targetSign);
+        if (targetIdx >= 0) {
+          natalHouse = ((moonSignIdx - targetIdx + 12) % 12) + 1;
+        }
+        cuspRange = '$targetSign burcuna göre $natalHouse. Güneş Evi';
+      }
+    } catch (_) {
+      // Güvenli fallback
+      final ascIdx = SkyTransitsService.signs.indexOf(userRising.isNotEmpty ? userRising : 'Koç');
+      natalHouse = ((moonSignIdx - (ascIdx >= 0 ? ascIdx : 0) + 12) % 12) + 1;
+      cuspRange = 'Placidus Evi';
+    }
+
+    final houseMeta = _placidusHouseMetadata[natalHouse] ?? _placidusHouseMetadata[1]!;
+    final natalHouseName = '$natalHouse. Ev';
+    final natalHouseTheme = houseMeta.$1;
+    final natalHouseDesc = houseMeta.$2;
+    final natalHouseAdvice = houseMeta.$3;
+
+    // 4. Doğum Haritası Gezegenleriyle Açıları Hesapla
+    final activeAspects = <PersonalTransitAspect>[];
+
+    try {
+      final chart = AstrologyEngine.calculateChart(
+        name: profile.name,
+        dateStr: profile.birthDate,
+        timeStr: profile.birthTime,
+        city: profile.birthCity.isEmpty ? 'İstanbul' : profile.birthCity,
+        country: profile.birthCountry.isEmpty ? 'Türkiye' : profile.birthCountry,
+      );
+
+      final bodiesToCheck = <String, (String, double)>{
+        'Güneş': ('Güneş', chart.planets['sun']?.longitude ?? AspectsService.calculateAbsoluteLongitude(chart.sunSign, chart.sunFormatted)),
+        'Ay': ('Ay', chart.planets['moon']?.longitude ?? AspectsService.calculateAbsoluteLongitude(chart.moonSign, chart.moonFormatted)),
+        'Yükselen (ASC)': ('Yükselen (ASC)', chart.planets['ascendant']?.longitude ?? AspectsService.calculateAbsoluteLongitude(chart.risingSign, chart.risingFormatted)),
+        'Tepe Noktası (MC)': ('Tepe Noktası (MC)', chart.planets['mc']?.longitude ?? 0.0),
+        'Merkür': ('Merkür', chart.planets['mercury']?.longitude ?? 0.0),
+        'Venüs': ('Venüs', chart.planets['venus']?.longitude ?? 0.0),
+        'Mars': ('Mars', chart.planets['mars']?.longitude ?? 0.0),
+        'Jüpiter': ('Jüpiter', chart.planets['jupiter']?.longitude ?? 0.0),
+        'Satürn': ('Satürn', chart.planets['saturn']?.longitude ?? 0.0),
+        'Uranüs': ('Uranüs', chart.planets['uranus']?.longitude ?? 0.0),
+        'Neptün': ('Neptün', chart.planets['neptune']?.longitude ?? 0.0),
+        'Plüton': ('Plüton', chart.planets['pluto']?.longitude ?? 0.0),
+        'Chiron': ('Chiron', chart.planets['chiron']?.longitude ?? 0.0),
+        'Kuzey Düğüm': ('Kuzey Düğüm', chart.planets['north_node']?.longitude ?? 0.0),
+      };
+
+      // Majör Açı Kuralları (Ay Transitleri için hassas orblar)
+      final aspectRules = [
+        (0.0, 'Kavuşum (0°)', '☌', 7.0, null),
+        (60.0, 'Sekstil (60°)', '⚹', 5.0, true),
+        (90.0, 'Kare (90°)', '□', 6.0, false),
+        (120.0, 'Üçgen (120°)', '△', 6.0, true),
+        (180.0, 'Karşıt (180°)', '☍', 7.0, false),
+      ];
+
+      for (final entry in bodiesToCheck.entries) {
+        final planetName = entry.key;
+        final planetLon = entry.value.$2;
+        if (planetLon <= 0.0 && planetName != 'Güneş') continue;
+
+        double diff = (normMoonLon - planetLon).abs() % 360.0;
+        if (diff > 180.0) diff = 360.0 - diff;
+
+        for (final rule in aspectRules) {
+          final targetDeg = rule.$1;
+          final aspName = rule.$2;
+          final aspSymbol = rule.$3;
+          final maxOrb = rule.$4;
+          final isHarm = rule.$5;
+
+          final orb = (diff - targetDeg).abs();
+          if (orb <= maxOrb) {
+            final orbDeg = orb.floor();
+            final orbMin = ((orb - orbDeg) * 60.0).round();
+            final orbStr = "$orbDeg°${orbMin.toString().padLeft(2, '0')}'";
+
+            final planetSignIdx = (planetLon / 30.0).floor() % 12;
+            final planetSign = SkyTransitsService.signs[planetSignIdx];
+            final pDegInSign = (planetLon % 30.0).floor();
+            final planetDegStr = "$pDegInSign° $planetSign";
+
+            final (interp, tip) = _getTransitMoonAspectText(
+              natalPlanet: planetName,
+              aspectName: aspName,
+              isHarmonious: isHarm ?? true,
+            );
+
+            activeAspects.add(
+              PersonalTransitAspect(
+                aspectName: aspName,
+                aspectSymbol: aspSymbol,
+                aspectDegree: targetDeg,
+                natalPlanet: planetName,
+                natalPlanetSign: planetSign,
+                natalPlanetDegree: planetDegStr,
+                orb: orb,
+                orbStr: orbStr,
+                isHarmonious: isHarm ?? (targetDeg == 0.0 ? true : false),
+                interpretation: interp,
+                strategicTip: tip,
+              ),
+            );
+          }
+        }
+      }
+
+      // En dar orb en başta (en güçlü aktif etki)
+      activeAspects.sort((a, b) => a.orb.compareTo(b.orb));
+    } catch (_) {}
+
+    // 5. Kozmik Sentez Metnini Derle
+    final buffer = StringBuffer();
+    final clientName = profile.name.trim().isNotEmpty ? profile.name : 'Danışan';
+    buffer.writeln('Sevgili $clientName, bugün ($dateStr) gökyüzünde Transit Ay, $transitMoonFormatted derecesinde seyrediyor ve haritanızın $natalHouseName ($natalHouseTheme) alanını aydınlatıyor.');
+    buffer.writeln();
+    buffer.writeln('🏠 **$natalHouseName Yaşam Alanı Dinamiği:**');
+    buffer.writeln(natalHouseDesc);
+    buffer.writeln();
+
+    if (activeAspects.isNotEmpty) {
+      buffer.writeln('🪐 **Transit Ay\'ın Natal Gezegenlerinize Yaptığı Geometrik Açılar:**');
+      for (final a in activeAspects) {
+        buffer.writeln('• ${a.aspectSymbol} **Transit Ay ${a.aspectName} Natal ${a.natalPlanet}** (${a.natalPlanetDegree}, Orb: ${a.orbStr}): ${a.interpretation}');
+      }
+    } else {
+      buffer.writeln('🪐 **Açı Durumu:**');
+      buffer.writeln('• 🌿 **Sakin & Dingin Kozmik Akış:** Transit Ay bugün doğum haritanızdaki majör gezegenlerle doğrudan sert veya bağlayıcı bir açı kurmuyor. Bu etki, $natalHouseName konularında dışsal çalkantılardan uzak, berrak bir odaklanma ve kendi ritminizi belirleme şansı tanıyor.');
+    }
+    buffer.writeln();
+    buffer.writeln('🎯 **Günün Stratejik Rehberi:**');
+    buffer.writeln(natalHouseAdvice);
+
+    // 6. Şanslı Saatler ve Enerji Skoru
+    int energyScore = 80;
+    for (final a in activeAspects) {
+      if (a.isHarmonious) {
+        energyScore += 4;
+      } else {
+        energyScore -= 3;
+      }
+    }
+    energyScore = energyScore.clamp(60, 98);
+
+    // Ay burcuna göre uyumlu saatler ve burç
+    final compatibleSigns = {
+      'Koç': 'Yay', 'Boğa': 'Başak', 'İkizler': 'Kova', 'Yengeç': 'Balık',
+      'Aslan': 'Koç', 'Başak': 'Boğa', 'Terazi': 'İkizler', 'Akrep': 'Yengeç',
+      'Yay': 'Aslan', 'Oğlak': 'Boğa', 'Kova': 'Terazi', 'Balık': 'Akrep',
+    };
+    final luckyHoursBySign = {
+      'Koç': '10:00 - 12:30', 'Boğa': '14:00 - 16:30', 'İkizler': '11:15 - 13:45',
+      'Yengeç': '18:00 - 20:30', 'Aslan': '12:00 - 14:45', 'Başak': '09:00 - 11:30',
+      'Terazi': '15:30 - 18:00', 'Akrep': '20:30 - 23:00', 'Yay': '13:00 - 15:30',
+      'Oğlak': '08:30 - 11:00', 'Kova': '16:00 - 18:30', 'Balık': '19:30 - 22:00',
+    };
+
+    final dailyThemeStr = 'Transit Ay $transitMoonFormatted • $natalHouseName: $natalHouseTheme';
+    final dailyFocusStr = natalHouseAdvice;
+    final dailyLuckyHoursStr = luckyHoursBySign[transitMoonSign] ?? '11:00 - 14:00';
+    final dailyCompSignStr = compatibleSigns[transitMoonSign] ?? 'Aslan';
+
+    return PersonalizedDailyBulletin(
+      sign: targetSign,
+      signSymbol: signSymbol,
+      signElement: signElement,
+      date: now,
+      dateStr: dateStr,
+      transitMoonSign: transitMoonSign,
+      transitMoonSymbol: transitMoonSymbol,
+      transitMoonDegree: transitMoonDegStr,
+      transitMoonFormatted: transitMoonFormatted,
+      transitMoonLongitude: normMoonLon,
+      natalHouse: natalHouse,
+      natalHouseName: natalHouseName,
+      natalHouseTheme: natalHouseTheme,
+      natalHouseDescription: natalHouseDesc,
+      natalHouseCuspRange: cuspRange,
+      activeAspects: activeAspects,
+      compiledDailySynthesis: buffer.toString(),
+      dailyTheme: dailyThemeStr,
+      dailyFocus: dailyFocusStr,
+      dailyLuckyHours: dailyLuckyHoursStr,
+      dailyCompatibleSign: dailyCompSignStr,
+      cosmicEnergyScore: energyScore,
+      isPersonalChart: isPersonalChart,
+    );
+  }
+
+  /// Transit Ay ve Natal Gezegen Açılarının Özel Yorum Üreticisi
+  static (String, String) _getTransitMoonAspectText({
+    required String natalPlanet,
+    required String aspectName,
+    required bool isHarmonious,
+  }) {
+    if (natalPlanet == 'Güneş') {
+      if (aspectName.contains('Kavuşum')) {
+        return (
+          'Bilinçaltı arzularınız ile yaşam hedefleriniz kusursuz bir uyum içinde. Duygularınızla mantığınız el ele veriyor; kendinize güveniniz tam.',
+          'Yeni hedefler başlatmak ve kendinizi samimiyetle ortaya koymak için harika bir gün.',
+        );
+      } else if (isHarmonious) {
+        return (
+          'Duygusal berraklık, canlılık ve içsel huzur devrede. Otorite figürleriyle ve çevrenizle diyaloglarınız akıcı ve destekleyici ilerler.',
+          'Önemli görüşmelerinizi planlayın; iradenizi rahatça kabul ettirebilirsiniz.',
+        );
+      } else {
+        return (
+          'İçsel istekleriniz ile mantığınız ve dış sorumluluklarınız arasında bir gerilim oluşabilir. Fevri kararlar almaktan veya ego savaşlarına girmekten kaçının.',
+          'Karşı tarafı suçlamak yerine orta yolu bulun; duygusal iniş çıkışların geçici olduğunu bilin.',
+        );
+      }
+    }
+
+    if (natalPlanet == 'Ay') {
+      if (isHarmonious) {
+        return (
+          'Kendi ruhsal doğanızla tam bir rezonans içindesiniz. Sezgileriniz son derece berrak, sevdiklerinizle şefkat dolu bağlar kurabilirsiniz.',
+          'İç sesinizi dinleyin; duygusal şifalanma ve dinlenme için ideal zaman.',
+        );
+      } else {
+        return (
+          'Duygusal hassasiyet, geçmişe özlem veya alınganlıklar tetiklenebilir. Olayları kişisel algılamamaya özen gösterin.',
+          'Duygularınızı bastırmayın ama fevri tepkiler vermeden önce derin bir nefes alın.',
+        );
+      }
+    }
+
+    if (natalPlanet == 'Merkür') {
+      if (isHarmonious) {
+        return (
+          'Zihniniz ile kalbiniz aynı dili konuşuyor. İletişimde zarafet, ikna kabiliyeti ve yazışmalarda başarı hakim.',
+          'Önemli sözleşmeler, sunumlar ve açık diyaloglar için bu pencereyi değerlendirin.',
+        );
+      } else {
+        return (
+          'Zihinsel sabırsızlık ve hislerin mantığın önüne geçmesi yanlış anlaşılmalara yol açabilir.',
+          'Sözlerinizi tartarak söyleyin; e-postaları göndermeden önce iki kez kontrol edin.',
+        );
+      }
+    }
+
+    if (natalPlanet == 'Venüs') {
+      if (isHarmonious) {
+        return (
+          'Günün en tatlı ve bereketli açılarından biri! Aşk hayatınızda cazibe, sanatsal ilham ve finansal fırsatlar kapınızı çalabilir.',
+          'Romantik buluşmalar planlayın, güzellik ve sanat uğraşlarına vakit ayırın.',
+        );
+      } else {
+        return (
+          'İlişkilerde beklentilerin karşılanmaması veya tatminsizlik oluşabilir. Duygusal boşlukları anlık lüks harcamalarla doldurmaktan kaçının.',
+          'Finansal harcamalarınızda ölçülü olun; sevgiyi talep etmek yerine şeffafça paylaşın.',
+        );
+      }
+    }
+
+    if (natalPlanet == 'Mars') {
+      if (isHarmonious) {
+        return (
+          'Yüksek yaşam ateşi, cesaret ve kararlılık devrede. Zorlu işleri tamamlamak ve engelleri aşmak için gereken enerjiye fazlasıyla sahipsiniz.',
+          'Ertelediğiniz projeleri bitirmek ve fiziksel spora zaman ayırmak için kullanın.',
+        );
+      } else {
+        return (
+          'Duygusal sabırsızlık, fevri çıkışlar ve tartışma potansiyeli yüksek. Aceleci eylemler sakarlıklara veya kırıcı sözlere yol açabilir.',
+          'Trafikte sakin kalın; gergin enerjinizi spor ve yoğun üretime kanalize edin.',
+        );
+      }
+    }
+
+    if (natalPlanet == 'Jüpiter') {
+      if (isHarmonious) {
+        return (
+          'Kozmik şans, ferahlık, iyimserlik ve manevi genişleme rüzgarı! Hayatınıza bereketli yeni kapıların açıldığı özel bir gün.',
+          'Cesur niyetler belirleyin; paylaşın, cömert olun ve evrenin sunduğu fırsatları kucaklayın.',
+        );
+      } else {
+        return (
+          'Aşırı iyimserlik, abartılı vaatler veya gereksiz masraflara meyilli olabilirsiniz. Realiteden kopmamak şarttır.',
+          'Ölçülü davranın; büyük riskler almadan önce ayaklarınızın yere bastığından emin olun.',
+        );
+      }
+    }
+
+    if (natalPlanet == 'Satürn') {
+      if (isHarmonious) {
+        return (
+          'Duygusal olgunluk, sabır, stratejik disiplin ve sorumlulukları layıkıyla yerine getirme gücü.',
+          'Kalıcı yapılar inşa etmek ve geleceğinizi garantiye alacak adımları atmak için ideal gün.',
+        );
+      } else {
+        return (
+          'İçsel bir ağırlık, yalnızlık veya engellenmişlik hissi oluşabilir. Kendinizi acımasızca eleştirmekten vazgeçin.',
+          'Sorumluluklarınızı sıraya koyun; adım adım ilerleyin ve dinlenmeyi ihmal etmeyin.',
+        );
+      }
+    }
+
+    if (natalPlanet == 'Uranüs') {
+      if (isHarmonious) {
+        return (
+          'Sıra dışı ilhamlar, beklenmedik sürprizler ve özgürleştirici yenilikler! Zihniniz kalıpların ötesini görüyor.',
+          'Farklı yaklaşımlar deneyin; rutinlerinizi kıracak heyecan verici adımlar atın.',
+        );
+      } else {
+        return (
+          'İçsel huzursuzluk, planların aniden değişmesi veya isyankar ruh hali. Esnek olmak günü kurtarır.',
+          'Fevri köprüleri yıkmayın; değişimi akıllıca ve sakin bir şekilde karşılayın.',
+        );
+      }
+    }
+
+    if (natalPlanet == 'Neptün') {
+      if (isHarmonious) {
+        return (
+          'Ruhsal derinlik, rüyaların bilgeliği, sanatsal ilham ve evrensel sevgi akışı. Kalbinizin antenleri sonuna kadar açık.',
+          'Meditasyon yapın, dua edin ve ilham gerektiren yaratıcı işlerinize odaklanın.',
+        );
+      } else {
+        return (
+          'Dalgınlık, aşırı fedakarlık veya gerçeklerden kaçma eğilimi. Net olmayan vaatlere karşı temkinli olunmalıdır.',
+          'Önemli kararlar almadan önce detayları netleştirin; sınırlarınızı koruyun.',
+        );
+      }
+    }
+
+    if (natalPlanet == 'Plüton') {
+      if (isHarmonious) {
+        return (
+          'Muazzam bir psikolojik güç, karizma ve krizleri avantaja dönüştürme yetisi. Sezgisel bir detektör gibisiniz.',
+          'Kökten değişim gerektiren sorunları masaya yatırın ve kararlılıkla çözün.',
+        );
+      } else {
+        return (
+          'Kıskançlık, takıntılar veya kontrol etme arzusu tetiklenebilir. Güç savaşlarına girmek enerjinizi tüketir.',
+          'Akışa teslim olun; kontrol edemeyeceğiniz durumları serbest bırakın.',
+        );
+      }
+    }
+
+    if (natalPlanet == 'Chiron') {
+      if (isHarmonious) {
+        return (
+          'Ruhsal şifalanma, eski yaraları sevgiyle sarma ve başkalarına ilham verici bir bilgelikle rehberlik etme fırsatı.',
+          'Kendinize şefkat gösterin; affediciliğin getirdiği hafifliği deneyimleyin.',
+        );
+      } else {
+        return (
+          'Eski bir kırgınlık veya yetersizlik hissi yüzeye çıkabilir. Bu durum aslında kalıcı bir iyileşme davetidir.',
+          'Yaralarınızı yargılamayın; kendinize karşı nazik ve anlayışlı olun.',
+        );
+      }
+    }
+
+    if (natalPlanet == 'Kuzey Düğüm') {
+      return (
+        'Kadersel karşılaşmalar ve ruhun tekamülüne hizmet eden fırsatlar devrede. Geleceğe doğru adım atıyorsunuz.',
+        'Konfor alanınızdan çıkın; sizi büyüten ve vizyon katan yolları seçin.',
+      );
+    }
+
+    if (natalPlanet.contains('ASC') || natalPlanet.contains('Yükselen')) {
+      if (isHarmonious) {
+        return (
+          'Dış dünyada ışıldayan bir çekim gücü ve yüksek canlılık. Kendinizi rahatça ifade edebilir, dikkatleri üzerinize çekebilirsiniz.',
+          'Görüşmelerde ve sosyal ortamlarda ön planda olun.',
+        );
+      } else {
+        return (
+          'Duygusal dalgalanmalarınızın dışarıdan fark edilmesi veya çevrenizle geçici sürtüşmeler yaşanabilir.',
+          'Tepkilerinizi ölçülü tutun; kendinize dinlenme alanı yaratın.',
+        );
+      }
+    }
+
+    if (natalPlanet.contains('MC') || natalPlanet.contains('Tepe')) {
+      if (isHarmonious) {
+        return (
+          'Kariyerinizde ve toplumsal hedeflerinizde duygusal zekanızı kullanarak takdir toplayacağınız bereketli bir etki.',
+          'Yöneticilerinizle görüşün; projelerinizi cesaretle sunun.',
+        );
+      } else {
+        return (
+          'Kariyer sorumlulukları ile özel hayatın duygusal ihtiyaçları arasında denge kurma gerekliliği.',
+          'İki alanı birbirinden ayırın; önceliklerinizi netleştirin.',
+        );
+      }
+    }
+
+    return (
+      'Transit Ay ile $natalPlanet arasındaki bu açı, günün enerjisini daha odaklı ve hissedilir kılıyor.',
+      'Dengeli kalın ve farkındalıkla hareket edin.',
+    );
+  }
 
   static ZodiacBulletin getZodiacBulletin(String sign) {
     return _zodiacBulletins[sign] ?? _zodiacBulletins['Koç']!;

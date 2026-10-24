@@ -75,25 +75,25 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.14-build22
-          name: "📱 Gökyüzü Doktoru - v1.0.14 (Sürüm Kodu 22 & Güncellenmiş KVKK, Gizlilik Sözleşmesi, Google Play Fatura Güvencesi ve Çapraz Lisans Şartları)"
+          tag_name: v1.0.14-build23
+          name: "📱 Gökyüzü Doktoru - v1.0.14 (Sürüm Kodu 23 & Dinamik Transit Ay Natal Placidus Günlük Yorumu ve 4-Tıklama Reklam Algoritması)"
           body: |
-            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.14 / Sürüm Kodu 22)
+            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.14 / Sürüm Kodu 23)
 
             - **`gokyuzu-doktoru.apk`**: Kendi Android telefonunuzda doğrudan test edip kullanmak için yükleme dosyası (İmzalı, Obfuscated).
-            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı, Sürüm Kodu 22, In-App Billing İzinli, ProGuard & R8 Korumalı).
+            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı, Sürüm Kodu 23, In-App Billing İzinli, ProGuard & R8 Korumalı).
 
-            #### 🌟 Bu Sürümdeki Büyük Yenilikler & Yasal Metin Düzenlemeleri (Build 22):
-            1. **⚖️ 6698 Sayılı KVKK ve Açık Rıza Metni Güncellemesi**:
-               - Android sistem hesap seçicisi (AccountManager) üzerinden bağlanan gerçek Google (Gmail) hesap kimliği, işlevsel e-posta yedeklemesi ve şifreli GKY-YEDEK kurtarma paketleri işlenen veriler kapsamına eklendi.
-            2. **🛡️ Gizlilik Politikası (Privacy Policy) Güncellemesi**:
-               - Google Play Store In-App Billing resmi faturalandırma motoru, Google tarafından kullanıcının kayıtlı Gmail adresine iletilen resmi vergi faturası e-postası ve sıfır kredi kartı saklama güvencesi açıklandı.
-            3. **📜 Kullanım Koşulları (EULA) ve Mesafeli Satış Sözleşmesi Güncellemesi**:
-               - 6502 sayılı Kanun ve Mesafeli Sözleşmeler Yönetmeliği m. 15/1-ğ uyarınca anında ifa edilen dijital hizmetlerde cayma hakkı istisnası ve Google Play Store üzerinden tek tıkla abonelik iptal rehberi detaylandırıldı.
-               - Tek kullanımlık Çapraz Platform VIP Transfer Anahtarı (GKY-VIP-...) şartları yasal güvenceye bağlandı.
-            4. **💳 Google Play Resmi In-App Billing Alt Sayfası Entegrasyonu**.
-            5. **✉️ İşlevsel E-posta Harita Yedekleme & Kurtarma**.
-            6. **🎃 Büyük Turuncu Cadılar Bayramı Kozmik Teması & Ekran Taşma Düzeltmeleri**.
+            #### 🌟 Bu Sürümdeki Büyük Yenilikler (Build 23):
+            1. **🌙 Dinamik Transit Ay & Natal Placidus Ev/Açı Sentezi (Astro Bülten & Günlük Yorum)**:
+               - Statik günlük burç yorumları tamamen kaldırılarak, her gün transit Ay'ın canlı gökyüzü boylamı (burç ve tam derece/dakika) hesaplanmaktadır.
+               - Kullanıcının natal haritasındaki Placidus ev kasp sınırları (1'den 12'ye) derece hassasiyetiyle taranır; Ay'ın hangi evde olduğu tam olarak belirlenir.
+               - Transit Ay'ın kullanıcının natal gezegenlerine (Güneş, Ay, Merkür, Venüs, Mars, Jüpiter, Satürn, Uranüs, Neptün, Plüton, Chiron, Kuzey Düğüm, ASC, MC) yaptığı majör açılar (0° Kavuşum, 60° Sekstil, 90° Kare, 120° Üçgen, 180° Karşıt) orblarıyla hesaplanır.
+               - Her güne özel kişiselleştirilmiş kozmik bülten sentezi, tema, odak alanı, şanslı saatler ve kozmik enerji skoru üretilir.
+            2. **💰 Ana Ekran ve Tüm Modüllerde Her 4 Tıklamada Bir Geçiş Reklamı**:
+               - Reklam optimizasyonu genişletildi; yalnızca harita detayında değil, ana ekrandaki aksiyonlarda (Astro Bülten burç/tarih seçimleri, profil geçişleri, sezon kartı, günün enerjisi, VIP modül tıklamaları, hızlı geçişler) her 4 tıklamada 1 geçiş reklamı tetiklenir.
+               - VIP kullanıcılara reklamlar %100 kapalıdır.
+            3. **🛡️ Kararlılık ve Performans**:
+               - Reklam bekleme sürelerinde 2.5 saniyelik güvenlik zaman aşımı eklenerek kullanıcı deneyimi akıcı hale getirildi.
           files: |
             gokyuzu-doktoru.apk
             gokyuzu-doktoru.aab

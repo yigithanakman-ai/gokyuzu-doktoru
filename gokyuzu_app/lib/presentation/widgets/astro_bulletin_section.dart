@@ -18,6 +18,7 @@ class AstroBulletinSection extends StatefulWidget {
 
 class _AstroBulletinSectionState extends State<AstroBulletinSection> {
   late WeeklyCosmicSummary _weeklySummary;
+  late PersonalizedDailyBulletin _personalizedDaily;
   List<AstroBulletinEvent> _monthlyEvents = [];
   bool _isLoadingEvents = true;
 
@@ -25,6 +26,7 @@ class _AstroBulletinSectionState extends State<AstroBulletinSection> {
   void initState() {
     super.initState();
     _weeklySummary = AstroBulletinService.getWeeklySummary();
+    _personalizedDaily = AstroBulletinService.getPersonalizedDailyBulletin(profile: widget.profile);
     _loadEvents();
   }
 
@@ -260,6 +262,35 @@ class _AstroBulletinSectionState extends State<AstroBulletinSection> {
                 ),
 
                 const SizedBox(height: 10),
+                Container(
+                  padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 7),
+                  decoration: BoxDecoration(
+                    color: AppColors.electricViolet.withValues(alpha: 0.16),
+                    borderRadius: BorderRadius.circular(10),
+                    border: Border.all(
+                      color: AppColors.electricViolet.withValues(alpha: 0.4),
+                    ),
+                  ),
+                  child: Row(
+                    children: [
+                      const Icon(Icons.nightlight_round, size: 14, color: AppColors.starlightGold),
+                      const SizedBox(width: 6),
+                      Expanded(
+                        child: Text(
+                          'Transit Ay: ${_personalizedDaily.transitMoonFormatted} • ${_personalizedDaily.natalHouse}. Evinizde (${_personalizedDaily.activeAspects.length} Açı)',
+                          style: const TextStyle(
+                            fontSize: 11,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                          ),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                        ),
+                      ),
+                    ],
+                  ),
+                ),
+                const SizedBox(height: 8),
                 Row(
                   mainAxisAlignment: MainAxisAlignment.spaceBetween,
                   children: [
@@ -327,6 +358,7 @@ class _AstroBulletinModalContentState
   int _activeTab = 0; // 0: 12 Burç Yorumları, 1: Aylık Gökyüzü Olayları (Auto-Purge), 2: Haftalık Özet
   late String _selectedSign;
   bool _isWeeklyView = false; // false: Günlük, true: Haftalık
+  late PersonalizedDailyBulletin _dailyBulletin;
 
   @override
   void initState() {
@@ -340,6 +372,14 @@ class _AstroBulletinModalContentState
     } else {
       _selectedSign = 'Koç';
     }
+    _loadDailyBulletin();
+  }
+
+  void _loadDailyBulletin() {
+    _dailyBulletin = AstroBulletinService.getPersonalizedDailyBulletin(
+      profile: widget.profile,
+      selectedSign: _selectedSign,
+    );
   }
 
   @override
@@ -449,7 +489,11 @@ class _AstroBulletinModalContentState
   Widget _buildTopTabItem(int index, String label, IconData icon) {
     final isSelected = _activeTab == index;
     return InkWell(
-      onTap: () => setState(() => _activeTab = index),
+      onTap: () {
+        AdService.registerActionAndShowInterstitial(onDone: () {
+          if (mounted) setState(() => _activeTab = index);
+        });
+      },
       borderRadius: BorderRadius.circular(10),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),
@@ -545,7 +589,16 @@ class _AstroBulletinModalContentState
                 return Padding(
                   padding: const EdgeInsets.only(right: 8),
                   child: InkWell(
-                    onTap: () => setState(() => _selectedSign = s),
+                    onTap: () {
+                      AdService.registerActionAndShowInterstitial(onDone: () {
+                        if (mounted) {
+                          setState(() {
+                            _selectedSign = s;
+                            _loadDailyBulletin();
+                          });
+                        }
+                      });
+                    },
                     borderRadius: BorderRadius.circular(12),
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 12, vertical: 8),
@@ -704,9 +757,99 @@ class _AstroBulletinModalContentState
                 const SizedBox(height: 12),
 
                 if (!_isWeeklyView) ...[
-                  // GÜNLÜK İÇERİK
+                  // GÜNLÜK DİNAMİK TRANSİT AY & NATAL EV / AÇI İÇERİĞİ
+                  Container(
+                    margin: const EdgeInsets.only(bottom: 14),
+                    padding: const EdgeInsets.all(12),
+                    decoration: BoxDecoration(
+                      gradient: LinearGradient(
+                        colors: [
+                          const Color(0xFF2A1B4E).withValues(alpha: 0.6),
+                          const Color(0xFF160F2E).withValues(alpha: 0.8),
+                        ],
+                      ),
+                      borderRadius: BorderRadius.circular(14),
+                      border: Border.all(
+                        color: AppColors.electricViolet.withValues(alpha: 0.4),
+                      ),
+                    ),
+                    child: Column(
+                      crossAxisAlignment: CrossAxisAlignment.start,
+                      children: [
+                        Row(
+                          children: [
+                            Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                              decoration: BoxDecoration(
+                                color: AppColors.starlightGold.withValues(alpha: 0.2),
+                                borderRadius: BorderRadius.circular(8),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Text('🌙', style: TextStyle(fontSize: 12)),
+                                  const SizedBox(width: 4),
+                                  Text(
+                                    'Transit Ay: ${_dailyBulletin.transitMoonFormatted}',
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.starlightGold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            const SizedBox(width: 6),
+                            Expanded(
+                              child: Container(
+                                padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 4),
+                                decoration: BoxDecoration(
+                                  color: AppColors.pastelMint.withValues(alpha: 0.2),
+                                  borderRadius: BorderRadius.circular(8),
+                                ),
+                                child: Text(
+                                  _dailyBulletin.isPersonalChart
+                                      ? '🏠 ${_dailyBulletin.natalHouse}. Evinizde (Derece Hesabı)'
+                                      : '🏠 ${_dailyBulletin.sign} İçin ${_dailyBulletin.natalHouse}. Evde',
+                                  style: const TextStyle(
+                                    fontSize: 11,
+                                    fontWeight: FontWeight.bold,
+                                    color: AppColors.pastelMint,
+                                  ),
+                                  maxLines: 1,
+                                  overflow: TextOverflow.ellipsis,
+                                ),
+                              ),
+                            ),
+                          ],
+                        ),
+                        const SizedBox(height: 8),
+                        Row(
+                          children: [
+                            const Icon(Icons.architecture_rounded, size: 13, color: AppColors.pastelLavender),
+                            const SizedBox(width: 5),
+                            Expanded(
+                              child: Text(
+                                'Placidus Yaşam Aksı: ${_dailyBulletin.natalHouseCuspRange}',
+                                style: const TextStyle(
+                                  fontSize: 10.5,
+                                  color: AppColors.pastelLavender,
+                                  fontWeight: FontWeight.w500,
+                                ),
+                                maxLines: 1,
+                                overflow: TextOverflow.ellipsis,
+                              ),
+                            ),
+                          ],
+                        ),
+                      ],
+                    ),
+                  ),
+
+                  // Kozmik Tema Başlığı & Ev Tanımı
                   Text(
-                    AppTranslationService.tr('BUGÜNÜN KOZMİK TEMASI'),
+                    AppTranslationService.tr('BUGÜNÜN KOZMİK TEMASI & TETİKLENEN YAŞAM ALANI'),
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
@@ -716,17 +859,190 @@ class _AstroBulletinModalContentState
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    AppTranslationService.tr(bulletin.dailyTheme),
+                    _dailyBulletin.dailyTheme,
                     style: const TextStyle(
                       fontSize: 13,
-                      fontWeight: FontWeight.w600,
+                      fontWeight: FontWeight.w700,
                       color: Colors.white,
                       height: 1.4,
                     ),
                   ),
-                  const SizedBox(height: 12),
+                  const SizedBox(height: 6),
                   Text(
-                    AppTranslationService.tr('GÜNÜN ODAK NOKTASI & TAVSİYE'),
+                    _dailyBulletin.natalHouseDescription,
+                    style: const TextStyle(
+                      fontSize: 12,
+                      color: Colors.white70,
+                      height: 1.45,
+                    ),
+                  ),
+                  const SizedBox(height: 16),
+
+                  // Transit Ay'ın Natal Gezegenlere Yaptığı Açılar
+                  Row(
+                    mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    children: [
+                      Text(
+                        AppTranslationService.tr('TRANSİT AY AÇILARI (GEOMETRİK ETKİLEŞİM)'),
+                        style: const TextStyle(
+                          fontSize: 11,
+                          fontWeight: FontWeight.bold,
+                          color: AppColors.starlightGold,
+                          letterSpacing: 0.6,
+                        ),
+                      ),
+                      Container(
+                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                        decoration: BoxDecoration(
+                          color: _dailyBulletin.activeAspects.isNotEmpty
+                              ? AppColors.pastelMint.withValues(alpha: 0.2)
+                              : Colors.white10,
+                          borderRadius: BorderRadius.circular(6),
+                        ),
+                        child: Text(
+                          '${_dailyBulletin.activeAspects.length} Açı Aktif',
+                          style: TextStyle(
+                            fontSize: 9.5,
+                            fontWeight: FontWeight.bold,
+                            color: _dailyBulletin.activeAspects.isNotEmpty
+                                ? AppColors.pastelMint
+                                : AppColors.textMuted,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 8),
+
+                  if (_dailyBulletin.activeAspects.isNotEmpty) ...[
+                    ..._dailyBulletin.activeAspects.map((aspect) {
+                      final isHarm = aspect.isHarmonious;
+                      final badgeColor = aspect.aspectName.contains('Kavuşum')
+                          ? AppColors.starlightGold
+                          : (isHarm ? AppColors.pastelMint : AppColors.warningOrange);
+
+                      return Container(
+                        margin: const EdgeInsets.only(bottom: 8),
+                        padding: const EdgeInsets.all(12),
+                        decoration: BoxDecoration(
+                          color: Colors.white.withValues(alpha: 0.04),
+                          borderRadius: BorderRadius.circular(12),
+                          border: Border.all(
+                            color: badgeColor.withValues(alpha: 0.35),
+                          ),
+                        ),
+                        child: Column(
+                          crossAxisAlignment: CrossAxisAlignment.start,
+                          children: [
+                            Row(
+                              mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                              children: [
+                                Row(
+                                  children: [
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                      decoration: BoxDecoration(
+                                        color: badgeColor.withValues(alpha: 0.2),
+                                        borderRadius: BorderRadius.circular(6),
+                                      ),
+                                      child: Text(
+                                        aspect.aspectSymbol,
+                                        style: TextStyle(
+                                          fontSize: 12,
+                                          fontWeight: FontWeight.bold,
+                                          color: badgeColor,
+                                        ),
+                                      ),
+                                    ),
+                                    const SizedBox(width: 8),
+                                    Text(
+                                      'Transit Ay ${aspect.aspectName} Natal ${aspect.natalPlanet}',
+                                      style: const TextStyle(
+                                        fontSize: 12,
+                                        fontWeight: FontWeight.bold,
+                                        color: Colors.white,
+                                      ),
+                                    ),
+                                  ],
+                                ),
+                                Container(
+                                  padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                                  decoration: BoxDecoration(
+                                    color: Colors.white10,
+                                    borderRadius: BorderRadius.circular(6),
+                                  ),
+                                  child: Text(
+                                    'Orb: ${aspect.orbStr}',
+                                    style: const TextStyle(
+                                      fontSize: 10,
+                                      color: AppColors.textSecondary,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                            const SizedBox(height: 6),
+                            Text(
+                              aspect.interpretation,
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                color: Colors.white70,
+                                height: 1.35,
+                              ),
+                            ),
+                            const SizedBox(height: 4),
+                            Row(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                const Icon(Icons.lightbulb_outline_rounded, size: 12, color: AppColors.starlightGold),
+                                const SizedBox(width: 4),
+                                Expanded(
+                                  child: Text(
+                                    aspect.strategicTip,
+                                    style: const TextStyle(
+                                      fontSize: 11,
+                                      color: AppColors.starlightGold,
+                                      fontStyle: FontStyle.italic,
+                                    ),
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ],
+                        ),
+                      );
+                    }),
+                  ] else ...[
+                    Container(
+                      padding: const EdgeInsets.all(12),
+                      decoration: BoxDecoration(
+                        color: Colors.white.withValues(alpha: 0.03),
+                        borderRadius: BorderRadius.circular(12),
+                        border: Border.all(color: Colors.white12),
+                      ),
+                      child: Row(
+                        children: [
+                          const Icon(Icons.spa_rounded, size: 18, color: AppColors.pastelMint),
+                          const SizedBox(width: 10),
+                          Expanded(
+                            child: Text(
+                              AppTranslationService.tr('Bugün Transit Ay natal gezegenlerinizle majör bir açı kurmuyor (Kozmik dinlenme akışı). Bu etki, ${_dailyBulletin.natalHouse}. Ev konularınıza dışsal çalkantılardan uzak, berrak ve huzurlu bir şekilde odaklanmanız için sessiz bir fırsat sunuyor.'),
+                              style: const TextStyle(
+                                fontSize: 11.5,
+                                color: Colors.white70,
+                                height: 1.35,
+                              ),
+                            ),
+                          ),
+                        ],
+                      ),
+                    ),
+                  ],
+                  const SizedBox(height: 14),
+
+                  // Günün Odak Noktası & Tavsiye
+                  Text(
+                    AppTranslationService.tr('GÜNÜN ODAK NOKTASI & STRATEJİK TAVSİYE'),
                     style: const TextStyle(
                       fontSize: 11,
                       fontWeight: FontWeight.bold,
@@ -736,7 +1052,7 @@ class _AstroBulletinModalContentState
                   ),
                   const SizedBox(height: 6),
                   Text(
-                    AppTranslationService.tr(bulletin.dailyFocus),
+                    _dailyBulletin.dailyFocus,
                     style: const TextStyle(
                       fontSize: 12.5,
                       color: Colors.white70,
@@ -744,6 +1060,8 @@ class _AstroBulletinModalContentState
                     ),
                   ),
                   const SizedBox(height: 14),
+
+                  // Şanslı Saatler & Skor
                   Container(
                     padding: const EdgeInsets.all(12),
                     decoration: BoxDecoration(
@@ -751,15 +1069,35 @@ class _AstroBulletinModalContentState
                       borderRadius: BorderRadius.circular(12),
                     ),
                     child: Row(
+                      mainAxisAlignment: MainAxisAlignment.spaceBetween,
                       children: [
-                        const Icon(Icons.alarm_on_rounded, size: 16, color: AppColors.starlightGold),
-                        const SizedBox(width: 8),
-                        Text(
-                          '${AppTranslationService.tr('Günün Şanslı Saatleri')}: ${bulletin.dailyLuckyHours}',
-                          style: const TextStyle(
-                            fontSize: 12,
-                            fontWeight: FontWeight.bold,
-                            color: Colors.white,
+                        Row(
+                          children: [
+                            const Icon(Icons.alarm_on_rounded, size: 16, color: AppColors.starlightGold),
+                            const SizedBox(width: 8),
+                            Text(
+                              '${AppTranslationService.tr('Şanslı Saatler')}: ${_dailyBulletin.dailyLuckyHours}',
+                              style: const TextStyle(
+                                fontSize: 12,
+                                fontWeight: FontWeight.bold,
+                                color: Colors.white,
+                              ),
+                            ),
+                          ],
+                        ),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 3),
+                          decoration: BoxDecoration(
+                            color: AppColors.starlightGold.withValues(alpha: 0.15),
+                            borderRadius: BorderRadius.circular(8),
+                          ),
+                          child: Text(
+                            'Enerji: %${_dailyBulletin.cosmicEnergyScore}',
+                            style: const TextStyle(
+                              fontSize: 11,
+                              fontWeight: FontWeight.bold,
+                              color: AppColors.starlightGold,
+                            ),
                           ),
                         ),
                       ],
@@ -844,7 +1182,11 @@ class _AstroBulletinModalContentState
   Widget _buildPeriodToggleItem(bool isWeekly, String label) {
     final isSelected = _isWeeklyView == isWeekly;
     return InkWell(
-      onTap: () => setState(() => _isWeeklyView = isWeekly),
+      onTap: () {
+        AdService.registerActionAndShowInterstitial(onDone: () {
+          if (mounted) setState(() => _isWeeklyView = isWeekly);
+        });
+      },
       borderRadius: BorderRadius.circular(10),
       child: AnimatedContainer(
         duration: const Duration(milliseconds: 200),

@@ -29,6 +29,7 @@ import 'numerology_screen.dart';
 import '../widgets/lunar_return_modal.dart';
 import '../widgets/rectification_modal.dart';
 import '../widgets/astro_bulletin_section.dart';
+import '../../data/services/astro_bulletin_service.dart';
 import '../widgets/personal_eclipses_counseling_sheet.dart';
 import '../../data/services/cosmic_theme_service.dart';
 import '../widgets/cosmic_story_share_modal.dart';
@@ -542,20 +543,10 @@ class _HomeScreenState extends State<HomeScreen> {
   Future<void> _fetchDailyHoroscope() async {
     try {
       final prof = _effectiveProfile;
-      final liveChart = AstrologyEngine.calculateChart(
-        name: prof.name,
-        dateStr: prof.birthDate,
-        timeStr: prof.birthTime,
-        city: prof.birthCity,
-        country: prof.birthCountry,
-      );
-      final horoscope = await ApiService.getDailyHoroscope(
-        name: prof.name,
-        chart: {
-          'sun': liveChart.sunSign,
-          'moon': liveChart.moonSign,
-          'ascendant': liveChart.ascendant,
-        },
+      final dailyBulletin = AstroBulletinService.getPersonalizedDailyBulletin(profile: prof);
+      final horoscope = DailyHoroscopeModel(
+        date: dailyBulletin.dateStr,
+        text: dailyBulletin.compiledDailySynthesis,
       );
       if (mounted) {
         setState(() {
@@ -737,7 +728,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           IconButton(
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
-                            onPressed: () => _showCosmicSeasonPickerModal(context),
+                            onPressed: () => _safeAction(() => _showCosmicSeasonPickerModal(context)),
                             icon: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
                               decoration: BoxDecoration(
@@ -764,7 +755,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           IconButton(
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
-                            onPressed: () => _showLanguageSelectionSheet(context),
+                            onPressed: () => _safeAction(() => _showLanguageSelectionSheet(context)),
                             icon: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
                               decoration: BoxDecoration(
@@ -795,7 +786,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           IconButton(
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
-                            onPressed: () => _showNotificationPermissionModal(context),
+                            onPressed: () => _safeAction(() => _showNotificationPermissionModal(context)),
                             icon: Container(
                               padding: const EdgeInsets.all(7),
                               decoration: BoxDecoration(
@@ -817,14 +808,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           IconButton(
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
-                            onPressed: () async {
+                            onPressed: () => _safeAction(() async {
                               await Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (_) => ProfileScreen(profile: widget.profile),
                                 ),
                               );
                               _checkVipStatus();
-                            },
+                            }),
                             icon: Container(
                               padding: const EdgeInsets.all(7),
                               decoration: BoxDecoration(
@@ -852,14 +843,14 @@ class _HomeScreenState extends State<HomeScreen> {
                           IconButton(
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
-                            onPressed: () async {
+                            onPressed: () => _safeAction(() async {
                               await Navigator.of(context).push(
                                 MaterialPageRoute(
                                   builder: (_) => SettingsScreen(profile: widget.profile),
                                 ),
                               );
                               _checkVipStatus();
-                            },
+                            }),
                             icon: Container(
                               padding: const EdgeInsets.all(7),
                               decoration: BoxDecoration(
@@ -891,15 +882,15 @@ class _HomeScreenState extends State<HomeScreen> {
                   ),
                   const SizedBox(height: 8),
                   InkWell(
-                    onTap: () async {
+                    onTap: () => _safeAction(() async {
                       await Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => ProfileScreen(profile: widget.profile),
                         ),
                       );
                       _checkVipStatus();
-                    },
-                    onLongPress: () => _showCosmicSeasonPickerModal(context),
+                    }),
+                    onLongPress: () => _safeAction(() => _showCosmicSeasonPickerModal(context)),
                     borderRadius: BorderRadius.circular(20),
                     child: Container(
                       padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
@@ -973,7 +964,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   final isHalloween = activeSeason == CosmicSeason.halloween;
 
                   return GestureDetector(
-                    onTap: () => _showCosmicSeasonPickerModal(context),
+                    onTap: () => _safeAction(() => _showCosmicSeasonPickerModal(context)),
                     child: Container(
                       width: double.infinity,
                       margin: const EdgeInsets.only(bottom: 16),
@@ -1565,7 +1556,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   const SizedBox(width: 8),
                   Expanded(
                     child: InkWell(
-                      onTap: _handleResetProfile,
+                      onTap: () => _safeAction(_handleResetProfile),
                       borderRadius: BorderRadius.circular(14),
                       child: Container(
                         padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 10),
@@ -1638,55 +1629,59 @@ class _HomeScreenState extends State<HomeScreen> {
                             ),
                           ),
                         )
-                      : GlassCard(
-                          borderColor: AppColors.pastelPink.withValues(alpha: 0.4),
-                          child: Column(
-                            crossAxisAlignment: CrossAxisAlignment.start,
-                            children: [
-                              Row(
-                                mainAxisAlignment:
-                                    MainAxisAlignment.spaceBetween,
-                                children: [
-                                  Text(
-                                    AppTranslationService.tr('Günün Enerjisi'),
-                                    style: Theme.of(context)
-                                        .textTheme
-                                        .titleLarge
-                                        ?.copyWith(
-                                          color: AppColors.pastelPink,
-                                          fontSize: 18,
-                                        ),
-                                  ),
-                                  Container(
-                                    padding: const EdgeInsets.symmetric(
-                                        horizontal: 10, vertical: 4),
-                                    decoration: BoxDecoration(
-                                      color: AppColors.surfaceLight,
-                                      borderRadius: BorderRadius.circular(12),
+                      : InkWell(
+                          onTap: () => _safeAction(() {}),
+                          borderRadius: BorderRadius.circular(20),
+                          child: GlassCard(
+                            borderColor: AppColors.pastelPink.withValues(alpha: 0.4),
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  mainAxisAlignment:
+                                      MainAxisAlignment.spaceBetween,
+                                  children: [
+                                    Text(
+                                      AppTranslationService.tr('Günün Enerjisi'),
+                                      style: Theme.of(context)
+                                          .textTheme
+                                          .titleLarge
+                                          ?.copyWith(
+                                            color: AppColors.pastelPink,
+                                            fontSize: 18,
+                                          ),
                                     ),
-                                    child: Text(
-                                      _dailyHoroscope?.date ?? (currentLang == 'ja' ? '本日' : (currentLang == 'en' ? 'Today' : 'Bugün')),
-                                      style: const TextStyle(
-                                        fontSize: 11,
-                                        fontWeight: FontWeight.bold,
-                                        color: AppColors.starlightGold,
+                                    Container(
+                                      padding: const EdgeInsets.symmetric(
+                                          horizontal: 10, vertical: 4),
+                                      decoration: BoxDecoration(
+                                        color: AppColors.surfaceLight,
+                                        borderRadius: BorderRadius.circular(12),
+                                      ),
+                                      child: Text(
+                                        _dailyHoroscope?.date ?? (currentLang == 'ja' ? '本日' : (currentLang == 'en' ? 'Today' : 'Bugün')),
+                                        style: const TextStyle(
+                                          fontSize: 11,
+                                          fontWeight: FontWeight.bold,
+                                          color: AppColors.starlightGold,
+                                        ),
                                       ),
                                     ),
-                                  ),
-                                ],
-                              ),
-                              const SizedBox(height: 14),
-                              Text(
-                                _dailyHoroscope?.text ?? '',
-                                style: Theme.of(context)
-                                    .textTheme
-                                    .bodyLarge
-                                    ?.copyWith(
-                                      height: 1.6,
-                                      fontSize: 14.5,
-                                    ),
-                              ),
-                            ],
+                                  ],
+                                ),
+                                const SizedBox(height: 14),
+                                Text(
+                                  _dailyHoroscope?.text ?? '',
+                                  style: Theme.of(context)
+                                      .textTheme
+                                      .bodyLarge
+                                      ?.copyWith(
+                                        height: 1.6,
+                                        fontSize: 14.5,
+                                      ),
+                                ),
+                              ],
+                            ),
                           ),
                         ),
               const SizedBox(height: 16),
@@ -1784,7 +1779,7 @@ class _HomeScreenState extends State<HomeScreen> {
               const SizedBox(height: 12),
 
               InkWell(
-                onTap: () => _showVipConsultationModal(context),
+                onTap: () => _safeAction(() => _showVipConsultationModal(context)),
                 borderRadius: BorderRadius.circular(20),
                 child: GlassCard(
                   padding:
@@ -1992,7 +1987,7 @@ class _HomeScreenState extends State<HomeScreen> {
                         ),
                         const SizedBox(width: 8),
                         InkWell(
-                          onTap: () => _showSocialShareModal(context),
+                          onTap: () => _safeAction(() => _showSocialShareModal(context)),
                           borderRadius: BorderRadius.circular(8),
                           child: Container(
                             padding: const EdgeInsets.symmetric(
@@ -2856,27 +2851,29 @@ class _HomeScreenState extends State<HomeScreen> {
     required VipTier requiredTier,
     required VoidCallback onAccessGranted,
   }) async {
-    final currentTier = await StorageService.getVipTier();
-    if (currentTier == VipTier.free) {
-      if (context.mounted) _showPurchaseModal(context);
-      return;
-    }
-
-    if (requiredTier == VipTier.platinum && currentTier != VipTier.platinum) {
-      if (context.mounted) {
-        _showTierUpgradeModal(context, moduleName, 'Platinum VIP');
+    _safeAction(() async {
+      final currentTier = await StorageService.getVipTier();
+      if (currentTier == VipTier.free) {
+        if (context.mounted) _showPurchaseModal(context);
+        return;
       }
-      return;
-    }
 
-    if (requiredTier == VipTier.gold && currentTier == VipTier.silver) {
-      if (context.mounted) {
-        _showTierUpgradeModal(context, moduleName, 'Gold veya Platinum VIP');
+      if (requiredTier == VipTier.platinum && currentTier != VipTier.platinum) {
+        if (context.mounted) {
+          _showTierUpgradeModal(context, moduleName, 'Platinum VIP');
+        }
+        return;
       }
-      return;
-    }
 
-    onAccessGranted();
+      if (requiredTier == VipTier.gold && currentTier == VipTier.silver) {
+        if (context.mounted) {
+          _showTierUpgradeModal(context, moduleName, 'Gold veya Platinum VIP');
+        }
+        return;
+      }
+
+      onAccessGranted();
+    });
   }
 
   void _showTierUpgradeModal(BuildContext context, String moduleName, String requiredTierName) {
@@ -3832,7 +3829,7 @@ class _HomeScreenState extends State<HomeScreen> {
             ),
             const SizedBox(width: 8),
             InkWell(
-              onTap: () => _showAllTransitsModal(context),
+              onTap: () => _safeAction(() => _showAllTransitsModal(context)),
               borderRadius: BorderRadius.circular(8),
               child: Padding(
                 padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
@@ -4142,7 +4139,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 const SizedBox(width: 8),
                                 InkWell(
-                                  onTap: () => _showAllLunarMansionsModal(context),
+                                  onTap: () => _safeAction(() => _showAllLunarMansionsModal(context)),
                                   borderRadius: BorderRadius.circular(6),
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
@@ -4252,7 +4249,7 @@ class _HomeScreenState extends State<HomeScreen> {
                                 ),
                                 const SizedBox(width: 8),
                                 InkWell(
-                                  onTap: () => _showAllHermeticStepsModal(context),
+                                  onTap: () => _safeAction(() => _showAllHermeticStepsModal(context)),
                                   borderRadius: BorderRadius.circular(6),
                                   child: Padding(
                                     padding: const EdgeInsets.symmetric(horizontal: 4, vertical: 2),
