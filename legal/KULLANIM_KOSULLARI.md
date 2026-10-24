@@ -1,6 +1,6 @@
 # GÖKYÜZÜ DOKTORU - KULLANIM ŞARTLARI & HİZMET KOŞULLARI (TERMS OF USE)
 
-**Son Güncelleme:** 13 Ekim 2026  
+**Son Güncelleme:** 24 Ekim 2026  
 **Uygulama Adı:** Gökyüzü Doktoru  
 **Geliştirici:** Yiğithan Akman  
 **İletişim:** yigithanakman@gokyuzudoktoru.com  
@@ -15,8 +15,9 @@ Uygulama; doğum haritası, yükselen burç, ev konumları, gezegen transitleri,
 
 Yorumlar **eğlence ve kişisel düşünme (öz farkındalık) amaçlıdır**, gelişmiş yapay zekâ (Google Gemini AI) modelleri ile desteklenir, hata veya tutarsızlık içerebilir ve **kesinlikle tıbbi teşhis, tedavi, psikolojik terapi, hukuki danışmanlık veya finansal/yatırım tavsiyesi değildir**. Hayati ve önemli kararlarınızı yalnızca bu yorumlara dayandırmayınız.
 
-### 2. Hesap ve Yaş Şartı
+### 2. Hesap, Google Girişi ve Yaş Şartı
 * Hesap oluşturmak ve uygulamayı kullanmak için **en az 16 yaşında** olmalısınız.
+* Kullanıcılar Android sistem hesap seçicisi (AccountManager) üzerinden gerçek Google (Gmail) hesaplarıyla tek tıkla giriş yapabilir, harita profillerini buluta eşitleyebilir ve dilediklerinde e-posta kutularına güvenli şifreli yedekleme paketi (GKY-YEDEK) alabilirler.
 * Hesap bilgilerinizin (e-posta ve şifre) doğruluğundan ve gizliliğinden siz sorumlusunuz.
 * Hesabınızı ve tüm doğum haritası verilerinizi dilediğiniz zaman Uygulama içindeki **Profil > Hesabımı ve Verilerimi Kalıcı Olarak Sil** butonu üzerinden tek dokunuşla silebilirsiniz.
 
@@ -25,15 +26,16 @@ Yorumlar **eğlence ve kişisel düşünme (öz farkındalık) amaçlıdır**, g
 * Ücretsiz kullanıcılar isteğe bağlı ödüllü video reklam izleyerek ek analiz hakkı açabilirler.
 * Kazanılan analiz haklarının veya ücretsiz kredilerin hiçbir maddi/parasal değeri yoktur, başkasına devredilemez ve nakde çevrilemez.
 
-### 4. VIP Abonelik & Ödeme Koşulları
+### 4. VIP Abonelik, Google Play Faturalandırma & Çapraz Lisans Koşulları
 * **Abonelik Modeli:** VIP üyelik (Silver, Gold, Platinum); aylık veya yıllık otomatik yenilenen dijital bir aboneliktir.
-* **Fiyatlandırma:** Fiyat, satın alma ekranında Apple App Store veya Google Play Store'un gösterdiği resmi tutardır (ülkeye göre yerel para birimi, döviz kuru ve vergiler dahil gösterilir).
-* **Ödeme Tahsilatı:** Ödeme, onayınızla doğrudan Apple Kimliği veya Google Play hesabınızdan tahsil edilir. Kredi kartı bilgilerinize biz asla erişmeyiz.
+* **Fiyatlandırma & Fatura:** Fiyat, satın alma ekranında Google Play Store (veya Apple App Store) tarafından gösterilen resmi tutardır. Satın alma işlemi tamamlandığında resmi vergi faturası ve işlem teyidi doğrudan Google Play tarafından kullanıcının kayıtlı Gmail adresine e-posta olarak gönderilir.
+* **Ödeme Tahsilatı:** Ödeme, onayınızla doğrudan Google Play faturalandırma motoru (In-App Billing) veya Apple Kimliği üzerinden tahsil edilir. Kredi kartı bilgilerinize biz asla erişmeyiz.
+* **Çapraz Platform VIP Transfer Anahtarı (GKY-VIP-...):** Kullanıcılar Android ➔ iOS veya yeni cihaza geçişte VIP Transfer Anahtarını kullanabilir. Bu anahtar kişiye özel ve tek kullanımlıktır; yeni cihaza aktarıldığında sil baştan süre verilmez, kullanıcının tam kalan gün süresi neyse aynen korunur.
 * **Otomatik Yenileme:** Abonelik, mevcut fatura döneminin bitiminden **en az 24 saat önce iptal edilmedikçe** otomatik olarak yenilenir. İptal işlemi cari dönemin sonunda yürürlüğe girer.
 * **Abonelik Yönetimi ve İptal:**
-  * **Apple (iOS):** Cihaz Ayarları > Apple Kimliği (Adınız) > Abonelikler > Gökyüzü Doktoru > "Aboneliği İptal Et".
   * **Google Play (Android):** Google Play Store > Profil Simgesi > Ödemeler ve Abonelikler > Abonelikler > Gökyüzü Doktoru > "Aboneliği İptal Et".
-* **Cayma Hakkı ve İade:** Anında ifa edilen dijital hizmetler kapsamında (6502 sayılı Tüketicinin Korunması Hakkında Kanun Madde 15/1-ğ uyarınca) satın alınan VIP aboneliklerde ücret iadesi yapılmaz; tüm iade talepleri ilgili mağazanın (Apple / Google) resmi iade kurallarına tabidir.
+  * **Apple (iOS):** Cihaz Ayarları > Apple Kimliği (Adınız) > Abonelikler > Gökyüzü Doktoru > "Aboneliği İptal Et".
+* **Cayma Hakkı ve İade İstisnası:** Anında ifa edilen dijital hizmetler kapsamında (6502 sayılı Tüketicinin Korunması Hakkında Kanun Madde 15/1-ğ uyarınca) satın alınan VIP aboneliklerde ücret iadesi yapılmaz; tüm iade talepleri ilgili mağazanın (Google / Apple) resmi iade kurallarına tabidir.
 
 ### 5. Kabul Edilebilir Kullanım & Güvenlik
 Kullanıcı;

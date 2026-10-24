@@ -61,12 +61,12 @@ class LegalDocumentScreen extends StatelessWidget {
           {
             'title': '2. İşlenen Kişisel Verileriniz',
             'body':
-                'Uygulamamızı kullanırken sağladığınız;\n• Kimlik Verileri: Ad, soyad, rumuz ve cinsiyet bilgisi.\n• Doğum Bilgileri: Doğum tarihi, kesin doğum saati, doğum yeri (ülke ve şehir) ve coğrafi enlem/boylam koordinatları.\n• İletişim & Bulut Senkronizasyon Verileri: E-posta adresi ve Google hesap eşleme bilgisi (isteğe bağlı: cihaz değişikliğinde veya Android ➔ iOS geçişinde harita ve VIP lisans haklarını korumak için).\n• Harita & Tercih Verileri: Hesaplanan doğum haritası gezegen konumları, açılar, notlar ve arşivlenmiş profiller.',
+                'Uygulamamızı kullanırken sağladığınız;\n• Kimlik Verileri: Ad, soyad, rumuz ve cinsiyet bilgisi.\n• Doğum Bilgileri: Doğum tarihi, kesin doğum saati, doğum yeri (ülke ve şehir) ve coğrafi enlem/boylam koordinatları.\n• İletişim, Google Girişi & Bulut Senkronizasyon Verileri: E-posta adresi, Android sistem hesap seçicisi (AccountManager) üzerinden bağlanan gerçek Google (Gmail) hesap kimliği, şifreli kurtarma ve yedekleme anahtarları (cihaz değişikliğinde veya Android ➔ iOS geçişinde harita ve VIP lisans haklarını korumak için).\n• E-Posta Yedekleme Verileri: Kullanıcının kendi talebiyle oluşturulan ve cihazın e-posta istemcisi aracılığıyla kullanıcının gelen kutusuna iletilen doğum haritası, kayıtlı danışan profilleri ve GKY-YEDEK kurtarma paketleri.\n• Harita & Tercih Verileri: Hesaplanan doğum haritası gezegen konumları, açılar, notlar, arşivlenmiş aile/danışan profilleri ve yerel takvimle çalışan sezon teması tercihleri.',
           },
           {
             'title': '3. Kişisel Verilerin İşlenme Amaçları',
             'body':
-                'Kişisel verileriniz aşağıdaki amaçlarla sınırlı olarak işlenmektedir:\n• Geocentric ve Placidus efemeris algoritmaları üzerinden kişiselleştirilmiş doğum haritası, yükselen burç ve gezegen transitlerinin hesaplanması.\n• Solar Return, Lunar Return, İkincil İlerletim ve Rektifikasyon gibi astrolojik hesaplamaların yapılması.\n• VIP üyelik ve arşivleme özelliklerinin kişiye özel olarak sunulması.\n• İsteğe bağlı olarak Google hesabı ile bağlanan kullanıcıların cihaz değişikliği (Android ➔ iPhone vb.) durumunda harita arşivini ve VIP lisans haklarını tek tıkla geri yükleyebilmesi.\n• Yasal mevzuattan kaynaklanan bilgi saklama ve güvenlik yükümlülüklerinin yerine getirilmesi.',
+                'Kişisel verileriniz aşağıdaki amaçlarla sınırlı olarak işlenmektedir:\n• Geocentric ve Placidus efemeris algoritmaları üzerinden kişiselleştirilmiş doğum haritası, yükselen burç ve gezegen transitlerinin hesaplanması.\n• Solar Return, Lunar Return, İkincil İlerletim ve Rektifikasyon gibi astrolojik hesaplamaların yapılması.\n• Google Play Store resmi In-App Billing abonelik satın alımları ile kullanıcı profilini eşleştirmek ve faturanın Google tarafından iletilmesini sağlamak.\n• VIP üyelik ve arşivleme özelliklerinin kişiye özel olarak sunulması.\n• Google hesabı ile bağlanan kullanıcıların cihaz değişikliği durumunda harita arşivini, işlevsel e-posta yedeklerini ve VIP lisans haklarını tek tıkla geri yükleyebilmesi.\n• Yasal mevzuattan kaynaklanan bilgi saklama ve güvenlik yükümlülüklerinin yerine getirilmesi.',
           },
           {
             'title': '4. Verilerin Aktarımı ve Üçüncü Taraflar',
@@ -84,12 +84,12 @@ class LegalDocumentScreen extends StatelessWidget {
           {
             'title': '1. Hangi Verileri Topluyoruz?',
             'body':
-                '• Hesap & Bulut Yedekleme Bilgileri: E-posta adresi ve isteğe bağlı Google hesabı eşlemesi (telefon değişiminde veya Android ➔ iOS geçişinde harita ve VIP haklarınızı kurtarabilmek için).\n'
+                '• Hesap, Google Girişi & Bulut Yedekleme Bilgileri: Android sistem hesap seçicisi (AccountManager) üzerinden seçilen gerçek Google (Gmail) adresi, kullanıcının talebiyle e-posta kutusuna gönderilen şifreli GKY-YEDEK harita kurtarma paketi ve VIP transfer anahtarları.\n'
                 '• Profil ve Doğum Bilgileri: Adınız/rumuzunuz, cinsiyetiniz, doğum tarihiniz, doğum saatiniz, doğum şehriniz ve coğrafi koordinatlarınız (Placidus haritası ve efemeris için zorunludur).\n'
                 '• Kullanıcı İçerikleri: Rektifikasyon geçmiş yaşam olay notları ve harita niyet metinleri.\n'
                 '• Kullanım Verileri: Kayıtlı harita profilleri (arşiv), tercihler ve VIP üyelik durumu.\n'
                 '• Reklam ve Cihaz Verileri: İsteğe bağlı ödüllü sponsorlu reklam izlendiğinde Google AdMob; reklam kimliği ve cihaz teknik verilerini işleyebilir.\n'
-                '• Satın Alma Bilgileri: VIP aboneliği doğrudan Apple App Store veya Google Play Store üzerinden alınır. Kredi kartı ve ödeme bilgilerinize biz asla erişmeyiz.',
+                '• Satın Alma & Fatura Bilgileri: VIP abonelik ödemeleri doğrudan Google Play Store veya Apple App Store resmi altyapısıyla işlenir. Kredi kartı verilerine geliştirici asla erişemez; satın alma faturası doğrudan Google tarafından kullanıcının Gmail adresine e-posta olarak gönderilir.',
           },
           {
             'title': '2. Verileri Neden Kullanıyoruz?',
@@ -174,13 +174,14 @@ class LegalDocumentScreen extends StatelessWidget {
                 'Temel astrolojik göstergeler ücretsiz sunulur. Ücretsiz kullanıcılar sponsorlu video reklam izleyerek ek analiz hakkı açabilirler. Bu hakların veya kredilerin hiçbir maddi değeri yoktur, devredilemez ve nakde çevrilemez.',
           },
           {
-            'title': '4. VIP Abonelik & Otomatik Yenileme',
+            'title': '4. VIP Abonelik, Google Play Faturalandırma & Çapraz Lisans',
             'body':
-                '• VIP üyelik, aylık veya yıllık otomatik yenilenen bir aboneliktir. Fiyatı satın alma anında mağazanın gösterdiği tutardır.\n'
-                '• Ödeme doğrudan Apple App Store veya Google Play hesabınızdan tahsil edilir. Kredi kartı bilgilerinize biz asla erişmeyiz.\n'
+                '• VIP üyelik (Silver, Gold, Platinum); aylık veya yıllık otomatik yenilenen bir aboneliktir. Fiyatı satın alma anında mağazanın gösterdiği tutardır.\n'
+                '• Ödeme doğrudan Google Play Store resmi In-App Billing (veya Apple App Store) hesabınızdan tahsil edilir. Kredi kartı bilgilerinize biz asla erişmeyiz. İşlem faturası doğrudan Google tarafından kayıtlı Gmail adresinize e-posta olarak gönderilir.\n'
+                '• Çapraz Platform VIP Transfer Anahtarı (GKY-VIP-...): Kullanıcılar cihaz değişimi yaptıklarında VIP lisanslarını aktarabilirler. Bu anahtar tek kullanımlıktır ve sil baştan süre vermek yerine kullanıcının hak ettiği tam kalan gün süresini korur.\n'
                 '• Abonelik, cari dönemin bitiminden en az 24 saat önce iptal edilmedikçe otomatik olarak yenilenir.\n'
-                '• İptal Adımları: iOS (Ayarlar > Apple Kimliği > Abonelikler > İptal Et); Android (Play Store > Profil > Ödemeler ve Abonelikler > İptal Et).\n'
-                '• Dijital ortamda anında ifa edilen hizmetler kapsamında (6502 sayılı Kanun Md. 15/1-ğ) mağaza kurallarına tabidir.',
+                '• İptal Adımları: Android (Google Play Store > Profil > Ödemeler ve Abonelikler > Abonelikler > İptal Et); iOS (Ayarlar > Apple Kimliği > Abonelikler > İptal Et).\n'
+                '• Dijital ortamda anında ifa edilen hizmetler kapsamında (6502 sayılı Kanun Md. 15/1-ğ) cayma hakkı istisnasına tabidir.',
           },
           {
             'title': '5. Kabul Edilebilir Kullanım & Güvenlik',
@@ -234,9 +235,10 @@ class LegalDocumentScreen extends StatelessWidget {
                 '6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği\'nin 15. maddesinin 1. fıkrasının (ğ) bendi uyarınca; "Elektronik ortamda anında ifa edilen hizmetler veya tüketiciye anında teslim edilen gayrimaddi mallara ilişkin sözleşmelerde tüketici CAYMA HAKKINI KULLANAMAZ." Satın alma tamamlanıp dijital içerik veya VIP yetkisi kullanıcıya tanımlandıktan sonra ücret iadesi yapılması hukuken ve teknik olarak mümkün değildir.',
           },
           {
-            'title': '3. Abonelik İptali ve Yenileme Durdurma',
+            'title': '3. Google Play Faturalandırma, E-posta Faturası & Abonelik İptali',
             'body':
-                'Kullanıcılar periyodik aboneliklerini (aylık/yıllık) diledikleri zaman bir sonraki fatura döneminden önce iptal edebilirler:\n• Apple (iOS): Ayarlar > [Apple Kimliği] > Abonelikler > Gökyüzü Doktoru > Aboneliği İptal Et\n• Google (Android): Google Play Store > Profil > Ödemeler ve Abonelikler > Gökyüzü Doktoru > Aboneliği İptal Et\nİptal durumunda mevcut dönemin sonuna kadar VIP haklar kesintisiz sürer.',
+                'Abonelik ödemeleri resmi Google Play In-App Billing güvencesiyle tahsil edilir ve satın alma anında Google tarafından kullanıcının kayıtlı Gmail adresine resmi vergi faturası/sipariş onayı e-posta olarak iletilir.\n\n'
+                'Kullanıcılar periyodik aboneliklerini (aylık/yıllık) diledikleri zaman bir sonraki fatura döneminden önce iptal edebilirler:\n• Google (Android): Google Play Store > Profil > Ödemeler ve Abonelikler > Gökyüzü Doktoru > Aboneliği İptal Et\n• Apple (iOS): Ayarlar > [Apple Kimliği] > Abonelikler > Gökyüzü Doktoru > Aboneliği İptal Et\nİptal durumunda mevcut dönemin sonuna kadar VIP haklar kesintisiz sürer; dönem sonunda yeni çekim yapılmaz.',
           },
           {
             'title': '4. Hatalı ve Mükerrer Çekimler',

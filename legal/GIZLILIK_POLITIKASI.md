@@ -1,6 +1,6 @@
 # GÖKYÜZÜ DOKTORU - GİZLİLİK POLİTİKASI (PRIVACY POLICY)
 
-**Son Güncelleme:** 13 Ekim 2026  
+**Son Güncelleme:** 24 Ekim 2026  
 **Uygulama Adı:** Gökyüzü Doktoru  
 **Geliştirici / Veri Sorumlusu:** Yiğithan Akman  
 **İletişim:** yigithanakman@gokyuzudoktoru.com  
@@ -9,18 +9,19 @@
 ---
 
 ### Giriş
-Gökyüzü Doktoru ("Uygulama") olarak kullanıcılarımızın mahremiyetine en yüksek düzeyde saygı gösteriyoruz. Bu Gizlilik Politikası; iOS ve Android mobil uygulamalarımızı kullandığınızda kişisel verilerinizin nasıl toplandığını, yapay zekâ entegrasyonlarımızı, veri güvenliğini ve yasal haklarınızı açıklar.
+Gökyüzü Doktoru ("Uygulama") olarak kullanıcılarımızın mahremiyetine en yüksek düzeyde saygı gösteriyoruz. Bu Gizlilik Politikası; iOS ve Android mobil uygulamalarımızı kullandığınızda kişisel verilerinizin nasıl toplandığını, Google Play resmi In-App Billing faturalandırma altyapısını, Android sistem hesap seçicisi ile gerçek Gmail entegrasyonunu, e-posta yedekleme sistemini, yapay zekâ entegrasyonlarımızı, veri güvenliğini ve yasal haklarınızı açıklar.
 
 ---
 
 ### 1. Hangi Verileri Topluyoruz?
-* **Hesap Bilgileri:** E-posta adresi ve şifre (şifreler şifrelenerek saklanır, bize dahi görünmez).
+* **Hesap ve Google Giriş Bilgileri:** E-posta adresi, Android sistem hesap seçicisi (AccountManager) üzerinden seçilen gerçek Google (Gmail) hesabı ve şifreli kurtarma anahtarları.
+* **İşlevsel E-Posta Yedekleme Verileri:** Kullanıcının Ayarlar ekranında "Şimdi Yedekle" butonunu tıklamasıyla cihazın e-posta istemcisi (Gmail vb.) üzerinden doğrudan kullanıcının kendi e-posta kutusuna gönderilen şifreli GKY-YEDEK harita yedeği ve VIP transfer anahtarları.
 * **Profil ve Doğum Verileri:** Adınız (veya rumuzunuz), cinsiyetiniz, doğum tarihiniz (gün/ay/yıl), kesin doğum saatiniz (saat/dakika), doğum şehri ve ülkesi, coğrafi enlem/boylam koordinatları. Bu veriler Placidus doğum haritası ve efemeris hesaplamaları için zorunludur.
 * **Anlık Coğrafi Konum (GPS):** Keldani Gezegen Saatleri ve NOAA gün doğumu/batımı döngülerini saniyesi saniyesine hesaplayabilmek amacıyla yalnızca kullanıcının talebi ve izniyle ön planda cihaz koordinatları kullanılır (asla arka planda izlenmez, sunuculara yüklenmez veya satılmaz).
 * **Yazdığınız İçerik:** Rektifikasyon geçmiş yaşam olay notları, doğum haritası soru ve niyet metinleri.
-* **Kullanım Verileri (Cihazınızda):** Kayıtlı harita profilleri (arşiv), günlük astrolojik notlar, ayarlarınız ve VIP üyelik durumu.
+* **Kullanım Verileri (Cihazınızda):** Kayıtlı harita profilleri (arşiv), günlük astrolojik notlar, ayarlarınız, yerel takvimle çalışan sezonluk temalar (Cadılar Bayramı vb.) ve VIP üyelik durumu.
 * **Reklam ve Cihaz Verileri:** İsteğe bağlı ödüllü sponsorlu reklam izlediğinizde Google AdMob; reklam kimliği, IP adresi, cihaz modeli ve işletim sistemi sürümü gibi teknik verileri işleyebilir.
-* **Satın Alma Bilgileri:** VIP abonelikleri ve rapor ödemeleri doğrudan **Apple App Store** veya **Google Play Store** üzerinden güvenle gerçekleştirilir. Kredi kartı ve ödeme bilgilerinize biz asla erişmeyiz; sistemimiz mağazadan yalnızca aboneliğin aktif/pasif durum bilgisini alır.
+* **Satın Alma ve Fatura Bilgileri:** VIP abonelikleri ve rapor ödemeleri doğrudan **Google Play Store resmi faturalandırma motoru (In-App Billing)** veya **Apple App Store** üzerinden güvenle gerçekleştirilir. Kredi kartı ve ödeme bilgilerinize biz asla erişmeyiz; satın alma faturası ve işlem teyidi doğrudan Google Play tarafından kullanıcının kayıtlı Gmail adresine resmi e-posta olarak gönderilir.
 
 ---
 
@@ -28,7 +29,8 @@ Gökyüzü Doktoru ("Uygulama") olarak kullanıcılarımızın mahremiyetine en 
 * Kişiselleştirilmiş doğum haritası, yükselen burç, ev yöneticilikleri ve gezegen konumlarını hesaplamak için,
 * İkincil İlerletim (Secondary Progressions), Solar Return, Lunar Return, Zodiacal Releasing, Firdarya ve Profeksiyon öngörü raporlarını üretmek için,
 * 10 sayfalık profesyonel PDF analiz kitapçığını oluşturmak için,
-* Kullanıcı hesabını doğrulamak ve arşivlenmiş harita profillerini yönetmek için,
+* Kullanıcı hesabını doğrulamak, Google Play resmi aboneliğini eşleştirmek ve arşivlenmiş harita profillerini yönetmek için,
+* Kullanıcının talebi doğrultusunda e-posta kutusuna harita yedekleme paketini iletmek ve cihazlar arası VIP aktarımını (GKY-VIP-...) güvenle sağlamak için,
 * VIP abonelik ve reklam sistemlerini işletmek için,
 * Uygulama güvenliğini sağlamak, hataları gidermek ve yasal yükümlülüklerimizi yerine getirmek için.
 

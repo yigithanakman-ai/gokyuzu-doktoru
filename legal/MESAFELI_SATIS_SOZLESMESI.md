@@ -1,6 +1,6 @@
 # GÖKYÜZÜ DOKTORU - MESAFELİ SATIŞ SÖZLEŞMESİ VE ÖN BİLGİLENDİRME FORMU
 
-**Tarih:** 13 Ekim 2026  
+**Tarih:** 24 Ekim 2026  
 **Yasal Dayanak:** 6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği  
 
 ---
@@ -13,7 +13,7 @@
 * **Web:** https://yigithanakman-ai.github.io/gokyuzu-doktoru/  
 
 **1.2. ALICI / TÜKETİCİ:**  
-* Uygulama üzerinden hesap oluşturan, VIP üyelik veya dijital rapor satın alan gerçek kişi.
+* Uygulama üzerinden hesap oluşturan, Google Play In-App Billing veya Apple Store aracılığıyla VIP üyelik veya dijital rapor satın alan gerçek kişi.
 
 ---
 
@@ -25,14 +25,15 @@
 ### MADDE 3 - SÖZLEŞME KONUSU HİZMET VE ÖDEME
 * **Hizmetin Tanımı:** Dijital astroloji analizleri, 10 sayfalık kişiselleştirilmiş PDF kitapçığı, ileri seviye öngörü modülleri ve VIP üyelik hakları.
 * **Teslimat Şekli:** Hizmet, elektronik ortamda anında kullanıma açılarak veya indirilebilir dijital dosya (PDF) formatında anında teslim edilir. Fiziki kargo veya posta gönderimi bulunmamaktadır.
-* **Fiyatlandırma:** Uygulama içi satın alma ekranında belirtilen ve tüm vergiler (KDV) dahil tutardır.
-* **Ödeme Kanalları:** Apple App Store In-App Purchase, Google Play Billing veya anlaşmalı yetkili ödeme kuruluşları.
+* **Fiyatlandırma & Fatura:** Uygulama içi satın alma ekranında belirtilen ve tüm vergiler (KDV) dahil tutardır. Satın alma işlemi tamamlandığında resmi vergi faturası ve işlem teyidi Google Play tarafından ALICI'nın kayıtlı Gmail adresine e-posta olarak gönderilir.
+* **Ödeme Kanalları:** Google Play Billing (In-App Billing), Apple App Store In-App Purchase veya anlaşmalı yetkili ödeme kuruluşları.
 
 ---
 
 ### MADDE 4 - GENEL HÜKÜMLER
 * ALICI, sözleşme konusu hizmetin temel nitelikleri, satış fiyatı, ödeme şekli ve teslimata ilişkin ön bilgileri okuyup bilgi sahibi olduğunu ve elektronik ortamda gerekli teyidi verdiğini beyan eder.
 * Hizmet, dijital ortamda anında ifa edilen gayri maddi nitelikte bir hizmet olduğundan, ödemenin onaylanmasıyla birlikte teslimat tamamlanmış kabul edilir.
+* Çapraz platform VIP Transfer Anahtarı (GKY-VIP-...) tek kullanımlıktır ve ALICI'nın cari aboneliğindeki tam kalan gün süresini yeni cihaza taşır.
 
 ---
 
@@ -43,7 +44,7 @@
 ---
 
 ### MADDE 6 - ABONELİK İPTALİ
-ALICI, devam eden periyodik aboneliklerini dilediği an bir sonraki fatura döneminden itibaren geçerli olmak üzere mağaza abonelik yönetim ekranlarından (iOS: Ayarlar > Abonelikler; Android: Play Store > Abonelikler) iptal edebilir. İptal edilen dönem için önceden ödenmiş bedelin kısmi iadesi yapılmaz, ancak ALICI dönem sonuna kadar tüm VIP haklarından faydalanmaya devam eder.
+ALICI, devam eden periyodik aboneliklerini dilediği an bir sonraki fatura döneminden itibaren geçerli olmak üzere mağaza abonelik yönetim ekranlarından (Android: Google Play Store > Profil > Ödemeler ve Abonelikler; iOS: Ayarlar > Abonelikler) iptal edebilir. İptal edilen dönem için önceden ödenmiş bedelin kısmi iadesi yapılmaz, ancak ALICI dönem sonuna kadar tüm VIP haklarından kesintisiz faydalanmaya devam eder. Dönem sonunda karttan yeni bir çekim yapılmaz.
 
 ---
 

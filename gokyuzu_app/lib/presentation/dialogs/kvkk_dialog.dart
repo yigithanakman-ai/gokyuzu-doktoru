@@ -20,9 +20,10 @@ class KvkkDialog {
           title: '2. İşlenen Kişisel Veriler',
           content:
               '• Kimlik Bilgileri: Ad, soyad, rumuz ve cinsiyet.\n'
-              '• İletişim & Senkronizasyon Bilgileri: E-posta adresi ve isteğe bağlı Google hesabı eşleme bilgisi (telefon değişiminde veya Android ➔ iOS geçişinde harita ve VIP lisans haklarını korumak için).\n'
+              '• İletişim, Google Girişi & Senkronizasyon Verileri: E-posta adresi, Android sistem hesap seçicisi (AccountManager) üzerinden bağlanan gerçek Google (Gmail) hesap kimliği, şifreli kurtarma ve yedekleme anahtarları (telefon değişiminde, cihaz sıfırlamada veya Android ➔ iOS geçişinde harita ve VIP lisans haklarını korumak için).\n'
+              '• E-Posta Yedekleme Verileri: Kullanıcının kendi talebiyle oluşturulan ve cihazın e-posta istemcisi aracılığıyla kullanıcının gelen kutusuna iletilen doğum haritası, kayıtlı danışan profilleri ve GKY-YEDEK kurtarma paketleri.\n'
               '• Kozmik & Doğum Verileri: Doğum tarihi, kesin doğum saati, doğum yeri şehri ve ülkesi (enlem/boylam koordinatları).\n'
-              '• Tercih & Not Verileri: Harita arşivi kayıtları, günlük astrolojik notlar ve hatırlatıcılar.',
+              '• Tercih & Not Verileri: Harita arşivi kayıtları, günlük astrolojik notlar, takvim hatırlatıcıları ve yerel takvimle çalışan sezon teması tercihleri.',
           icon: Icons.person_pin_rounded,
         ),
         _SectionData(
@@ -31,7 +32,8 @@ class KvkkDialog {
               '• Geocentric, Placidus ve Tropikal Batı efemeris algoritmalarıyla hassas doğum haritanızı hesaplamak,\n'
               '• Günlük transitler, anlık Ay fazı, Yanık Yol takvimi ve sabit yıldız etkilerini kişiselleştirmek,\n'
               '• Rektifikasyon ve öngörü analizlerini gerçekleştirmek,\n'
-              '• Kullanıcı hesap güvenliğini, arşivlenmiş profilleri ve cihazlar arası bulut senkronizasyonunu yönetmek.',
+              '• Google Play Store resmi abonelik satın alımları ile kullanıcı profilini eşleştirmek,\n'
+              '• Kullanıcı hesap güvenliğini, arşivlenmiş danışan/aile profillerini, işlevsel e-posta yedeklemesini ve cihazlar arası bulut senkronizasyonunu yönetmek.',
           icon: Icons.auto_awesome_rounded,
         ),
         _SectionData(
@@ -87,9 +89,11 @@ class KvkkDialog {
           icon: Icons.copyright_rounded,
         ),
         _SectionData(
-          title: '4. VIP Abonelik, Cayma Hakkı İstisnası & Ücret İadesi Yapılmaması',
+          title: '4. VIP Abonelik, Google Play Faturalandırma & Cayma Hakkı İstisnası',
           content:
-              'Dijital ortamda anında teslim edilen ve ifa edilen gayri maddi haklar kapsamında (6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği Madde 15/1-ğ uyarınca), satın alınan Silver, Gold ve Platinum VIP aboneliklerinde ve dijital analiz paketlerinde KESİNLİKLE ÜCRET İADESİ YAPILMAZ. Kullanıcı ödemeyi gerçekleştirerek cayma hakkından feragat ettiğini peşinen kabul ve taahhüt eder.',
+              '• Resmi Google Play Ödeme Güvencesi: Android cihazlarda tüm VIP abonelikler doğrudan Google Play Store resmi faturalandırma sistemi (In-App Billing) üzerinden tahsil edilir. Kredi kartı ve ödeme bilgileri doğrudan Google Ireland Limited / Google LLC güvencesindedir; satıcı kart bilgilerini asla göremez ve saklayamaz. Satın alma tamamlandığında Google Play tarafından kullanıcının kayıtlı Gmail adresine resmi vergi faturası ve işlem teyidi otomatik olarak e-posta ile gönderilir.\n'
+              '• Cayma Hakkı İstisnası (6502 Sayılı Kanun): Dijital ortamda anında teslim edilen ve ifa edilen gayri maddi haklar kapsamında (6502 sayılı Tüketicinin Korunması Hakkında Kanun ve Mesafeli Sözleşmeler Yönetmeliği Madde 15/1-ğ uyarınca), satın alınan Silver, Gold ve Platinum VIP aboneliklerinde ve anında üretilen PDF analizlerinde KESİNLİKLE ÜCRET İADESİ YAPILMAZ. Kullanıcı ödemeyi onaylayarak cayma hakkından feragat ettiğini peşinen kabul ve taahhüt eder.\n'
+              '• Çapraz Platform VIP Transfer Anahtarı (GKY-VIP-...): Kullanıcılar Android ➔ iOS veya yeni cihaza geçişte VIP Transfer Anahtarını kullanabilir. Bu anahtar kişiye özel ve tek kullanımlıktır; aktarılan yeni cihazda üyelik sil baştan yıllık verilmez, kullanıcının hak ettiği tam kalan süre (gün hesabı) neyse aynen korunur.',
           icon: Icons.money_off_csred_rounded,
           isWarning: true,
         ),
@@ -124,7 +128,9 @@ class KvkkDialog {
           title: '1. Toplanan Bilgiler ve Doğum Verileri',
           content:
               '• Kimlik & İletişim: Ad, soyad, e-posta adresi, cinsiyet.\n'
+              '• Google Hesap Girişi ve E-posta Yedekleme: Android sistem hesap seçicisi üzerinden bağlanan resmi Gmail adresi, kullanıcının talebiyle e-posta kutusuna gönderilen şifreli GKY-YEDEK harita kurtarma paketi ve VIP lisans anahtarı.\n'
               '• Kozmik Veriler: Doğum tarihi, kesin doğum saati, doğum şehri ve ülkesi (enlem/boylam koordinatları).\n'
+              '• Satın Alma & Faturalandırma: VIP abonelik ödemeleri doğrudan Google Play Store veya Apple App Store resmi altyapısıyla işlenir. Kart bilgileriniz geliştiriciye asla iletilmez; işlem faturası doğrudan Google tarafından kullanıcının Gmail adresine e-posta olarak gönderilir.\n'
               '• Cihaz Verileri: İşletim sistemi sürümü ve hata raporları (yalnızca kararlılık için).',
           icon: Icons.fingerprint_rounded,
         ),
@@ -166,9 +172,10 @@ class KvkkDialog {
           isWarning: true,
         ),
         _SectionData(
-          title: '3. Abonelik İptali ve Otomatik Yenileme',
+          title: '3. Google Play Faturalandırma, E-posta Faturası & Abonelik İptali',
           content:
-              'Aboneliğinizi Apple App Store veya Google Play Store Ayarlar > Abonelikler menüsünden dilediğiniz an tek tıkla iptal edebilirsiniz. İptal durumunda fatura dönemi sonuna kadar VIP haklarınız kesintisiz sürer.',
+              'Abonelik ödemeleri resmi Google Play In-App Billing güvencesiyle tahsil edilir ve satın alma anında Google tarafından kullanıcının kayıtlı Gmail adresine resmi vergi faturası/sipariş onayı e-posta olarak iletilir.\n\n'
+              'Aboneliğinizi Google Play Store (veya Apple App Store) Ayarlar > Abonelikler menüsünden dilediğiniz an tek tıkla iptal edebilirsiniz. İptal durumunda fatura dönemi sonuna kadar VIP haklarınız kesintisiz sürer; dönem sonunda yeni çekim yapılmaz.',
           icon: Icons.event_repeat_rounded,
         ),
       ],

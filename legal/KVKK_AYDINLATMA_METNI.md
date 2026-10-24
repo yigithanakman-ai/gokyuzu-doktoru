@@ -1,6 +1,6 @@
 # GÖKYÜZÜ DOKTORU - KVKK AYDINLATMA VE AÇIK RIZA METNİ
 
-**Son Güncelleme Tarihi:** 13 Ekim 2026  
+**Son Güncelleme Tarihi:** 24 Ekim 2026  
 **Veri Sorumlusu:** Gökyüzü Doktoru (Yiğithan Akman)  
 **İletişim:** yigithanakman@gokyuzudoktoru.com  
 
@@ -12,10 +12,11 @@
 ### 2. İşlenen Kişisel Veri Kategorileri
 Uygulamamızın çalışması, astrolojik hesaplamaların yapılması ve hizmetlerin sunulabilmesi için aşağıdaki veriler işlenmektedir:
 * **Kimlik Verileri:** Ad, soyad, kullanıcı adı/rumuz, cinsiyet.
-* **İletişim Verileri:** E-posta adresi (hesap oluşturma, güvenlik bildirimleri ve arşiv eşleme amacıyla).
+* **İletişim, Google Girişi & Senkronizasyon Verileri:** E-posta adresi, Android sistem hesap seçicisi (AccountManager) üzerinden bağlanan gerçek Google (Gmail) hesap kimliği, şifreli kurtarma anahtarları (telefon değişiminde, cihaz sıfırlamada veya Android ➔ iOS geçişinde harita ve VIP lisans haklarını korumak için).
+* **E-Posta Yedekleme Verileri:** Kullanıcının açık talebiyle oluşturulan ve cihazın e-posta istemcisi aracılığıyla kullanıcının gelen kutusuna iletilen doğum haritası, kayıtlı danışan profilleri ve GKY-YEDEK kurtarma paketleri.
 * **Kozmik & Doğum Verileri:** Doğum tarihi (gün/ay/yıl), kesin doğum saati (saat/dakika), doğum yeri şehri ve ülkesi, coğrafi koordinatlar (enlem ve boylam).
 * **Anlık Konum Verisi (GPS):** Keldani Gezegen Saatleri ve NOAA gün doğumu/batımı hesaplamaları amacıyla kullanıcının açık rızasıyla cihaz üzerinden alınan anlık enlem/boylam koordinatları (kesinlikle sunuculara aktarılmaz veya saklanmaz, yerel olarak işlenir).
-* **Kullanım & Arşiv Verileri:** Kaydedilen profil listeleri, harita notları, rektifikasyon olay kayıtları ve uygulama içi tercihler.
+* **Kullanım & Arşiv Verileri:** Kaydedilen profil listeleri, harita notları, rektifikasyon olay kayıtları, yerel takvimle çalışan sezonluk tema tercihleri (Cadılar Bayramı vb.) ve uygulama içi tercihler.
 * **Cihaz ve Güvenlik Verileri:** Cihaz modeli, işletim sistemi sürümü, IP adresi ve uygulama hata günlükleri (yalnızca sistem kararlılığı için).
 
 ### 3. Kişisel Verilerin İşlenme Amaçları ve Hukuki Sebepleri
@@ -23,7 +24,8 @@ Toplanan kişisel verileriniz, KVKK'nın 5. ve 6. maddelerinde belirtilen kişis
 * Geocentric, Tropikal Zodyak ve Placidus ev sistemi algoritmalarıyla doğum haritanızı hesaplamak,
 * Gündüz/gece haritası (sect), kıstırılmış burçlar, asalaletler ve Arap noktalarını tespit etmek,
 * İkincil İlerletim (Secondary Progressions), Solar Arc, Solar Return, Lunar Return, Firdarya, Profeksiyon ve Zodiacal Releasing öngörü modellerini kişiselleştirmek,
-* Kullanıcı hesap oluşturma ve güvenliğini sağlamak,
+* Google Play Store resmi In-App Billing abonelik satın alımları ile kullanıcı profilini eşleştirmek ve resmi faturanın Google tarafından iletilmesini sağlamak,
+* Kullanıcı hesap oluşturma, güvenliğini sağlama ve işlevsel e-posta yedekleme/kurtarma mekanizmasını yürütmek,
 * 10 sayfalık kişiselleştirilmiş astrolojik analiz raporunu (PDF) oluşturmak,
 * Yasal yükümlülükleri yerine getirmek ve olası hukuki uyuşmazlıklarda delil teşkil etmek.
 
