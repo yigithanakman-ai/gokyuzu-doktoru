@@ -1,5 +1,7 @@
+import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
+import 'package:flutter/services.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/services/app_translation_service.dart';
 import '../../data/services/in_app_purchase_service.dart';
@@ -39,13 +41,34 @@ class _VipUpgradeModalState extends State<VipUpgradeModal> {
   int _secretTapCount = 0;
   DateTime? _lastTapTime;
   bool _isProcessing = false;
+  StreamSubscription<VipTier>? _purchaseSub;
 
   @override
   void initState() {
     super.initState();
+    _purchaseSub = InAppPurchaseService.instance.onPurchaseCompleted.listen((tier) {
+      if (!mounted) return;
+      Navigator.of(context).pop();
+      widget.onPurchased?.call();
+      ScaffoldMessenger.of(context).showSnackBar(
+        SnackBar(
+          content: Text(
+            '🎉 Google Play aboneliğiniz onaylandı! ${tier.name.toUpperCase()} VIP ayrıcalıklarınız aktif edildi 👑',
+          ),
+          backgroundColor: const Color(0xFF1D5A3A),
+          duration: const Duration(seconds: 4),
+        ),
+      );
+    });
     InAppPurchaseService.instance.loadProducts().then((_) {
       if (mounted) setState(() {});
     });
+  }
+
+  @override
+  void dispose() {
+    _purchaseSub?.cancel();
+    super.dispose();
   }
 
   void _onCrownSecretTap() {
@@ -159,40 +182,20 @@ class _VipUpgradeModalState extends State<VipUpgradeModal> {
     setState(() => _isProcessing = true);
 
     try {
-      final storeName = Platform.isIOS ? 'Apple App Store' : 'Google Play Store';
-      debugPrint('[VipUpgradeModal] $packageName ($productId) seçildi. $storeName oturumu açılıyor...');
+      final storeName = Platform.isIOS ? 'Apple App Store' : 'Google Play';
+      debugPrint('[VipUpgradeModal] $packageName ($productId) seçildi. $storeName ödeme penceresi açılıyor...');
 
       final initiated = await InAppPurchaseService.instance.buySubscription(productId, tier);
 
-      if (!initiated) {
-        // Mağazanın doğrudan abonelik sayfasına yönlendirildi
-        if (mounted) {
-          ScaffoldMessenger.of(context).showSnackBar(
-            SnackBar(
-              content: Row(
-                children: [
-                  const Icon(Icons.shopping_bag_rounded, color: AppColors.starlightGold),
-                  const SizedBox(width: 8),
-                  Expanded(
-                    child: Text(
-                      '$storeName abonelik sayfası açılıyor...',
-                      style: const TextStyle(fontWeight: FontWeight.bold),
-                    ),
-                  ),
-                ],
-              ),
-              backgroundColor: const Color(0xFF221C38),
-              duration: const Duration(seconds: 4),
-            ),
-          );
-        }
+      if (!initiated && mounted) {
+        _showBillingSetupInfoDialog(productId, packageName);
       }
     } catch (e) {
       debugPrint('[VipUpgradeModal] Satın alma hatası: $e');
       if (mounted) {
         ScaffoldMessenger.of(context).showSnackBar(
           SnackBar(
-            content: Text('İşlem başlatılırken bir hata oluştu: $e'),
+            content: Text('Google Play ödeme penceresi başlatılırken hata oluştu: $e'),
             backgroundColor: AppColors.savageRed,
           ),
         );
@@ -200,6 +203,89 @@ class _VipUpgradeModalState extends State<VipUpgradeModal> {
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
+  }
+
+  void _showBillingSetupInfoDialog(String productId, String packageName) {
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF191528),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: AppColors.starlightGold, width: 1.2),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.payment_rounded, color: AppColors.starlightGold, size: 22),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Google Play Ödeme Penceresi',
+                style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: SingleChildScrollView(
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            crossAxisAlignment: CrossAxisAlignment.start,
+            children: [
+              Text(
+                'Seçilen Paket: $packageName\nÜrün Kimliği (Product ID): $productId',
+                style: const TextStyle(
+                  color: AppColors.starlightGold,
+                  fontSize: 12,
+                  fontWeight: FontWeight.bold,
+                ),
+              ),
+              const SizedBox(height: 10),
+              const Text(
+                'Google Play Ödeme Alt Penceresinin (Test Kartı / Abone Ol ekranı) açılabilmesi için:\n\n'
+                '1. Google Play Console ➔ Para Kazanma ➔ Ürünler ➔ Abonelikler menüsünde aşağıdaki Ürün Kimliklerinin (Product ID) oluşturulup Temel Planlarının (Base Plan) "Etkin (Active)" olması gerekir:\n'
+                '• gokyuzu_vip_platinum_year\n'
+                '• gokyuzu_vip_platinum_month\n'
+                '• gokyuzu_vip_gold_month\n'
+                '• gokyuzu_vip_silver_month\n\n'
+                '2. Uygulamanın Google Play Kapalı Test (Closed Testing) bağlantısından indirilmiş olması gerekir.',
+                style: TextStyle(color: Colors.white70, fontSize: 11.5, height: 1.4),
+              ),
+            ],
+          ),
+        ),
+        actions: [
+          TextButton.icon(
+            onPressed: () {
+              Clipboard.setData(ClipboardData(text: productId));
+              ScaffoldMessenger.of(context).showSnackBar(
+                SnackBar(
+                  content: Text('Ürün Kimliği kopyalandı: $productId'),
+                  backgroundColor: const Color(0xFF6C5CE7),
+                ),
+              );
+            },
+            icon: const Icon(Icons.copy_rounded, size: 15, color: AppColors.starlightGold),
+            label: const Text('Ürün Kodu Kopyala', style: TextStyle(color: AppColors.starlightGold, fontSize: 12)),
+          ),
+          ElevatedButton(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.starlightGold,
+              foregroundColor: Colors.black,
+            ),
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('Tamam', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  String _resolveDisplayPrice(String productId, String fallbackPrice) {
+    final p = InAppPurchaseService.instance.findMatchingProduct(productId);
+    if (p != null && p.id == productId && p.price.isNotEmpty) {
+      return p.price;
+    }
+    return fallbackPrice;
   }
 
   @override
@@ -328,7 +414,7 @@ class _VipUpgradeModalState extends State<VipUpgradeModal> {
                 const SizedBox(height: 18),
 
                 const Text(
-                  'Abonelik Seçenekleri (Doğrudan Mağaza Ödemesi):',
+                  'Abonelik Seçenekleri (Doğrudan Google Play Ödemesi):',
                   style: TextStyle(
                     fontSize: 12.5,
                     fontWeight: FontWeight.bold,
@@ -340,7 +426,7 @@ class _VipUpgradeModalState extends State<VipUpgradeModal> {
                 // Paket 1: Platinum Yıllık
                 _buildPackageCard(
                   title: 'Platinum VIP (Yıllık İndirimli)',
-                  price: '4.199 ₺ / yıl',
+                  price: _resolveDisplayPrice(InAppPurchaseService.platinumYearId, '4.199 ₺ / yıl'),
                   period: '12 Ay Peşin (Aylık ~10\$)',
                   badge: '%25 İNDİRİM 👑',
                   badgeColor: AppColors.starlightGold,
@@ -357,7 +443,7 @@ class _VipUpgradeModalState extends State<VipUpgradeModal> {
                 // Paket 2: Platinum Aylık
                 _buildPackageCard(
                   title: 'Platinum VIP (Aylık)',
-                  price: '459 ₺ / ay',
+                  price: _resolveDisplayPrice(InAppPurchaseService.platinumMonthId, '459 ₺ / ay'),
                   period: 'Aylık Abonelik (13\$)',
                   badge: 'TAM ERİŞİM 💎',
                   badgeColor: AppColors.starlightGold,
@@ -374,7 +460,7 @@ class _VipUpgradeModalState extends State<VipUpgradeModal> {
                 // Paket 3: Gold Aylık
                 _buildPackageCard(
                   title: 'Gold VIP (Altın Paket)',
-                  price: '319 ₺ / ay',
+                  price: _resolveDisplayPrice(InAppPurchaseService.goldMonthId, '319 ₺ / ay'),
                   period: 'Aylık Abonelik (9\$)',
                   badge: 'EN POPÜLER ⭐',
                   badgeColor: AppColors.pastelMint,
@@ -391,7 +477,7 @@ class _VipUpgradeModalState extends State<VipUpgradeModal> {
                 // Paket 4: Silver Aylık
                 _buildPackageCard(
                   title: 'Silver VIP (Gümüş Paket)',
-                  price: '179 ₺ / ay',
+                  price: _resolveDisplayPrice(InAppPurchaseService.silverMonthId, '179 ₺ / ay'),
                   period: 'Aylık Abonelik (5\$)',
                   badge: 'BAŞLANGIÇ 🌙',
                   badgeColor: AppColors.pastelLavender,
@@ -413,7 +499,7 @@ class _VipUpgradeModalState extends State<VipUpgradeModal> {
                       if (context.mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           const SnackBar(
-                            content: Text('Satın alımlarınız kontrol ediliyor ve güncelleniyor...'),
+                            content: Text('Google Play satın alımlarınız kontrol ediliyor ve güncelleniyor...'),
                             backgroundColor: Color(0xFF221C38),
                           ),
                         );
@@ -524,19 +610,27 @@ class _VipUpgradeModalState extends State<VipUpgradeModal> {
                         ),
                       ],
                     ),
-                    ElevatedButton(
+                    ElevatedButton.icon(
                       style: ElevatedButton.styleFrom(
-                        backgroundColor: isHighlight ? AppColors.starlightGold : Colors.white12,
+                        backgroundColor: isHighlight ? AppColors.starlightGold : const Color(0xFF2B2440),
                         foregroundColor: isHighlight ? Colors.black : Colors.white,
-                        padding: const EdgeInsets.symmetric(horizontal: 16, vertical: 8),
+                        side: BorderSide(
+                          color: isHighlight ? AppColors.starlightGold : AppColors.starlightGold.withValues(alpha: 0.5),
+                        ),
+                        padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 8),
                         minimumSize: Size.zero,
                         shape: RoundedRectangleBorder(
                           borderRadius: BorderRadius.circular(10),
                         ),
                       ),
-                      onPressed: onTap,
-                      child: Text(
-                        isHighlight ? 'Hemen Abone Ol' : 'Seç',
+                      onPressed: _isProcessing ? null : onTap,
+                      icon: Icon(
+                        Icons.play_arrow_rounded,
+                        size: 15,
+                        color: isHighlight ? Colors.black : AppColors.starlightGold,
+                      ),
+                      label: Text(
+                        isHighlight ? 'Abone Ol' : 'Seç & Öde',
                         style: const TextStyle(fontSize: 12, fontWeight: FontWeight.bold),
                       ),
                     ),

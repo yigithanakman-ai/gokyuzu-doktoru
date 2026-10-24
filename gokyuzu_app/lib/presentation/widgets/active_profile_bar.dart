@@ -310,14 +310,27 @@ class ActiveProfileBar extends StatelessWidget {
                     ),
                     const SizedBox(height: 2),
                     Text(
-                      '${current.name} • ☀️ ${current.sunSign} / 🌅 ${current.risingSign}',
+                      current.name,
                       style: const TextStyle(
-                        fontSize: 12.5,
-                        fontWeight: FontWeight.bold,
+                        fontSize: 13,
+                        fontWeight: FontWeight.w900,
                         color: Colors.white,
                       ),
                       maxLines: 1,
                       overflow: TextOverflow.ellipsis,
+                    ),
+                    const SizedBox(height: 1),
+                    FittedBox(
+                      fit: BoxFit.scaleDown,
+                      alignment: Alignment.centerLeft,
+                      child: Text(
+                        '☀️ ${current.sunSign} • 🌅 Yükselen ${current.risingSign}',
+                        style: const TextStyle(
+                          fontSize: 11.5,
+                          fontWeight: FontWeight.w600,
+                          color: AppColors.starlightGold,
+                        ),
+                      ),
                     ),
                   ],
                 ),

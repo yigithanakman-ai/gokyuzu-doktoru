@@ -23,8 +23,8 @@ class CosmicThemeService {
     final m = now.month;
     final d = now.day;
 
-    // 1. Cadılar Bayramı / Samhain (24 Ekim - 2 Kasım)
-    if ((m == 10 && d >= 24) || (m == 11 && d <= 2)) {
+    // 1. Cadılar Bayramı / Samhain (15 Ekim - 5 Kasım)
+    if ((m == 10 && d >= 15) || (m == 11 && d <= 5)) {
       return CosmicSeason.halloween;
     }
 
@@ -46,8 +46,26 @@ class CosmicThemeService {
     return CosmicSeason.standard;
   }
 
-  /// Anlık aktif sezon
-  static CosmicSeason get currentSeason => _overrideSeason ?? _detectCurrentSeason();
+  /// Anlık aktif sezon (Tarih değiştiyse seasonNotifier'ı da otomatik senkronize eder)
+  static CosmicSeason get currentSeason {
+    final detected = _overrideSeason ?? _detectCurrentSeason();
+    if (seasonNotifier.value != detected) {
+      WidgetsBinding.instance.addPostFrameCallback((_) {
+        if (seasonNotifier.value != detected) {
+          seasonNotifier.value = detected;
+        }
+      });
+    }
+    return detected;
+  }
+
+  /// Uygulama açıldığında veya ön plana geldiğinde aktif sezonu tazeler
+  static void refreshSeason() {
+    final detected = _overrideSeason ?? _detectCurrentSeason();
+    if (seasonNotifier.value != detected) {
+      seasonNotifier.value = detected;
+    }
+  }
 
   /// Demo / Test için sezonu zorla ayarlar
   static void setOverrideSeason(CosmicSeason? season) {

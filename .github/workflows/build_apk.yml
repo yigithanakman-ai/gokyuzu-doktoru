@@ -75,34 +75,30 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.14-build20
-          name: "📱 Gökyüzü Doktoru - v1.0.14 (Sürüm Kodu 20 & Solar Fire Asteroit Kalibrasyonu, Kesintisiz Bildirimler ve Bulut/VIP Aktarımı)"
+          tag_name: v1.0.14-build21
+          name: "📱 Gökyüzü Doktoru - v1.0.14 (Sürüm Kodu 21 & Google Play Resmi Ödeme Sayfası, Gerçek Gmail Girişi, E-posta Yedekleme, Cadılar Bayramı Teması ve Taşma Düzeltmeleri)"
           body: |
-            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.14 / Sürüm Kodu 20)
+            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.14 / Sürüm Kodu 21)
 
             - **`gokyuzu-doktoru.apk`**: Kendi Android telefonunuzda doğrudan test edip kullanmak için yükleme dosyası (İmzalı, Obfuscated).
-            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı, Sürüm Kodu 20, ProGuard & R8 Korumalı).
+            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı, Sürüm Kodu 21, In-App Billing İzinli, ProGuard & R8 Korumalı).
 
-            #### 🌟 Bu Sürümdeki Büyük Yenilikler (Build 20):
-            1. **🪐 Solar Fire & Astro Gold Birebir Uyumlu Asteroit Kalibrasyonu**:
-               - Swiss Ephemeris JPL DE441 ephemeris motoru ile tam senkronize asteroit algoritmaları entegre edildi.
-               - Pallas, Ceres, Lilith (Kara Ay), Juno, Vesta ve Chiron yerleşimleri, burç geçişleri ve retro hareketleri Solar Fire ile 0° 0' mutlak doğrulukla eşitlendi.
-               - 6 Mart 1991 Bolu 10:07 referans haritasında Pallas 15° 15' Başak Retro, Ceres 3° 47' Akrep Retro, Lilith 24° 23' Yay, Juno 17° 05' Oğlak, Vesta 26° 53' Boğa tam eşleşti.
-            2. **⏰ Kesintisiz Arka Plan & Kilit Ekranı Bildirim Motoru (Deep Sleep / Doze Fix)**:
-               - Android `alarmClock` modu ve `exactAllowWhileIdle` ile uygulama kapalıyken, pil tasarrufunda veya derin uykudayken dahi bildirimlerin tam vaktinde kilit ekranına düşmesi garantilendi.
-               - `fullScreenIntent` desteği ve yüksek öncelikli bildirim kanalları ile gecikmesiz uyandırma sağlandı.
-            3. **☁️ Bulut Hesap & Google Eşitleme (Cloud Account Sync)**:
-               - Kullanıcılar tek tıkla Google hesaplarını bağlayabilir; doğum haritalarını, transit kayıtlarını, günlük notlarını ve kişisel ayarlarını güvenle buluta yedekleyip diledikleri cihazda geri yükleyebilir.
-            4. **🔑 Tek Kullanımlık & Kalan Süre Korumalı VIP Transfer Anahtarı (Cross-Platform VIP)**:
-               - Android'den iOS'a veya yeni bir Android cihaza geçerken VIP abonelik süresi kaybolmaz.
-               - 1 yıllık VIP alıp 4 ay kullanan kullanıcı yeni cihaza geçtiğinde kalan süresi (ör. 8 ay / 245 gün) neyse tam olarak o süre geçerli olur; asla sıfırdan yıllık süre verilmez ve süre heba olmaz.
-               - Her VIP kodu FNV-1a sağlama toplamlı, tek kullanımlık (single-use) ve manipülasyona karşı kriptografik olarak kilitlidir.
-            5. **⚙️ Yepyeni Kapsamlı Ayarlar Ekranı (`SettingsScreen`)**:
-               - Ana Ekran ve Profil ekranından erişilebilen modern ayarlar menüsü.
-               - Bulut Eşitleme, VIP Kalan Gün Sayacı ve Transfer Kodu Yönetimi, Detaylı Bildirim Anahtarları, Dil Tercihleri ve Hesap Yönetimi tek merkezde toplandı.
-            6. **⚖️ Güncellenmiş KVKK, Gizlilik Sözleşmesi ve Yasal Metinler**:
-               - İsteğe bağlı bulut hesap eşitleme ve çapraz cihaz veri aktarımına ilişkin aydınlatma metinleri yasal uyumlulukla güncellendi.
-            7. **🛡️ Siber Güvenlik, R8/ProGuard Karartma & 78/78 Otomasyon Test Onayı**.
+            #### 🌟 Bu Sürümdeki Büyük Yenilikler & Düzeltmeler (Build 21):
+            1. **💳 Resmi Google Play İçi Ödeme Sayfası (In-App Billing Sheet)**:
+               - VIP abonelik ve VIP paketlerindeki tüm "Seç" butonları doğrudan Android Google Play faturalandırma alt sayfasına (`BillingClient.launchBillingFlow` & `GooglePlayPurchaseParam`) yönlendirir.
+               - Tarayıcı veya harici abonelik yönetim sayfasına (`subscriptions`) yönlendiren eski kodlar tamamen temizlendi. Test kartı ile satın alımlar doğrudan resmi Google Play faturası ve e-postası üretir.
+            2. **✉️ Gerçek ve İşlevsel E-posta Yedekleme & Geri Yükleme**:
+               - Ayarlar ekranında girilen e-posta adresine kullanıcının doğum haritası, kayıtlı aile/danışan profilleri, tek kullanımlık VIP transfer anahtarı ve `GKY-YEDEK-...` geri yükleme kodu gerçek e-posta olarak iletilir.
+               - Kullanıcı gelen kutusundaki bu kodla veya Google senkronizasyonuyla haritalarını tek tıkla kurtarabilir.
+            3. **🔑 Gerçek Google (Gmail) ile Giriş & Hesap Seçimi**:
+               - Giriş ve Üyelik ekranlarına (`AuthScreen`) ve Ayarlar ekranına (`SettingsScreen`) Android'in resmi sistem hesap seçicisi (`AccountManager`) entegre edildi.
+               - Kullanıcı cihazındaki gerçek `@gmail.com` hesabını tek dokunuşla seçebilir veya Google'ın resmi giriş ekranından yeni hesap ekleyebilir.
+            4. **🎃 Büyük Turuncu Cadılar Bayramı Kozmik Teması**:
+               - Cadılar Bayramı sezonu (15 Ekim - 5 Kasım) otomatik algılama ve anında ekran yenileme desteğiyle HomeScreen'de göz alıcı turuncu parlak balkabağı kartı (`#FF7518`), gezegen kostümleri (`🍁`, `🦇`, `👻`, `🧙‍♀️`) ve özel atmosferiyle aktif hale getirildi.
+            5. **📐 Ekran Taşma ve Kırpılma Düzeltmeleri (UI Overflows Fixed)**:
+               - Üst başlık çubuğu responsive 2 katmanlı hale getirildi; "MERHABA, YİĞİTHAN AKMAN" artık asla "MERHA..." şeklinde kırpılmaz.
+               - Aktif Harita kartında isim ve burç bilgileri responsive düzene alındı; taşma giderildi.
+               - Yükselen burç rozetindeki `👻` hayalet emojisi ve Instagram Story paylaşım butonundaki `YENİ` rozeti kart sınırları içine tam oturtuldu.
           files: |
             gokyuzu-doktoru.apk
             gokyuzu-doktoru.aab

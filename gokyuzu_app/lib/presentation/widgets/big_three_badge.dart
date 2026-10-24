@@ -26,7 +26,7 @@ class BigThreeBadge extends StatelessWidget {
         final emoji = CosmicThemeService.getPlanetCostumeEmoji(label);
 
         return Container(
-          padding: const EdgeInsets.symmetric(horizontal: 14, vertical: 12),
+          padding: const EdgeInsets.symmetric(horizontal: 8, vertical: 10),
           decoration: BoxDecoration(
             color: accentColor.withValues(alpha: 0.12),
             borderRadius: BorderRadius.circular(18),
@@ -38,33 +38,39 @@ class BigThreeBadge extends StatelessWidget {
           child: Column(
             mainAxisSize: MainAxisSize.min,
             children: [
-              Row(
-                mainAxisSize: MainAxisSize.min,
-                children: [
-                  Icon(icon, size: 14, color: accentColor),
-                  const SizedBox(width: 4),
-                  Text(
-                    AppTranslationService.tr(label).toUpperCase(),
-                    style: TextStyle(
-                      fontSize: 10,
-                      fontWeight: FontWeight.w700,
-                      letterSpacing: 0.8,
-                      color: accentColor,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Row(
+                  mainAxisSize: MainAxisSize.min,
+                  children: [
+                    Icon(icon, size: 13, color: accentColor),
+                    const SizedBox(width: 3),
+                    Text(
+                      AppTranslationService.tr(label).toUpperCase(),
+                      style: TextStyle(
+                        fontSize: 10,
+                        fontWeight: FontWeight.w700,
+                        letterSpacing: 0.5,
+                        color: accentColor,
+                      ),
                     ),
-                  ),
-                  if (emoji != null) ...[
-                    const SizedBox(width: 4),
-                    Text(emoji, style: const TextStyle(fontSize: 12)),
+                    if (emoji != null) ...[
+                      const SizedBox(width: 3),
+                      Text(emoji, style: const TextStyle(fontSize: 11.5)),
+                    ],
                   ],
-                ],
+                ),
               ),
               const SizedBox(height: 4),
-              Text(
-                AppTranslationService.signName(sign),
-                style: const TextStyle(
-                  fontSize: 15,
-                  fontWeight: FontWeight.bold,
-                  color: AppColors.textPrimary,
+              FittedBox(
+                fit: BoxFit.scaleDown,
+                child: Text(
+                  AppTranslationService.signName(sign),
+                  style: const TextStyle(
+                    fontSize: 14.5,
+                    fontWeight: FontWeight.bold,
+                    color: AppColors.textPrimary,
+                  ),
                 ),
               ),
             ],

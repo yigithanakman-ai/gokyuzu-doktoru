@@ -2,6 +2,7 @@ import 'package:flutter/material.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/services/storage_service.dart';
 import '../../data/services/app_translation_service.dart';
+import '../../data/services/cloud_account_service.dart';
 import '../dialogs/kvkk_dialog.dart';
 import 'onboarding_input_screen.dart';
 import 'home_screen.dart';
@@ -160,6 +161,203 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
     if (!mounted) return;
     setState(() => _isLoading = false);
     _proceedToApp();
+  }
+
+  Future<void> _handleGoogleSignIn() async {
+    if (!_checkConsent()) return;
+
+    setState(() {
+      _errorMessage = null;
+      _isLoading = true;
+    });
+
+    try {
+      final account = await CloudAccountService.signInWithNativeGoogleAccount();
+      if (!mounted) return;
+
+      if (account != null && account.email.contains('@')) {
+        final chosenEmail = account.email.trim();
+        final localPart = chosenEmail.split('@').first;
+        final parts = localPart.split(RegExp(r'[._\-]'));
+        final inferredName = _registerNameController.text.trim().isNotEmpty
+            ? _registerNameController.text.trim()
+            : (parts.isNotEmpty && parts.first.isNotEmpty
+                ? '${parts.first[0].toUpperCase()}${parts.first.substring(1)}'
+                : 'Kozmik');
+        final inferredSurname = _registerSurnameController.text.trim().isNotEmpty
+            ? _registerSurnameController.text.trim()
+            : (parts.length > 1 && parts[1].isNotEmpty
+                ? '${parts[1][0].toUpperCase()}${parts[1].substring(1)}'
+                : 'Gezgin');
+
+        await StorageService.saveUserAccount(
+          name: inferredName,
+          surname: inferredSurname,
+          email: chosenEmail,
+          gender: _selectedGender,
+        );
+
+        if (!mounted) return;
+        setState(() => _isLoading = false);
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '✅ Google (Gmail) hesabınız bağlandı: $chosenEmail',
+            ),
+            backgroundColor: Colors.green.shade700,
+          ),
+        );
+        _proceedToApp();
+        return;
+      }
+
+      setState(() => _isLoading = false);
+      _showManualGmailInputDialog();
+    } catch (_) {
+      if (!mounted) return;
+      setState(() => _isLoading = false);
+      _showManualGmailInputDialog();
+    }
+  }
+
+  void _showManualGmailInputDialog() {
+    final gmailCtrl = TextEditingController(
+      text: _loginEmailController.text.trim().isNotEmpty
+          ? _loginEmailController.text.trim()
+          : _registerEmailController.text.trim(),
+    );
+    showDialog(
+      context: context,
+      builder: (ctx) => AlertDialog(
+        backgroundColor: const Color(0xFF191528),
+        shape: RoundedRectangleBorder(
+          borderRadius: BorderRadius.circular(20),
+          side: const BorderSide(color: AppColors.starlightGold, width: 1.2),
+        ),
+        title: const Row(
+          children: [
+            Icon(Icons.mail_rounded, color: AppColors.starlightGold, size: 22),
+            SizedBox(width: 8),
+            Expanded(
+              child: Text(
+                'Gmail Hesabınızla Giriş Yapın',
+                style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
+              ),
+            ),
+          ],
+        ),
+        content: Column(
+          mainAxisSize: MainAxisSize.min,
+          crossAxisAlignment: CrossAxisAlignment.start,
+          children: [
+            const Text(
+              'Google Play aboneliklerinizin ve harita yedeklerinizin eşleşmesi için gerçek Gmail adresinizi giriniz:',
+              style: TextStyle(color: Colors.white70, fontSize: 12),
+            ),
+            const SizedBox(height: 12),
+            TextField(
+              controller: gmailCtrl,
+              keyboardType: TextInputType.emailAddress,
+              style: const TextStyle(color: Colors.white, fontSize: 13.5),
+              decoration: InputDecoration(
+                hintText: 'ornek@gmail.com',
+                hintStyle: const TextStyle(color: Colors.white38),
+                prefixIcon: const Icon(Icons.alternate_email_rounded, color: AppColors.starlightGold, size: 18),
+                filled: true,
+                fillColor: Colors.white.withValues(alpha: 0.06),
+                border: OutlineInputBorder(
+                  borderRadius: BorderRadius.circular(12),
+                  borderSide: const BorderSide(color: Colors.white24),
+                ),
+              ),
+            ),
+          ],
+        ),
+        actions: [
+          TextButton(
+            onPressed: () => Navigator.of(ctx).pop(),
+            child: const Text('İptal', style: TextStyle(color: Colors.white54)),
+          ),
+          ElevatedButton.icon(
+            style: ElevatedButton.styleFrom(
+              backgroundColor: AppColors.starlightGold,
+              foregroundColor: Colors.black,
+              shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(10)),
+            ),
+            onPressed: () async {
+              final email = gmailCtrl.text.trim();
+              if (!_isValidEmail(email)) {
+                ScaffoldMessenger.of(context).showSnackBar(
+                  const SnackBar(
+                    content: Text('Lütfen geçerli bir Gmail / e-posta adresi giriniz.'),
+                    backgroundColor: Colors.redAccent,
+                  ),
+                );
+                return;
+              }
+              Navigator.of(ctx).pop();
+              await CloudAccountService.linkGoogleAccount(
+                email: email,
+                displayName: _registerNameController.text.trim().isNotEmpty
+                    ? _registerNameController.text.trim()
+                    : email.split('@').first,
+              );
+              await StorageService.saveUserAccount(
+                name: _registerNameController.text.trim().isNotEmpty
+                    ? _registerNameController.text.trim()
+                    : email.split('@').first,
+                surname: _registerSurnameController.text.trim(),
+                email: email,
+                gender: _selectedGender,
+              );
+              if (!mounted) return;
+              _proceedToApp();
+            },
+            icon: const Icon(Icons.check_circle_rounded, size: 16),
+            label: const Text('Gmail ile Devam Et', style: TextStyle(fontWeight: FontWeight.bold)),
+          ),
+        ],
+      ),
+    );
+  }
+
+  Widget _buildGoogleSignInButton() {
+    return SizedBox(
+      width: double.infinity,
+      height: 48,
+      child: OutlinedButton.icon(
+        onPressed: _isLoading ? null : _handleGoogleSignIn,
+        style: OutlinedButton.styleFrom(
+          backgroundColor: Colors.white.withValues(alpha: 0.07),
+          foregroundColor: Colors.white,
+          side: const BorderSide(color: AppColors.starlightGold, width: 1.2),
+          shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(14)),
+        ),
+        icon: Container(
+          padding: const EdgeInsets.all(4),
+          decoration: const BoxDecoration(
+            color: Colors.white,
+            shape: BoxShape.circle,
+          ),
+          child: const Text(
+            'G',
+            style: TextStyle(
+              color: Color(0xFF4285F4),
+              fontWeight: FontWeight.w900,
+              fontSize: 13,
+            ),
+          ),
+        ),
+        label: Text(
+          AppTranslationService.tr('Google (Gmail) ile Gerçek Hesap Seç & Giriş Yap'),
+          style: const TextStyle(
+            fontSize: 12.5,
+            fontWeight: FontWeight.bold,
+            color: Colors.white,
+          ),
+        ),
+      ),
+    );
   }
 
   @override
@@ -628,6 +826,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                   ),
           ),
         ),
+        const SizedBox(height: 12),
+        _buildGoogleSignInButton(),
       ],
     );
   }
@@ -690,6 +890,8 @@ class _AuthScreenState extends State<AuthScreen> with SingleTickerProviderStateM
                   ),
           ),
         ),
+        const SizedBox(height: 12),
+        _buildGoogleSignInButton(),
       ],
     );
   }

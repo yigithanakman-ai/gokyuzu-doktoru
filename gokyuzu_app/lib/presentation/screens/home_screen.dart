@@ -110,6 +110,7 @@ class _HomeScreenState extends State<HomeScreen> {
   @override
   void initState() {
     super.initState();
+    CosmicThemeService.refreshSeason();
     ActiveProfileService.activeProfileNotifier.addListener(_onActiveProfileChanged);
     _checkVipStatus();
     _fetchDailyHoroscope();
@@ -711,152 +712,186 @@ class _HomeScreenState extends State<HomeScreen> {
               child: Column(
                 crossAxisAlignment: CrossAxisAlignment.start,
                 children: [
-                  // Top Bar
+                  // Top Bar (Taşmasız 2 Katmanlı Responsive Başlık & Aksiyon İkonları)
                   Row(
                     mainAxisAlignment: MainAxisAlignment.spaceBetween,
+                    crossAxisAlignment: CrossAxisAlignment.center,
                     children: [
-                      Expanded(
-                        child: Column(
-                          crossAxisAlignment: CrossAxisAlignment.start,
-                          children: [
-                            Text(
-                              AppTranslationService.tr('KOZMİK DOKTOR'),
-                              style: Theme.of(context).textTheme.labelSmall?.copyWith(
-                                    color: AppColors.pastelLavender,
-                                    letterSpacing: 1.5,
-                                  ),
-                            ),
-                            const SizedBox(height: 2),
-                            Text(
-                              '${AppTranslationService.tr('Merhaba')}, ${_capitalize(_effectiveProfile.name)}',
-                              maxLines: 1,
-                              overflow: TextOverflow.ellipsis,
-                              style: Theme.of(context)
-                                  .textTheme
-                                  .displayMedium
-                                  ?.copyWith(fontSize: 22),
-                            ),
-                            const SizedBox(height: 6),
-                            InkWell(
-                              onTap: () async {
-                                await Navigator.of(context).push(
-                                  MaterialPageRoute(
-                                    builder: (_) => ProfileScreen(profile: widget.profile),
-                                  ),
-                                );
-                                _checkVipStatus();
-                              },
-                              onLongPress: () => _showCosmicSeasonPickerModal(context),
-                              borderRadius: BorderRadius.circular(20),
-                              child: Container(
-                                padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 4),
-                                decoration: BoxDecoration(
-                                  color: _isVipUnlocked
-                                      ? const Color(0xFFFFD700).withAlpha(35)
-                                      : Colors.white.withAlpha(16),
-                                  borderRadius: BorderRadius.circular(20),
-                                  border: Border.all(
-                                    color: _isVipUnlocked
-                                        ? const Color(0xFFFFD700).withAlpha(140)
-                                        : Colors.white24,
-                                    width: 1,
-                                  ),
-                                ),
-                                child: Row(
-                                  mainAxisSize: MainAxisSize.min,
-                                  children: [
-                                    Icon(
-                                      _isVipUnlocked
-                                          ? Icons.stars_rounded
-                                          : Icons.account_circle_outlined,
-                                      size: 14,
-                                      color: _isVipUnlocked
-                                          ? const Color(0xFFFFD700)
-                                          : AppColors.pastelLavender,
-                                    ),
-                                    const SizedBox(width: 5),
-                                    Text(
-                                      _isVipUnlocked
-                                          ? AppTranslationService.tr('VIP Profil & Üyelik')
-                                          : AppTranslationService.tr('Profil & Giriş / Kayıt'),
-                                      style: TextStyle(
-                                        fontSize: 11.5,
-                                        fontWeight: FontWeight.bold,
-                                        color: _isVipUnlocked
-                                            ? const Color(0xFFFFD700)
-                                            : Colors.white,
-                                      ),
-                                    ),
-                                    const SizedBox(width: 4),
-                                    const Icon(
-                                      Icons.arrow_forward_ios_rounded,
-                                      size: 10,
-                                      color: Colors.white54,
-                                    ),
-                                  ],
-                                ),
+                      Flexible(
+                        child: Text(
+                          AppTranslationService.tr('KOZMİK DOKTOR'),
+                          maxLines: 1,
+                          overflow: TextOverflow.ellipsis,
+                          style: Theme.of(context).textTheme.labelSmall?.copyWith(
+                                color: CosmicThemeService.isHalloween
+                                    ? const Color(0xFFFF7518)
+                                    : AppColors.pastelLavender,
+                                letterSpacing: 1.4,
+                                fontWeight: FontWeight.w800,
                               ),
-                            ),
-                          ],
                         ),
                       ),
-                  const SizedBox(width: 4),
-                  IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    onPressed: () => _showLanguageSelectionSheet(context),
-                    icon: Container(
-                      padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
-                      decoration: BoxDecoration(
-                        borderRadius: BorderRadius.circular(12),
-                        color: Colors.white.withAlpha(20),
-                        border: Border.all(color: Colors.white24),
-                      ),
-                      child: Row(
+                      Row(
                         mainAxisSize: MainAxisSize.min,
                         children: [
-                          const Icon(Icons.language_rounded, size: 15, color: AppColors.starlightGold),
-                          const SizedBox(width: 3),
-                          Text(
-                            AppTranslationService.currentLang.toUpperCase(),
-                            style: const TextStyle(
-                              fontSize: 11,
-                              fontWeight: FontWeight.bold,
-                              color: AppColors.starlightGold,
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            onPressed: () => _showCosmicSeasonPickerModal(context),
+                            icon: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: CosmicThemeService.primaryAccentColor.withValues(alpha: 0.22),
+                                border: Border.all(
+                                  color: CosmicThemeService.primaryAccentColor.withValues(alpha: 0.7),
+                                ),
+                              ),
+                              child: Text(
+                                CosmicThemeService.isHalloween
+                                    ? '🎃'
+                                    : (CosmicThemeService.isNewYear
+                                        ? '🎄'
+                                        : (CosmicThemeService.isValentines
+                                            ? '💖'
+                                            : (CosmicThemeService.isSpringEquinox ? '🌸' : '🎃'))),
+                                style: const TextStyle(fontSize: 13),
+                              ),
                             ),
+                            tooltip: 'Kozmik Sezon & Bayram Teması',
+                          ),
+                          const SizedBox(width: 5),
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            onPressed: () => _showLanguageSelectionSheet(context),
+                            icon: Container(
+                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
+                              decoration: BoxDecoration(
+                                borderRadius: BorderRadius.circular(12),
+                                color: Colors.white.withAlpha(20),
+                                border: Border.all(color: Colors.white24),
+                              ),
+                              child: Row(
+                                mainAxisSize: MainAxisSize.min,
+                                children: [
+                                  const Icon(Icons.language_rounded,
+                                      size: 14, color: AppColors.starlightGold),
+                                  const SizedBox(width: 3),
+                                  Text(
+                                    AppTranslationService.currentLang.toUpperCase(),
+                                    style: const TextStyle(
+                                      fontSize: 10.5,
+                                      fontWeight: FontWeight.bold,
+                                      color: AppColors.starlightGold,
+                                    ),
+                                  ),
+                                ],
+                              ),
+                            ),
+                            tooltip: AppTranslationService.tr('change_language'),
+                          ),
+                          const SizedBox(width: 5),
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            onPressed: () => _showNotificationPermissionModal(context),
+                            icon: Container(
+                              padding: const EdgeInsets.all(7),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: const Color(0xFF00E5FF).withAlpha(25),
+                                border: Border.all(
+                                  color: const Color(0xFF00E5FF).withAlpha(110),
+                                ),
+                              ),
+                              child: const Icon(
+                                Icons.notifications_active_rounded,
+                                size: 17,
+                                color: Color(0xFF00E5FF),
+                              ),
+                            ),
+                            tooltip: AppTranslationService.tr('Gökyüzü Bildirimleri'),
+                          ),
+                          const SizedBox(width: 5),
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            onPressed: () async {
+                              await Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => ProfileScreen(profile: widget.profile),
+                                ),
+                              );
+                              _checkVipStatus();
+                            },
+                            icon: Container(
+                              padding: const EdgeInsets.all(7),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: _isVipUnlocked
+                                    ? const Color(0xFFFFD700).withAlpha(35)
+                                    : Colors.white10,
+                                border: Border.all(
+                                  color: _isVipUnlocked
+                                      ? const Color(0xFFFFD700).withAlpha(150)
+                                      : Colors.white24,
+                                ),
+                              ),
+                              child: Icon(
+                                _isVipUnlocked ? Icons.stars_rounded : Icons.person_rounded,
+                                size: 18,
+                                color: _isVipUnlocked
+                                    ? const Color(0xFFFFD700)
+                                    : AppColors.pastelLavender,
+                              ),
+                            ),
+                            tooltip: AppTranslationService.tr('Profil & Üyelik İşlemleri'),
+                          ),
+                          const SizedBox(width: 5),
+                          IconButton(
+                            padding: EdgeInsets.zero,
+                            constraints: const BoxConstraints(),
+                            onPressed: () async {
+                              await Navigator.of(context).push(
+                                MaterialPageRoute(
+                                  builder: (_) => SettingsScreen(profile: widget.profile),
+                                ),
+                              );
+                              _checkVipStatus();
+                            },
+                            icon: Container(
+                              padding: const EdgeInsets.all(7),
+                              decoration: BoxDecoration(
+                                shape: BoxShape.circle,
+                                color: Colors.white10,
+                                border: Border.all(color: Colors.white24),
+                              ),
+                              child: const Icon(
+                                Icons.settings_rounded,
+                                size: 18,
+                                color: Color(0xFF00E5FF),
+                              ),
+                            ),
+                            tooltip: AppTranslationService.tr('Ayarlar & Bulut Yedekleme'),
                           ),
                         ],
                       ),
-                    ),
-                    tooltip: AppTranslationService.tr('change_language'),
+                    ],
                   ),
-                  const SizedBox(width: 4),
-                  IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    onPressed: () => _showNotificationPermissionModal(context),
-                    icon: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: const Color(0xFF00E5FF).withAlpha(25),
-                        border: Border.all(
-                          color: const Color(0xFF00E5FF).withAlpha(110),
-                        ),
-                      ),
-                      child: const Icon(
-                        Icons.notifications_active_rounded,
-                        size: 19,
-                        color: Color(0xFF00E5FF),
-                      ),
+                  const SizedBox(height: 6),
+                  FittedBox(
+                    fit: BoxFit.scaleDown,
+                    alignment: Alignment.centerLeft,
+                    child: Text(
+                      '${AppTranslationService.tr('Merhaba')}, ${_capitalize(_effectiveProfile.name)}',
+                      maxLines: 1,
+                      style: Theme.of(context).textTheme.displayMedium?.copyWith(fontSize: 22),
                     ),
-                    tooltip: AppTranslationService.tr('Gökyüzü Bildirimleri'),
                   ),
-                  const SizedBox(width: 6),
-                  IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    onPressed: () async {
+                  const SizedBox(height: 8),
+                  InkWell(
+                    onTap: () async {
                       await Navigator.of(context).push(
                         MaterialPageRoute(
                           builder: (_) => ProfileScreen(profile: widget.profile),
@@ -864,59 +899,58 @@ class _HomeScreenState extends State<HomeScreen> {
                       );
                       _checkVipStatus();
                     },
-                    icon: Container(
-                      padding: const EdgeInsets.all(8),
+                    onLongPress: () => _showCosmicSeasonPickerModal(context),
+                    borderRadius: BorderRadius.circular(20),
+                    child: Container(
+                      padding: const EdgeInsets.symmetric(horizontal: 10, vertical: 5),
                       decoration: BoxDecoration(
-                        shape: BoxShape.circle,
                         color: _isVipUnlocked
                             ? const Color(0xFFFFD700).withAlpha(35)
-                            : Colors.white10,
+                            : Colors.white.withAlpha(16),
+                        borderRadius: BorderRadius.circular(20),
                         border: Border.all(
                           color: _isVipUnlocked
-                              ? const Color(0xFFFFD700).withAlpha(150)
+                              ? const Color(0xFFFFD700).withAlpha(140)
                               : Colors.white24,
+                          width: 1,
                         ),
                       ),
-                      child: Icon(
-                        _isVipUnlocked ? Icons.stars_rounded : Icons.person_rounded,
-                        size: 20,
-                        color: _isVipUnlocked
-                            ? const Color(0xFFFFD700)
-                            : AppColors.pastelLavender,
+                      child: Row(
+                        mainAxisSize: MainAxisSize.min,
+                        children: [
+                          Icon(
+                            _isVipUnlocked
+                                ? Icons.stars_rounded
+                                : Icons.account_circle_outlined,
+                            size: 14,
+                            color: _isVipUnlocked
+                                ? const Color(0xFFFFD700)
+                                : AppColors.pastelLavender,
+                          ),
+                          const SizedBox(width: 5),
+                          Text(
+                            _isVipUnlocked
+                                ? AppTranslationService.tr('VIP Profil & Üyelik')
+                                : AppTranslationService.tr('Profil & Giriş / Kayıt'),
+                            style: TextStyle(
+                              fontSize: 11.5,
+                              fontWeight: FontWeight.bold,
+                              color: _isVipUnlocked
+                                  ? const Color(0xFFFFD700)
+                                  : Colors.white,
+                            ),
+                          ),
+                          const SizedBox(width: 4),
+                          const Icon(
+                            Icons.arrow_forward_ios_rounded,
+                            size: 10,
+                            color: Colors.white54,
+                          ),
+                        ],
                       ),
                     ),
-                    tooltip: AppTranslationService.tr('Profil & Üyelik İşlemleri'),
                   ),
-                  const SizedBox(width: 6),
-                  IconButton(
-                    padding: EdgeInsets.zero,
-                    constraints: const BoxConstraints(),
-                    onPressed: () async {
-                      await Navigator.of(context).push(
-                        MaterialPageRoute(
-                          builder: (_) => SettingsScreen(profile: widget.profile),
-                        ),
-                      );
-                      _checkVipStatus();
-                    },
-                    icon: Container(
-                      padding: const EdgeInsets.all(8),
-                      decoration: BoxDecoration(
-                        shape: BoxShape.circle,
-                        color: Colors.white10,
-                        border: Border.all(color: Colors.white24),
-                      ),
-                      child: const Icon(
-                        Icons.settings_rounded,
-                        size: 20,
-                        color: Color(0xFF00E5FF),
-                      ),
-                    ),
-                    tooltip: AppTranslationService.tr('Ayarlar & Bulut Yedekleme'),
-                  ),
-                ],
-              ),
-              const SizedBox(height: 16),
+                  const SizedBox(height: 12),
 
               // VIP Platinum Aktif Profil Seçici (Context Switcher)
               ActiveProfileBar(
@@ -928,61 +962,116 @@ class _HomeScreenState extends State<HomeScreen> {
               ),
               const SizedBox(height: 12),
 
-              // Kozmik Sezon & Bayramlar Canlı Banner'ı (Sadece Özel Günlerde Otomatik Açılır)
+              // 🎃 BÜYÜK TURUNCU CADILAR BAYRAMI & KOZMİK SEZON TEMA KARTI
               ValueListenableBuilder<CosmicSeason>(
                 valueListenable: CosmicThemeService.seasonNotifier,
-                builder: (context, season, _) {
-                  if (season == CosmicSeason.standard) return const SizedBox.shrink();
+                builder: (context, _, _) {
+                  final activeSeason = CosmicThemeService.currentSeason;
+                  if (activeSeason == CosmicSeason.standard) return const SizedBox.shrink();
                   final primary = CosmicThemeService.primaryAccentColor;
                   final secondary = CosmicThemeService.secondaryAccentColor;
+                  final isHalloween = activeSeason == CosmicSeason.halloween;
 
-                  return Container(
-                    margin: const EdgeInsets.only(bottom: 16),
-                    padding: const EdgeInsets.all(14),
-                    decoration: BoxDecoration(
-                      gradient: LinearGradient(
-                        colors: [
-                          primary.withValues(alpha: 0.32),
-                          secondary.withValues(alpha: 0.24),
+                  return GestureDetector(
+                    onTap: () => _showCosmicSeasonPickerModal(context),
+                    child: Container(
+                      width: double.infinity,
+                      margin: const EdgeInsets.only(bottom: 16),
+                      padding: const EdgeInsets.all(16),
+                      decoration: BoxDecoration(
+                        gradient: LinearGradient(
+                          colors: isHalloween
+                              ? [
+                                  const Color(0xFFFF6B00).withValues(alpha: 0.42),
+                                  const Color(0xFF9333EA).withValues(alpha: 0.35),
+                                  const Color(0xFF2D0C00).withValues(alpha: 0.85),
+                                ]
+                              : [
+                                  primary.withValues(alpha: 0.32),
+                                  secondary.withValues(alpha: 0.24),
+                                ],
+                          begin: Alignment.topLeft,
+                          end: Alignment.bottomRight,
+                        ),
+                        borderRadius: BorderRadius.circular(20),
+                        border: Border.all(
+                          color: primary,
+                          width: 2.0,
+                        ),
+                        boxShadow: [
+                          BoxShadow(
+                            color: primary.withValues(alpha: 0.38),
+                            blurRadius: 22,
+                            spreadRadius: 2,
+                          ),
                         ],
-                        begin: Alignment.topLeft,
-                        end: Alignment.bottomRight,
                       ),
-                      borderRadius: BorderRadius.circular(18),
-                      border: Border.all(
-                        color: primary.withValues(alpha: 0.75),
-                        width: 1.4,
+                      child: Row(
+                        crossAxisAlignment: CrossAxisAlignment.center,
+                        children: [
+                          Container(
+                            width: 54,
+                            height: 54,
+                            decoration: BoxDecoration(
+                              shape: BoxShape.circle,
+                              gradient: RadialGradient(
+                                colors: [
+                                  primary.withValues(alpha: 0.55),
+                                  primary.withValues(alpha: 0.15),
+                                ],
+                              ),
+                              border: Border.all(color: primary, width: 1.5),
+                            ),
+                            child: Center(
+                              child: Text(
+                                isHalloween
+                                    ? '🎃'
+                                    : (activeSeason == CosmicSeason.newYear
+                                        ? '🎄'
+                                        : (activeSeason == CosmicSeason.valentines
+                                            ? '💖'
+                                            : '🌸')),
+                                style: const TextStyle(fontSize: 30),
+                              ),
+                            ),
+                          ),
+                          const SizedBox(width: 14),
+                          Expanded(
+                            child: Column(
+                              crossAxisAlignment: CrossAxisAlignment.start,
+                              children: [
+                                Row(
+                                  children: [
+                                    Expanded(
+                                      child: Text(
+                                        CosmicThemeService.seasonBadgeText,
+                                        style: TextStyle(
+                                          color: primary,
+                                          fontWeight: FontWeight.w900,
+                                          fontSize: 13,
+                                          letterSpacing: 0.5,
+                                        ),
+                                      ),
+                                    ),
+                                    if (isHalloween)
+                                      const Text('🦇 🕸️ 🧙‍♀️', style: TextStyle(fontSize: 12)),
+                                  ],
+                                ),
+                                const SizedBox(height: 5),
+                                Text(
+                                  CosmicThemeService.seasonBannerSubtitle,
+                                  style: const TextStyle(
+                                    color: Colors.white,
+                                    fontSize: 11.8,
+                                    height: 1.38,
+                                    fontWeight: FontWeight.w500,
+                                  ),
+                                ),
+                              ],
+                            ),
+                          ),
+                        ],
                       ),
-                      boxShadow: [
-                        BoxShadow(
-                          color: primary.withValues(alpha: 0.25),
-                          blurRadius: 18,
-                          spreadRadius: 2,
-                        ),
-                      ],
-                    ),
-                    child: Column(
-                      crossAxisAlignment: CrossAxisAlignment.start,
-                      children: [
-                        Text(
-                          CosmicThemeService.seasonBadgeText,
-                          style: TextStyle(
-                            color: primary,
-                            fontWeight: FontWeight.w900,
-                            fontSize: 12.5,
-                            letterSpacing: 0.5,
-                          ),
-                        ),
-                        const SizedBox(height: 6),
-                        Text(
-                          CosmicThemeService.seasonBannerSubtitle,
-                          style: const TextStyle(
-                            color: Colors.white,
-                            fontSize: 12,
-                            height: 1.45,
-                          ),
-                        ),
-                      ],
                     ),
                   );
                 },
@@ -1163,40 +1252,43 @@ class _HomeScreenState extends State<HomeScreen> {
                     backgroundColor: AppColors.starlightGold.withValues(alpha: 0.15),
                     foregroundColor: AppColors.starlightGold,
                     side: const BorderSide(color: AppColors.starlightGold, width: 1.2),
-                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 16),
+                    padding: const EdgeInsets.symmetric(vertical: 12, horizontal: 12),
                     shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(16)),
                     elevation: 0,
                   ),
-                  icon: const Icon(Icons.auto_awesome_rounded, color: AppColors.starlightGold, size: 20),
-                  label: Row(
-                    mainAxisAlignment: MainAxisAlignment.center,
-                    children: [
-                      Text(
-                        AppTranslationService.tr('📸 Instagram Story Kartı Oluştur (9:16)'),
-                        style: const TextStyle(
-                          fontSize: 13,
-                          fontWeight: FontWeight.bold,
-                          color: Colors.white,
-                          letterSpacing: 0.3,
-                        ),
-                      ),
-                      const SizedBox(width: 8),
-                      Container(
-                        padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
-                        decoration: BoxDecoration(
-                          color: AppColors.starlightGold,
-                          borderRadius: BorderRadius.circular(6),
-                        ),
-                        child: const Text(
-                          'YENİ',
-                          style: TextStyle(
-                            fontSize: 9,
-                            fontWeight: FontWeight.w900,
-                            color: Colors.black,
+                  icon: const Icon(Icons.auto_awesome_rounded, color: AppColors.starlightGold, size: 18),
+                  label: FittedBox(
+                    fit: BoxFit.scaleDown,
+                    child: Row(
+                      mainAxisAlignment: MainAxisAlignment.center,
+                      children: [
+                        Text(
+                          AppTranslationService.tr('📸 Instagram Story Kartı Oluştur (9:16)'),
+                          style: const TextStyle(
+                            fontSize: 12.5,
+                            fontWeight: FontWeight.bold,
+                            color: Colors.white,
+                            letterSpacing: 0.2,
                           ),
                         ),
-                      ),
-                    ],
+                        const SizedBox(width: 6),
+                        Container(
+                          padding: const EdgeInsets.symmetric(horizontal: 6, vertical: 2),
+                          decoration: BoxDecoration(
+                            color: AppColors.starlightGold,
+                            borderRadius: BorderRadius.circular(6),
+                          ),
+                          child: const Text(
+                            'YENİ',
+                            style: TextStyle(
+                              fontSize: 9,
+                              fontWeight: FontWeight.w900,
+                              color: Colors.black,
+                            ),
+                          ),
+                        ),
+                      ],
+                    ),
                   ),
                 ),
               ),

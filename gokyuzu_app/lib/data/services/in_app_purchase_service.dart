@@ -2,7 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/foundation.dart';
 import 'package:in_app_purchase/in_app_purchase.dart';
-import 'package:url_launcher/url_launcher.dart';
+import 'package:in_app_purchase_android/in_app_purchase_android.dart';
 import 'storage_service.dart';
 
 class InAppPurchaseService {
@@ -17,6 +17,7 @@ class InAppPurchaseService {
       rethrow;
     }
   }
+
   StreamSubscription<List<PurchaseDetails>>? _subscription;
 
   // Google Play ve Apple App Store Resmi Ürün & Abonelik Kimlikleri
@@ -32,8 +33,28 @@ class InAppPurchaseService {
     silverMonthId,
   };
 
+  /// Google Play Console'da tanımlanabilecek alternatif abonelik kimlikleri dahil tam sorgu kümesi
+  static const Set<String> allQueryProductIds = {
+    platinumYearId,
+    platinumMonthId,
+    goldMonthId,
+    silverMonthId,
+    'vip_yearly',
+    'vip_monthly',
+    'gokyuzu_vip_yearly',
+    'gokyuzu_vip_monthly',
+    'platinum_year',
+    'platinum_month',
+    'gold_month',
+    'silver_month',
+    'vip_yillik',
+    'vip_aylik',
+    'gokyuzu_vip',
+  };
+
   bool isAvailable = false;
   List<ProductDetails> products = [];
+  List<String> notFoundIds = [];
   bool isLoading = false;
   String? errorMessage;
 
@@ -69,16 +90,27 @@ class InAppPurchaseService {
 
   /// Google Play / App Store'dan ürün fiyat ve detaylarını çeker
   Future<void> loadProducts() async {
+    if (kIsWeb) return;
+    if (!isAvailable) {
+      try {
+        isAvailable = await _inAppPurchase.isAvailable();
+      } catch (_) {}
+    }
     if (!isAvailable) return;
+
     isLoading = true;
     try {
-      final response = await _inAppPurchase.queryProductDetails(productIds);
+      final response = await _inAppPurchase.queryProductDetails(allQueryProductIds);
       if (response.error != null) {
         errorMessage = response.error!.message;
         debugPrint('[InAppPurchaseService] Ürün sorgulama hatası: $errorMessage');
       }
       products = response.productDetails;
-      debugPrint('[InAppPurchaseService] ${products.length} adet mağaza ürünü yüklendi.');
+      notFoundIds = response.notFoundIDs;
+      debugPrint(
+        '[InAppPurchaseService] ${products.length} adet mağaza ürünü yüklendi: '
+        '${products.map((p) => "${p.id} (${p.price})").join(", ")}',
+      );
     } catch (e) {
       debugPrint('[InAppPurchaseService] loadProducts hatası: $e');
     } finally {
@@ -86,64 +118,93 @@ class InAppPurchaseService {
     }
   }
 
-  /// Kullanıcı paket seçtiğinde doğrudan mağaza içi satın alma oturumunu başlatır
+  /// Belirli bir paket için mağazadan yüklenen gerçek ürünü bulur
+  ProductDetails? findMatchingProduct(String productId) {
+    // 1. Birebir ID eşleşmesi
+    for (final p in products) {
+      if (p.id == productId) return p;
+    }
+
+    // 2. Paket tipine göre alternatif ID eşleşmesi
+    final aliases = <String>[];
+    if (productId == platinumYearId) {
+      aliases.addAll(['vip_yearly', 'gokyuzu_vip_yearly', 'platinum_year', 'vip_yillik', 'gokyuzu_vip']);
+    } else if (productId == platinumMonthId) {
+      aliases.addAll(['vip_monthly', 'gokyuzu_vip_monthly', 'platinum_month', 'vip_aylik', 'gokyuzu_vip']);
+    } else if (productId == goldMonthId) {
+      aliases.addAll(['gold_month', 'vip_monthly', 'gokyuzu_vip_monthly']);
+    } else if (productId == silverMonthId) {
+      aliases.addAll(['silver_month', 'vip_monthly', 'gokyuzu_vip_monthly']);
+    }
+
+    for (final alias in aliases) {
+      for (final p in products) {
+        if (p.id == alias) return p;
+      }
+    }
+
+    // 3. Eğer Play Console'da en az 1 aktif abonelik tanımlanmışsa onu kullan
+    if (products.isNotEmpty) {
+      return products.first;
+    }
+
+    return null;
+  }
+
+  /// Kullanıcı paket seçtiğinde ("Hemen Abone Ol" veya "Seç") doğrudan
+  /// YEREL GOOGLE PLAY ÖDEME ALT PENCERESİNİ (BillingClient.launchBillingFlow) başlatır.
+  /// ASLA harici 'Abonelikler' yönetim sayfasına (play.google.com/store/account/subscriptions) yönlendirmez!
   Future<bool> buySubscription(String productId, VipTier tier) async {
+    errorMessage = null;
+
     if (!isAvailable) {
-      await openStoreSubscriptionPage();
+      await initialize();
+    }
+
+    if (!isAvailable) {
+      errorMessage =
+          'Google Play Faturalandırma Servisi (BillingClient) bu cihazda başlatılamadı. '
+          'Lütfen cihazınızda Google Play Store hesabınızın açık olduğundan emin olun.';
       return false;
     }
 
-    ProductDetails? matchingProduct;
-    for (final p in products) {
-      if (p.id == productId) {
-        matchingProduct = p;
-        break;
-      }
-    }
+    ProductDetails? matchingProduct = findMatchingProduct(productId);
 
     if (matchingProduct == null) {
       await loadProducts();
-      for (final p in products) {
-        if (p.id == productId) {
-          matchingProduct = p;
-          break;
-        }
-      }
+      matchingProduct = findMatchingProduct(productId);
     }
 
     if (matchingProduct != null) {
-      final purchaseParam = PurchaseParam(productDetails: matchingProduct);
+      late final PurchaseParam purchaseParam;
+      if (!kIsWeb && Platform.isAndroid && matchingProduct is GooglePlayProductDetails) {
+        purchaseParam = GooglePlayPurchaseParam(
+          productDetails: matchingProduct,
+          offerToken: matchingProduct.offerToken,
+        );
+      } else {
+        purchaseParam = PurchaseParam(productDetails: matchingProduct);
+      }
+
       return await _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam);
     } else {
-      // Eğer Google Play Console'da ürünler henüz onay aşamasındaysa veya taslaktaysa,
-      // doğrudan mağaza resmi abonelikler sekmesini aç
-      await openStoreSubscriptionPage();
+      errorMessage =
+          'Google Play Console üzerinde "$productId" kodlu abonelik paketi henüz etkinleştirilmemiş '
+          'veya uygulama Google Play Kapalı Test kanalı yerine harici APK ile yüklenmiş.';
       return false;
     }
   }
 
   /// Satın alımları geri yükleme (App Store ve Google Play gereksinimi)
   Future<void> restorePurchases() async {
+    if (!isAvailable) {
+      await initialize();
+    }
     if (!isAvailable) return;
     try {
       await _inAppPurchase.restorePurchases();
     } catch (e) {
       debugPrint('[InAppPurchaseService] restorePurchases hatası: $e');
-    }
-  }
-
-  /// Mağazanın resmi abonelik yönetim sayfasına yönlendirir
-  static Future<void> openStoreSubscriptionPage() async {
-    final url = Platform.isIOS
-        ? 'https://apps.apple.com/account/subscriptions'
-        : 'https://play.google.com/store/account/subscriptions?package=com.gokyuzudoktoru.gokyuzu_app';
-    final uri = Uri.parse(url);
-    try {
-      if (await canLaunchUrl(uri)) {
-        await launchUrl(uri, mode: LaunchMode.externalApplication);
-      }
-    } catch (e) {
-      debugPrint('[InAppPurchaseService] openStoreSubscriptionPage hatası: $e');
     }
   }
 
@@ -157,11 +218,14 @@ class InAppPurchaseService {
     if (purchase.status == PurchaseStatus.pending) {
       debugPrint('[InAppPurchaseService] Satın alma işlemi devam ediyor...');
     } else if (purchase.status == PurchaseStatus.error) {
+      errorMessage = purchase.error?.message;
       debugPrint('[InAppPurchaseService] Satın alma hatası: ${purchase.error}');
     } else if (purchase.status == PurchaseStatus.purchased ||
         purchase.status == PurchaseStatus.restored) {
       final tier = _mapProductIdToTier(purchase.productID);
-      final isYearly = purchase.productID == platinumYearId;
+      final isYearly = purchase.productID == platinumYearId ||
+          purchase.productID.contains('year') ||
+          purchase.productID.contains('yillik');
       final duration = isYearly ? const Duration(days: 365) : const Duration(days: 30);
       final existingExpiry = await StorageService.getVipExpiryDate();
       final base = (existingExpiry != null && existingExpiry.isAfter(DateTime.now()))
@@ -178,17 +242,13 @@ class InAppPurchaseService {
   }
 
   VipTier _mapProductIdToTier(String productId) {
-    switch (productId) {
-      case platinumYearId:
-      case platinumMonthId:
-        return VipTier.platinum;
-      case goldMonthId:
-        return VipTier.gold;
-      case silverMonthId:
-        return VipTier.silver;
-      default:
-        return VipTier.platinum;
+    if (productId == goldMonthId || productId.contains('gold')) {
+      return VipTier.gold;
     }
+    if (productId == silverMonthId || productId.contains('silver')) {
+      return VipTier.silver;
+    }
+    return VipTier.platinum;
   }
 
   void dispose() {

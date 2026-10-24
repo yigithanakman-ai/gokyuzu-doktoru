@@ -1,6 +1,10 @@
 import 'dart:convert';
+import 'dart:io';
 import 'package:flutter/foundation.dart';
+import 'package:flutter/services.dart';
 import 'package:shared_preferences/shared_preferences.dart';
+import 'package:url_launcher/url_launcher.dart';
+import 'package:share_plus/share_plus.dart';
 import 'storage_service.dart';
 import 'profile_archive_service.dart';
 import '../models/saved_profile_model.dart';
@@ -67,7 +71,7 @@ class VipRedeemResult {
 }
 
 /// Çapraz Platform (Android ➔ iOS, Android ➔ Android) Bulut Hesabı,
-/// Harita Yedekleme, VIP Lisans Aktarımı ve Geri Yükleme Servisi.
+/// Gerçek Google Hesap Seçici, E-Posta Yedek Gönderimi, VIP Lisans Aktarımı ve Geri Yükleme Servisi.
 ///
 /// Patron 👑 Kuralı:
 /// 1. VIP transfer kodu kişiye özel ve SADECE 1 KULLANIMLIKTIR.
@@ -78,6 +82,44 @@ class CloudAccountService {
   static const String _prefCloudBackupPayloadKey = 'gokyuzu_cloud_payload_v1';
   static const String _prefVipRecoveryKey = 'gokyuzu_vip_recovery_key_v1';
   static const String _vipChecksumSalt = 'GKY_DOKTORU_VIP_SALT_2026_YIGITHAN_AKMAN';
+
+  static const MethodChannel _googleAuthChannel =
+      MethodChannel('com.gokyuzudoktoru.gokyuzu_app/google_auth');
+
+  /// Android işletim sisteminin gerçek Google Hesap Seçici penceresini (AccountManager) açar.
+  /// Kullanıcı cihazındaki gerçek Gmail hesaplarından birini seçer veya "Hesap ekle" ile
+  /// gerçek Google giriş sayfasına yönlendirilir.
+  static Future<CloudAccount?> signInWithNativeGoogleAccount({
+    String? fallbackDisplayName,
+  }) async {
+    if (kIsWeb || !Platform.isAndroid) return null;
+    try {
+      final result = await _googleAuthChannel.invokeMethod<dynamic>('pickGoogleAccount');
+      if (result is Map) {
+        final email = (result['email']?.toString() ?? '').trim();
+        if (email.isNotEmpty && email.contains('@')) {
+          final derivedName = fallbackDisplayName?.trim().isNotEmpty == true
+              ? fallbackDisplayName!.trim()
+              : email.split('@').first;
+          final account = await linkGoogleAccount(
+            email: email,
+            displayName: derivedName,
+          );
+          await StorageService.saveUserAccount(
+            name: derivedName,
+            surname: '',
+            email: email,
+            gender: 'Belirtilmedi',
+          );
+          return account;
+        }
+      }
+      return null;
+    } catch (e) {
+      debugPrint('[CloudAccountService] signInWithNativeGoogleAccount hatası: $e');
+      return null;
+    }
+  }
 
   /// Aktif bağlı bulut hesabını getirir
   static Future<CloudAccount?> getActiveAccount() async {
@@ -117,12 +159,10 @@ class CloudAccountService {
 
     var expiryDate = await StorageService.getVipExpiryDate();
     if (expiryDate == null) {
-      // Eğer henüz bitiş tarihi set edilmemişse (örn. ilk kez alan), 1 yıl tanımla
       expiryDate = DateTime.now().add(const Duration(days: 365));
       await StorageService.setVipExpiryDate(expiryDate);
     }
 
-    // Süresi bitmiş üyelik için transfer kodu üretilemez
     if (DateTime.now().isAfter(expiryDate)) {
       await StorageService.deactivateVip();
       return null;
@@ -152,7 +192,6 @@ class CloudAccountService {
     final generated = await generateVipTransferKey();
     if (generated != null && generated.isNotEmpty) return generated;
 
-    // Fallback: Henüz VIP değilse deterministik boş şablon
     final cleanSeed = seed.trim().toLowerCase();
     int hash = 5381;
     for (int i = 0; i < cleanSeed.length; i++) {
@@ -168,7 +207,6 @@ class CloudAccountService {
   }
 
   /// Tek Kullanımlık VIP Transfer Anahtarını Doğrula ve Sadece Kalan Süresiyle Aktar!
-  /// Sil baştan 1 yıl verilmez; kalan gün sayısı kadar aktif edilir ve anahtar mühürlenir.
   static Future<VipRedeemResult> redeemVipTransferKey(String rawKey) async {
     final clean = rawKey.trim().toUpperCase();
     if (clean.isEmpty) {
@@ -252,8 +290,6 @@ class CloudAccountService {
         : (tierCode == 'G' ? VipTier.gold : VipTier.platinum);
 
     await StorageService.setVipTier(tier, expiryDate: expiryDate);
-
-    // Bulut yedeğini bu cihazın kalan süresiyle senkronize et
     await backupToCloud();
 
     final dateFormatted =
@@ -317,7 +353,7 @@ class CloudAccountService {
     await prefs.remove(_prefCloudAccountKey);
   }
 
-  /// Mevcut Doğum Haritasını, Kayıtlı Danışan Arşivini, VIP Durumunu ve Bitiş Tarihini Buluta Yedekle
+  /// Mevcut Doğum Haritasını, Kayıtlı Danışan Arşivini, VIP Durumunu ve Bitiş Tarihini Yedekle
   static Future<bool> backupToCloud() async {
     try {
       final account = await getActiveAccount();
@@ -328,6 +364,7 @@ class CloudAccountService {
       final isVip = await StorageService.isVipUnlocked();
       final vipTier = await StorageService.getVipTier();
       final vipExpiryDate = await StorageService.getVipExpiryDate();
+      final transferKey = await generateVipTransferKey() ?? account.recoveryKey;
 
       final payload = {
         'version': 1,
@@ -338,7 +375,7 @@ class CloudAccountService {
         'isVip': isVip,
         'vipTier': vipTier.name,
         'vipExpiryDate': vipExpiryDate?.toIso8601String(),
-        'recoveryKey': account.recoveryKey,
+        'recoveryKey': transferKey,
       };
 
       final prefs = await SharedPreferences.getInstance();
@@ -350,7 +387,7 @@ class CloudAccountService {
         provider: account.provider,
         linkedAt: account.linkedAt,
         lastBackupAt: DateTime.now(),
-        recoveryKey: account.recoveryKey,
+        recoveryKey: transferKey,
       );
       await prefs.setString(
           _prefCloudAccountKey, json.encode(updatedAccount.toMap()));
@@ -358,6 +395,191 @@ class CloudAccountService {
       return true;
     } catch (e) {
       debugPrint('[CloudAccountService] backupToCloud hatası: $e');
+      return false;
+    }
+  }
+
+  /// Kullanıcının tüm haritalarını ve VIP transfer anahtarını içeren şifreli GKY-YEDEK-... paket kodunu üretir
+  static Future<String> generateRestorableBackupCode() async {
+    await backupToCloud();
+    final prefs = await SharedPreferences.getInstance();
+    final jsonStr = prefs.getString(_prefCloudBackupPayloadKey) ?? '{}';
+    final encoded = base64Url.encode(utf8.encode(jsonStr));
+    return 'GKY-YEDEK-$encoded';
+  }
+
+  /// Kullanıcının bağlı e-posta adresine (Gmail) gerçek yedekleme e-postasını hazırlar ve gönderir!
+  /// İçinde: Doğum haritası özeti, kayıtlı danışanlar, kalan süreli VIP Transfer Anahtarı ve
+  /// yeni cihazda tek tıkla geri yükleme sağlayan GKY-YEDEK kodu yer alır.
+  static Future<bool> sendBackupEmailToUser({String? targetEmail}) async {
+    try {
+      await backupToCloud();
+      final account = await getActiveAccount();
+      final email = (targetEmail ?? account?.email ?? '').trim();
+      if (email.isEmpty) return false;
+
+      final profile = await StorageService.getProfile();
+      final savedProfiles = await ProfileArchiveService.getProfiles();
+      final isVip = await StorageService.isVipUnlocked();
+      final vipTier = await StorageService.getVipTier();
+      final vipExpiry = await StorageService.getVipExpiryDate();
+      final vipKey = await generateVipTransferKey() ??
+          await getOrCreateVipRecoveryKey(email);
+      final backupCode = await generateRestorableBackupCode();
+
+      final now = DateTime.now();
+      final dateStr =
+          '${now.day.toString().padLeft(2, '0')}.${now.month.toString().padLeft(2, '0')}.${now.year} '
+          '${now.hour.toString().padLeft(2, '0')}:${now.minute.toString().padLeft(2, '0')}';
+
+      final remainingDays = (isVip && vipExpiry != null)
+          ? vipExpiry.difference(now).inDays.clamp(0, 3650)
+          : 0;
+      final expiryFormatted = vipExpiry != null
+          ? '${vipExpiry.day.toString().padLeft(2, '0')}.${vipExpiry.month.toString().padLeft(2, '0')}.${vipExpiry.year}'
+          : '-';
+
+      final buffer = StringBuffer();
+      buffer.writeln('🌌 GÖKYÜZÜ DOKTORU - RESMİ BULUT & E-POSTA YEDEKLEME PAKETİ');
+      buffer.writeln('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+      buffer.writeln('📧 Hesap E-Postası: $email');
+      buffer.writeln('📅 Yedekleme Tarihi: $dateStr');
+      buffer.writeln('');
+      if (profile != null) {
+        buffer.writeln('👤 ANA DOĞUM HARİTASI:');
+        buffer.writeln('• İsim: ${profile.name}');
+        buffer.writeln('• Doğum Tarihi & Saati: ${profile.birthDate} - ${profile.birthTime}');
+        buffer.writeln('• Doğum Yeri: ${profile.birthCity}, ${profile.birthCountry}');
+        buffer.writeln('• Güneş / Ay / Yükselen: ☀️ ${profile.sunSign} | 🌙 ${profile.moonSign} | 🌅 ${profile.risingSign}');
+        buffer.writeln('');
+      }
+      buffer.writeln('📂 KAYITLI DANIŞAN & AİLE HARİTALARI (${savedProfiles.length} Kişi):');
+      if (savedProfiles.isEmpty) {
+        buffer.writeln('• Kayıtlı ek harita bulunmuyor.');
+      } else {
+        for (final sp in savedProfiles) {
+          buffer.writeln('• ${sp.fullName} (${sp.birthCity} • ☀️ ${sp.sunSign} / 🌅 ${sp.risingSign})');
+        }
+      }
+      buffer.writeln('');
+      buffer.writeln('👑 VIP ÜYELİK & TEK KULLANIMLIK TRANSFER ANAHTARI:');
+      buffer.writeln('• Statü: ${isVip ? "AKTİF (${vipTier.name.toUpperCase()} VIP)" : "Standart Üye"}');
+      if (isVip) {
+        buffer.writeln('• Kalan VIP Süresi: $remainingDays Gün (Bitiş: $expiryFormatted)');
+      }
+      buffer.writeln('• VIP Transfer Anahtarınız: $vipKey');
+      buffer.writeln('  (Not: Bu anahtar tek kullanımlıktır; yeni cihazda sadece kalan sürenizi aktif eder.)');
+      buffer.writeln('');
+      buffer.writeln('🔐 TEK TIKLA TAM YEDEK GERİ YÜKLEME KODU:');
+      buffer.writeln('(Yeni telefonunuzda Ayarlar ➔ Geri Yükle bölümüne aşağıdaki kodu kopyalayıp yapıştırın):');
+      buffer.writeln('');
+      buffer.writeln(backupCode);
+      buffer.writeln('━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━━');
+
+      final subject = 'Gökyüzü Doktoru - Harita ve VIP Yedekleme Paketi ($dateStr)';
+      final body = buffer.toString();
+
+      // Uri.encodeComponent kullanarak boşlukların '+' yerine '%20' olmasını garanti et
+      final mailtoUrl =
+          'mailto:${Uri.encodeComponent(email)}'
+          '?subject=${Uri.encodeComponent(subject)}'
+          '&body=${Uri.encodeComponent(body)}';
+      final uri = Uri.parse(mailtoUrl);
+
+      final launched = await launchUrl(uri, mode: LaunchMode.externalApplication);
+      if (launched) return true;
+
+      // Eğer cihazda varsayılan mail istemcisi yanıt vermezse sistem paylaşım ekranıyla Gmail'e ilet
+      await Share.share(body, subject: subject);
+      return true;
+    } catch (e) {
+      debugPrint('[CloudAccountService] sendBackupEmailToUser hatası: $e');
+      return false;
+    }
+  }
+
+  /// E-postaya gönderilen GKY-YEDEK-... kodundan tüm haritaları ve VIP durumunu geri yükler
+  static Future<bool> restoreFromBackupCode(String rawCode) async {
+    try {
+      var clean = rawCode.trim();
+      if (clean.isEmpty) return false;
+
+      if (clean.contains('GKY-YEDEK-')) {
+        final idx = clean.indexOf('GKY-YEDEK-');
+        clean = clean.substring(idx + 'GKY-YEDEK-'.length).trim();
+        clean = clean.split(RegExp(r'\s+')).first;
+      }
+
+      // Eğer kullanıcı yanlışlıkla doğrudan GKY-VIP-... transfer anahtarını yapıştırdıysa:
+      if (clean.toUpperCase().startsWith('GKY-VIP-')) {
+        final vipRes = await redeemVipTransferKey(clean);
+        return vipRes.success;
+      }
+
+      final decodedJson = utf8.decode(base64Url.decode(base64Url.normalize(clean)));
+      final payload = json.decode(decodedJson) as Map<String, dynamic>;
+
+      final prefs = await SharedPreferences.getInstance();
+      await prefs.setString(_prefCloudBackupPayloadKey, decodedJson);
+
+      return await _applyRestorePayload(payload);
+    } catch (e) {
+      debugPrint('[CloudAccountService] restoreFromBackupCode hatası: $e');
+      return false;
+    }
+  }
+
+  static Future<bool> _applyRestorePayload(Map<String, dynamic> payload) async {
+    try {
+      // 1. Ana Kullanıcı Profilini Geri Yükle
+      if (payload['profile'] != null) {
+        final profileMap = payload['profile'] as Map<String, dynamic>;
+        final profile = UserProfile.fromJson(profileMap);
+        await StorageService.saveProfile(profile);
+      }
+
+      // 2. Danışan Arşivini Geri Yükle
+      if (payload['savedProfiles'] != null) {
+        final list = payload['savedProfiles'] as List<dynamic>;
+        for (final item in list) {
+          try {
+            final sp = SavedProfile.fromMap(item as Map<String, dynamic>);
+            await ProfileArchiveService.saveProfile(sp);
+          } catch (_) {}
+        }
+      }
+
+      // 3. VIP Durumunu ve Kalan Süresini Geri Yükle (Kalan süreyi korur, sıfırdan yıl vermez)
+      final recoveryKey = payload['recoveryKey'] as String?;
+      if (recoveryKey != null && recoveryKey.startsWith('GKY-VIP-')) {
+        final isConsumed = await StorageService.isKeyConsumed(recoveryKey);
+        if (!isConsumed) {
+          await redeemVipTransferKey(recoveryKey);
+        }
+      } else if (payload['isVip'] == true) {
+        final tierStr = payload['vipTier'] as String? ?? 'platinum';
+        final tier = VipTier.values.firstWhere(
+          (t) => t.name == tierStr,
+          orElse: () => VipTier.platinum,
+        );
+        final expiryStr = payload['vipExpiryDate'] as String?;
+        final expiryDate =
+            expiryStr != null ? DateTime.tryParse(expiryStr) : null;
+        if (expiryDate != null && DateTime.now().isBefore(expiryDate)) {
+          await StorageService.setVipTier(tier, expiryDate: expiryDate);
+        }
+      }
+
+      // 4. Mağaza satın alımlarını da tetikle
+      try {
+        if (!kIsWeb && InAppPurchaseService.instance.isAvailable) {
+          await InAppPurchaseService.instance.restorePurchases();
+        }
+      } catch (_) {}
+
+      return true;
+    } catch (e) {
+      debugPrint('[CloudAccountService] _applyRestorePayload hatası: $e');
       return false;
     }
   }
@@ -377,47 +599,7 @@ class CloudAccountService {
       }
 
       final payload = json.decode(jsonStr) as Map<String, dynamic>;
-
-      // 1. Ana Kullanıcı Profilini Geri Yükle
-      if (payload['profile'] != null) {
-        final profileMap = payload['profile'] as Map<String, dynamic>;
-        final profile = UserProfile.fromJson(profileMap);
-        await StorageService.saveProfile(profile);
-      }
-
-      // 2. Danışan Arşivini Geri Yükle
-      if (payload['savedProfiles'] != null) {
-        final list = payload['savedProfiles'] as List<dynamic>;
-        for (final item in list) {
-          try {
-            final sp = SavedProfile.fromMap(item as Map<String, dynamic>);
-            await ProfileArchiveService.saveProfile(sp);
-          } catch (_) {}
-        }
-      }
-
-      // 3. VIP Durumunu ve Kalan Süresini Geri Yükle
-      final isVip = payload['isVip'] == true;
-      if (isVip) {
-        final tierStr = payload['vipTier'] as String? ?? 'platinum';
-        final tier = VipTier.values.firstWhere(
-          (t) => t.name == tierStr,
-          orElse: () => VipTier.platinum,
-        );
-        final expiryStr = payload['vipExpiryDate'] as String?;
-        final expiryDate =
-            expiryStr != null ? DateTime.tryParse(expiryStr) : null;
-        await StorageService.setVipTier(tier, expiryDate: expiryDate);
-      }
-
-      // 4. Mağaza satın alımlarını da tetikle
-      try {
-        if (!kIsWeb && InAppPurchaseService.instance.isAvailable) {
-          await InAppPurchaseService.instance.restorePurchases();
-        }
-      } catch (_) {}
-
-      return true;
+      return await _applyRestorePayload(payload);
     } catch (e) {
       debugPrint('[CloudAccountService] restoreFromCloud hatası: $e');
       return false;

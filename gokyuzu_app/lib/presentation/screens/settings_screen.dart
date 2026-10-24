@@ -64,9 +64,42 @@ class _SettingsScreenState extends State<SettingsScreen> {
     return '${dt.day.toString().padLeft(2, '0')}.${dt.month.toString().padLeft(2, '0')}.${dt.year} ${dt.hour.toString().padLeft(2, '0')}:${dt.minute.toString().padLeft(2, '0')}';
   }
 
+  // Gerçek Android Google Hesap Seçici ile Bağlanma
+  Future<void> _handleNativeGoogleSignIn() async {
+    setState(() => _isLoading = true);
+    final nativeAcc = await CloudAccountService.signInWithNativeGoogleAccount(
+      fallbackDisplayName: widget.profile?.name.trim(),
+    );
+    await _loadState();
+    setState(() => _isLoading = false);
+
+    if (nativeAcc != null) {
+      if (mounted) {
+        ScaffoldMessenger.of(context).showSnackBar(
+          SnackBar(
+            content: Text(
+              '✅ Gerçek Google hesabı bağlandı: ${nativeAcc.email}\nŞimdi yedekleme paketi e-posta adresinize iletiliyor...',
+            ),
+            backgroundColor: const Color(0xFF4285F4),
+            duration: const Duration(seconds: 4),
+          ),
+        );
+      }
+      await CloudAccountService.sendBackupEmailToUser(targetEmail: nativeAcc.email);
+      return;
+    }
+
+    // Kullanıcı sistem seçicisini kapattıysa veya farklı cihazdaysa modalı aç
+    if (mounted) {
+      _showGoogleLinkModal();
+    }
+  }
+
   // Google Hesabı ile Bağlanma Modalı
   void _showGoogleLinkModal() {
-    final emailController = TextEditingController();
+    final emailController = TextEditingController(
+      text: _cloudAccount?.email ?? '',
+    );
     final nameController = TextEditingController(
       text: widget.profile?.name.trim() ?? '',
     );
@@ -116,17 +149,17 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           children: [
                             Text(
                               AppTranslationService.tr(
-                                  'Google Hesabını Bağla & Yedekle'),
+                                  'Google (Gmail) Hesabını Bağla & Yedekle'),
                               style: const TextStyle(
                                 color: Colors.white,
-                                fontSize: 16,
+                                fontSize: 15.5,
                                 fontWeight: FontWeight.bold,
                               ),
                             ),
                             const SizedBox(height: 2),
                             Text(
                               AppTranslationService.tr(
-                                  'Cihaz değiştiğinde harita ve VIP aktarımı sağlar'),
+                                  'Gerçek Gmail hesabınızı seçin ve yedeği e-postanıza alın'),
                               style: const TextStyle(
                                   color: Colors.white60, fontSize: 11),
                             ),
@@ -135,14 +168,57 @@ class _SettingsScreenState extends State<SettingsScreen> {
                       ),
                     ],
                   ),
-                  const SizedBox(height: 18),
-                  Text(
-                    AppTranslationService.tr(
-                        'Google Play veya kullandığınız Gmail adresinizi girerek doğum haritanızı, kayıtlı danışanlarınızı ve VIP üyeliğinizi bulut hesabınıza mühürleyebilirsiniz:'),
-                    style: const TextStyle(
-                        color: Colors.white70, fontSize: 12, height: 1.4),
+                  const SizedBox(height: 16),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 46,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: Colors.white,
+                        foregroundColor: Colors.black87,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      onPressed: () async {
+                        Navigator.pop(ctx);
+                        final acc = await CloudAccountService.signInWithNativeGoogleAccount(
+                          fallbackDisplayName: nameController.text.trim(),
+                        );
+                        if (acc != null) {
+                          await _loadState();
+                          if (mounted) {
+                            ScaffoldMessenger.of(context).showSnackBar(
+                              SnackBar(
+                                content: Text(
+                                  '✅ Google hesabı seçildi: ${acc.email}\nYedek paketi e-postanıza gönderiliyor...',
+                                ),
+                                backgroundColor: const Color(0xFF4285F4),
+                              ),
+                            );
+                          }
+                          await CloudAccountService.sendBackupEmailToUser(
+                            targetEmail: acc.email,
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.g_mobiledata_rounded,
+                          color: Color(0xFF4285F4), size: 28),
+                      label: const Text(
+                        'Cihazdaki Google (Gmail) Hesabını Seç',
+                        style: TextStyle(
+                            fontSize: 13, fontWeight: FontWeight.bold),
+                      ),
+                    ),
                   ),
                   const SizedBox(height: 14),
+                  Text(
+                    AppTranslationService.tr(
+                        'Veya yedekleme paketinin gönderileceği Gmail adresinizi aşağıya yazın:'),
+                    style: const TextStyle(
+                        color: Colors.white70, fontSize: 11.5, height: 1.4),
+                  ),
+                  const SizedBox(height: 10),
                   TextField(
                     controller: emailController,
                     keyboardType: TextInputType.emailAddress,
@@ -199,7 +275,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                             !email.contains('.')) {
                           setModalState(() {
                             errorText = AppTranslationService.tr(
-                                'Lütfen geçerli bir e-posta adresi girin.');
+                                'Lütfen geçerli bir Gmail / e-posta adresi girin.');
                           });
                           return;
                         }
@@ -217,19 +293,194 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           ScaffoldMessenger.of(context).showSnackBar(
                             SnackBar(
                               content: Text(
-                                '${AppTranslationService.tr("✅ Google hesabı başarıyla bağlandı:")} ${acc.email}\n${AppTranslationService.tr("Doğum haritanız ve VIP bilgileriniz buluta yedeklendi.")}',
+                                '✅ ${acc.email} bağlandı! Yedekleme paketiniz e-posta adresinize gönderiliyor...',
                               ),
                               backgroundColor: const Color(0xFF4285F4),
                               duration: const Duration(seconds: 4),
                             ),
                           );
                         }
+                        await CloudAccountService.sendBackupEmailToUser(
+                          targetEmail: acc.email,
+                        );
                       },
-                      icon: const Icon(Icons.cloud_done_rounded, size: 20),
+                      icon: const Icon(Icons.forward_to_inbox_rounded, size: 20),
                       label: Text(
-                        AppTranslationService.tr('Hesabı Bağla ve Yedekle'),
+                        AppTranslationService.tr('Bağla & Yedeği E-Postama Gönder'),
                         style: const TextStyle(
-                            fontSize: 14, fontWeight: FontWeight.bold),
+                            fontSize: 13.5, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                ],
+              ),
+            ),
+          );
+        },
+      ),
+    );
+  }
+
+  // E-Posta Yedek Kodu veya Bulut Yedeği Geri Yükleme Modalı
+  void _showBackupRestoreModal() {
+    final codeController = TextEditingController();
+    String? errorText;
+
+    showModalBottomSheet(
+      context: context,
+      isScrollControlled: true,
+      backgroundColor: Colors.transparent,
+      builder: (ctx) => StatefulBuilder(
+        builder: (modalCtx, setModalState) {
+          return Padding(
+            padding: EdgeInsets.only(
+              bottom: MediaQuery.of(context).viewInsets.bottom,
+            ),
+            child: Container(
+              padding: const EdgeInsets.all(24),
+              decoration: const BoxDecoration(
+                color: Color(0xFF161226),
+                borderRadius: BorderRadius.vertical(top: Radius.circular(28)),
+                border: Border(
+                  top: BorderSide(color: Color(0xFF00E5FF), width: 1.5),
+                ),
+              ),
+              child: Column(
+                mainAxisSize: MainAxisSize.min,
+                crossAxisAlignment: CrossAxisAlignment.start,
+                children: [
+                  Row(
+                    children: [
+                      Container(
+                        padding: const EdgeInsets.all(10),
+                        decoration: BoxDecoration(
+                          color: const Color(0xFF00E5FF).withAlpha(35),
+                          shape: BoxShape.circle,
+                        ),
+                        child: const Icon(
+                          Icons.cloud_download_rounded,
+                          color: Color(0xFF00E5FF),
+                          size: 24,
+                        ),
+                      ),
+                      const SizedBox(width: 12),
+                      const Expanded(
+                        child: Text(
+                          'E-Posta & Bulut Yedeğini Geri Yükle',
+                          style: TextStyle(
+                            color: Colors.white,
+                            fontSize: 15.5,
+                            fontWeight: FontWeight.bold,
+                          ),
+                        ),
+                      ),
+                    ],
+                  ),
+                  const SizedBox(height: 14),
+                  const Text(
+                    'Gmail kutunuza gönderilen yedekleme e-postasındaki "GKY-YEDEK-..." kodunu aşağıya yapıştırarak doğum haritanızı, danışan arşivinizi ve kalan VIP sürenizi bu cihaza aktarabilirsiniz:',
+                    style: TextStyle(color: Colors.white70, fontSize: 12, height: 1.4),
+                  ),
+                  const SizedBox(height: 12),
+                  TextField(
+                    controller: codeController,
+                    maxLines: 3,
+                    style: const TextStyle(
+                      color: Color(0xFF00E5FF),
+                      fontSize: 12,
+                      fontFamily: 'monospace',
+                    ),
+                    decoration: InputDecoration(
+                      hintText: 'GKY-YEDEK-eyJ2ZXJzaW9uIjox...',
+                      hintStyle: const TextStyle(color: Colors.white24),
+                      filled: true,
+                      fillColor: Colors.white.withAlpha(12),
+                      border: OutlineInputBorder(
+                        borderRadius: BorderRadius.circular(14),
+                        borderSide: BorderSide.none,
+                      ),
+                      errorText: errorText,
+                    ),
+                  ),
+                  const SizedBox(height: 14),
+                  SizedBox(
+                    width: double.infinity,
+                    height: 46,
+                    child: ElevatedButton.icon(
+                      style: ElevatedButton.styleFrom(
+                        backgroundColor: const Color(0xFF00E5FF),
+                        foregroundColor: Colors.black87,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      onPressed: () async {
+                        final raw = codeController.text.trim();
+                        if (raw.isEmpty) {
+                          setModalState(() {
+                            errorText = 'Lütfen e-postanızdaki GKY-YEDEK-... kodunu yapıştırın.';
+                          });
+                          return;
+                        }
+                        Navigator.pop(ctx);
+                        setState(() => _isLoading = true);
+                        final ok = await CloudAccountService.restoreFromBackupCode(raw);
+                        await _loadState();
+                        setState(() => _isLoading = false);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                ok
+                                    ? '📥 E-posta yedeğiniz başarıyla çözümlendi! Haritalarınız ve VIP verileriniz geri yüklendi.'
+                                    : '⚠️ Yedek kodu doğrulanamadı. Lütfen e-postanızdaki GKY-YEDEK-... kodunu tam kopyaladığınızdan emin olun.',
+                              ),
+                              backgroundColor: ok ? const Color(0xFF1D5A3A) : Colors.redAccent,
+                            ),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.restore_page_rounded, size: 20),
+                      label: const Text(
+                        'E-Posta Yedek Kodunu Geri Yükle',
+                        style: TextStyle(fontSize: 13.5, fontWeight: FontWeight.bold),
+                      ),
+                    ),
+                  ),
+                  const SizedBox(height: 10),
+                  SizedBox(
+                    width: double.infinity,
+                    child: OutlinedButton.icon(
+                      style: OutlinedButton.styleFrom(
+                        side: const BorderSide(color: Colors.white24),
+                        foregroundColor: Colors.white70,
+                        shape: RoundedRectangleBorder(
+                          borderRadius: BorderRadius.circular(14),
+                        ),
+                      ),
+                      onPressed: () async {
+                        Navigator.pop(ctx);
+                        setState(() => _isLoading = true);
+                        final success = await CloudAccountService.restoreFromCloud();
+                        await _loadState();
+                        setState(() => _isLoading = false);
+                        if (mounted) {
+                          ScaffoldMessenger.of(context).showSnackBar(
+                            SnackBar(
+                              content: Text(
+                                success
+                                    ? '📥 Cihaz/Bulut yedeği ve mağaza abonelikleri geri yüklendi!'
+                                    : 'ℹ️ Google Play mağaza satın alımları sorgulandı.',
+                              ),
+                              backgroundColor: const Color(0xFF4285F4),
+                            ),
+                          );
+                        }
+                      },
+                      icon: const Icon(Icons.sync_rounded, size: 18),
+                      label: const Text(
+                        'Cihaz Hafızası & Google Play\'den Geri Yükle',
+                        style: TextStyle(fontSize: 12),
                       ),
                     ),
                   ),
@@ -579,23 +830,28 @@ class _SettingsScreenState extends State<SettingsScreen> {
                     onPressed: () async {
                       setState(() => _isLoading = true);
                       await CloudAccountService.backupToCloud();
+                      final email = _cloudAccount?.email;
                       await _loadState();
                       setState(() => _isLoading = false);
                       if (mounted) {
                         ScaffoldMessenger.of(context).showSnackBar(
                           SnackBar(
-                            content: Text(AppTranslationService.tr(
-                                '☁️ Haritalarınız ve VIP bilgileriniz buluta başarıyla yedeklendi!')),
+                            content: Text(
+                              '📧 Harita, danışan arşivi ve VIP yedek paketiniz ($email) e-posta adresinize gönderiliyor...',
+                            ),
                             backgroundColor: const Color(0xFF4285F4),
                           ),
                         );
                       }
+                      await CloudAccountService.sendBackupEmailToUser(
+                        targetEmail: email,
+                      );
                     },
-                    icon: const Icon(Icons.cloud_upload_rounded, size: 16),
+                    icon: const Icon(Icons.forward_to_inbox_rounded, size: 16),
                     label: Text(
-                      AppTranslationService.tr('Şimdi Yedekle'),
+                      AppTranslationService.tr('Şimdi Yedekle (Mail Gönder)'),
                       style: const TextStyle(
-                          fontSize: 12, fontWeight: FontWeight.bold),
+                          fontSize: 11.5, fontWeight: FontWeight.bold),
                     ),
                   ),
                 ),
@@ -609,29 +865,7 @@ class _SettingsScreenState extends State<SettingsScreen> {
                           borderRadius: BorderRadius.circular(12)),
                       padding: const EdgeInsets.symmetric(vertical: 10),
                     ),
-                    onPressed: () async {
-                      setState(() => _isLoading = true);
-                      final success =
-                          await CloudAccountService.restoreFromCloud();
-                      await _loadState();
-                      setState(() => _isLoading = false);
-                      if (mounted) {
-                        ScaffoldMessenger.of(context).showSnackBar(
-                          SnackBar(
-                            content: Text(
-                              success
-                                  ? AppTranslationService.tr(
-                                      '📥 Buluttaki harita ve VIP verileriniz cihaza geri yüklendi!')
-                                  : AppTranslationService.tr(
-                                      'ℹ️ Bulutta yedek bulunamadı; mağaza satın alımları sorgulandı.'),
-                            ),
-                            backgroundColor: success
-                                ? const Color(0xFF00E5FF)
-                                : Colors.amber,
-                          ),
-                        );
-                      }
-                    },
+                    onPressed: _showBackupRestoreModal,
                     icon: const Icon(Icons.cloud_download_rounded, size: 16),
                     label: Text(
                       AppTranslationService.tr('Geri Yükle'),
@@ -643,25 +877,38 @@ class _SettingsScreenState extends State<SettingsScreen> {
               ],
             ),
             const SizedBox(height: 8),
-            Center(
-              child: TextButton(
-                onPressed: () async {
-                  await CloudAccountService.unlinkAccount();
-                  await _loadState();
-                  if (mounted) {
-                    ScaffoldMessenger.of(context).showSnackBar(
-                      SnackBar(
-                        content: Text(AppTranslationService.tr(
-                            'Hesap bağlantısı kaldırıldı. Verileriniz bu cihazda korunmaktadır.')),
-                      ),
-                    );
-                  }
-                },
-                child: Text(
-                  AppTranslationService.tr('Hesap Bağlantısını Kaldır'),
-                  style: const TextStyle(color: Colors.white38, fontSize: 11),
+            Row(
+              mainAxisAlignment: MainAxisAlignment.center,
+              children: [
+                TextButton.icon(
+                  onPressed: _handleNativeGoogleSignIn,
+                  icon: const Icon(Icons.switch_account_rounded,
+                      size: 14, color: Color(0xFF4285F4)),
+                  label: const Text(
+                    'Google Hesabını Değiştir',
+                    style: TextStyle(color: Color(0xFF4285F4), fontSize: 11),
+                  ),
                 ),
-              ),
+                const SizedBox(width: 8),
+                TextButton(
+                  onPressed: () async {
+                    await CloudAccountService.unlinkAccount();
+                    await _loadState();
+                    if (mounted) {
+                      ScaffoldMessenger.of(context).showSnackBar(
+                        SnackBar(
+                          content: Text(AppTranslationService.tr(
+                              'Hesap bağlantısı kaldırıldı. Verileriniz bu cihazda korunmaktadır.')),
+                        ),
+                      );
+                    }
+                  },
+                  child: Text(
+                    AppTranslationService.tr('Bağlantıyı Kaldır'),
+                    style: const TextStyle(color: Colors.white38, fontSize: 11),
+                  ),
+                ),
+              ],
             ),
           ] else ...[
             Text(
@@ -681,10 +928,10 @@ class _SettingsScreenState extends State<SettingsScreen> {
                   shape: RoundedRectangleBorder(
                       borderRadius: BorderRadius.circular(12)),
                 ),
-                onPressed: _showGoogleLinkModal,
+                onPressed: _handleNativeGoogleSignIn,
                 icon: const Icon(Icons.g_mobiledata_rounded, size: 28),
                 label: Text(
-                  AppTranslationService.tr('Google ile Hesabı Bağla & Yedekle'),
+                  AppTranslationService.tr('Google (Gmail) ile Bağla & Yedekle'),
                   style: const TextStyle(
                       fontSize: 13, fontWeight: FontWeight.bold),
                 ),
@@ -935,17 +1182,19 @@ class _SettingsScreenState extends State<SettingsScreen> {
               Expanded(
                 child: OutlinedButton.icon(
                   style: OutlinedButton.styleFrom(
-                    side: const BorderSide(color: Colors.white24),
-                    foregroundColor: Colors.white70,
+                    side: const BorderSide(color: AppColors.starlightGold),
+                    foregroundColor: AppColors.starlightGold,
                     shape: RoundedRectangleBorder(
                         borderRadius: BorderRadius.circular(12)),
                   ),
-                  onPressed: () =>
-                      InAppPurchaseService.openStoreSubscriptionPage(),
-                  icon: const Icon(Icons.open_in_new_rounded, size: 16),
+                  onPressed: () => VipUpgradeModal.show(
+                    context,
+                    onPurchased: () => _loadState(),
+                  ),
+                  icon: const Icon(Icons.workspace_premium_rounded, size: 16),
                   label: Text(
-                    AppTranslationService.tr('Aboneliği Yönet'),
-                    style: const TextStyle(fontSize: 11),
+                    AppTranslationService.tr('Google Play ile Abone Ol'),
+                    style: const TextStyle(fontSize: 11, fontWeight: FontWeight.bold),
                   ),
                 ),
               ),
