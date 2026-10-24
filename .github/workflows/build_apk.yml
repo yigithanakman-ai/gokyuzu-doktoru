@@ -75,24 +75,22 @@ jobs:
         uses: softprops/action-gh-release@v2
         if: github.ref == 'refs/heads/main'
         with:
-          tag_name: v1.0.14-build23
-          name: "📱 Gökyüzü Doktoru - v1.0.14 (Sürüm Kodu 23 & Dinamik Transit Ay Natal Placidus Günlük Yorumu ve 4-Tıklama Reklam Algoritması)"
+          tag_name: v1.0.14-build24
+          name: "📱 Gökyüzü Doktoru - v1.0.14 (Sürüm Kodu 24 & Doğrudan Google Play Ödeme Alt Penceresi, Temiz Metin ve Gizli Tema)"
           body: |
-            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.14 / Sürüm Kodu 23)
+            ### 🪐 Gökyüzü Doktoru Android Sürümleri (v1.0.14 / Sürüm Kodu 24)
 
             - **`gokyuzu-doktoru.apk`**: Kendi Android telefonunuzda doğrudan test edip kullanmak için yükleme dosyası (İmzalı, Obfuscated).
-            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı, Sürüm Kodu 23, In-App Billing İzinli, ProGuard & R8 Korumalı).
+            - **`gokyuzu-doktoru.aab`**: Google Play Console'a yükleyeceğiniz resmi Android App Bundle paketi (Resmi Upload İmzalı, Sürüm Kodu 24, In-App Billing İzinli, ProGuard & R8 Korumalı).
 
-            #### 🌟 Bu Sürümdeki Büyük Yenilikler (Build 23):
-            1. **🌙 Dinamik Transit Ay & Natal Placidus Ev/Açı Sentezi (Astro Bülten & Günlük Yorum)**:
-               - Statik günlük burç yorumları tamamen kaldırılarak, her gün transit Ay'ın canlı gökyüzü boylamı (burç ve tam derece/dakika) hesaplanmaktadır.
-               - Kullanıcının natal haritasındaki Placidus ev kasp sınırları (1'den 12'ye) derece hassasiyetiyle taranır; Ay'ın hangi evde olduğu tam olarak belirlenir.
-               - Transit Ay'ın kullanıcının natal gezegenlerine (Güneş, Ay, Merkür, Venüs, Mars, Jüpiter, Satürn, Uranüs, Neptün, Plüton, Chiron, Kuzey Düğüm, ASC, MC) yaptığı majör açılar (0° Kavuşum, 60° Sekstil, 90° Kare, 120° Üçgen, 180° Karşıt) orblarıyla hesaplanır.
-               - Her güne özel kişiselleştirilmiş kozmik bülten sentezi, tema, odak alanı, şanslı saatler ve kozmik enerji skoru üretilir.
-            2. **💰 Ana Ekran ve Tüm Modüllerde Her 4 Tıklamada Bir Geçiş Reklamı**:
-               - Reklam optimizasyonu genişletildi; yalnızca harita detayında değil, ana ekrandaki aksiyonlarda (Astro Bülten burç/tarih seçimleri, profil geçişleri, sezon kartı, günün enerjisi, VIP modül tıklamaları, hızlı geçişler) her 4 tıklamada 1 geçiş reklamı tetiklenir.
-               - VIP kullanıcılara reklamlar %100 kapalıdır.
-            3. **🛡️ Kararlılık ve Performans**:
+            #### 🌟 Bu Sürümdeki Büyük Düzeltmeler (Build 24):
+            1. **💳 Doğrudan Yerel Google Play Ödeme Alt Penceresi (Native In-App Billing)**:
+               - VIP üyelik ve paket seçimi butonlarındaki tüm yapay geliştirici uyarı pencereleri tamamen kaldırıldı.
+               - Kullanıcı paket seçtiğinde doğrudan Google Play'in resmi test/ödeme alt penceresi (BillingClient) tetiklenir veya Google Play mağaza sayfasına yönlendirilir.
+            2. **✨ Temiz Astro Bülten Günlük Yorum Metni**:
+               - Günlük burç ve bülten yorumlarında ekranda ham olarak gözüken tüm `**` yıldız işaretleri temizlendi; profesyonel, okunaklı ve saf metin formatına geçirildi.
+            3. **🎃 Balkabağı Tema Butonu Gizlendi**:
+               - Ana ekran üst gezinme çubuğundaki balkabağı butonu tamamen gizlendi. Kozmik temaların nereden ve nasıl değiştirildiği kullanıcılardan saklanarak tamamen gizli ve otomatik hale getirildi.
                - Reklam bekleme sürelerinde 2.5 saniyelik güvenlik zaman aşımı eklenerek kullanıcı deneyimi akıcı hale getirildi.
           files: |
             gokyuzu-doktoru.apk

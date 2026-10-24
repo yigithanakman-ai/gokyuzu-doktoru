@@ -728,33 +728,6 @@ class _HomeScreenState extends State<HomeScreen> {
                           IconButton(
                             padding: EdgeInsets.zero,
                             constraints: const BoxConstraints(),
-                            onPressed: () => _safeAction(() => _showCosmicSeasonPickerModal(context)),
-                            icon: Container(
-                              padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 4),
-                              decoration: BoxDecoration(
-                                borderRadius: BorderRadius.circular(12),
-                                color: CosmicThemeService.primaryAccentColor.withValues(alpha: 0.22),
-                                border: Border.all(
-                                  color: CosmicThemeService.primaryAccentColor.withValues(alpha: 0.7),
-                                ),
-                              ),
-                              child: Text(
-                                CosmicThemeService.isHalloween
-                                    ? '🎃'
-                                    : (CosmicThemeService.isNewYear
-                                        ? '🎄'
-                                        : (CosmicThemeService.isValentines
-                                            ? '💖'
-                                            : (CosmicThemeService.isSpringEquinox ? '🌸' : '🎃'))),
-                                style: const TextStyle(fontSize: 13),
-                              ),
-                            ),
-                            tooltip: 'Kozmik Sezon & Bayram Teması',
-                          ),
-                          const SizedBox(width: 5),
-                          IconButton(
-                            padding: EdgeInsets.zero,
-                            constraints: const BoxConstraints(),
                             onPressed: () => _safeAction(() => _showLanguageSelectionSheet(context)),
                             icon: Container(
                               padding: const EdgeInsets.symmetric(horizontal: 7, vertical: 5),
@@ -963,9 +936,7 @@ class _HomeScreenState extends State<HomeScreen> {
                   final secondary = CosmicThemeService.secondaryAccentColor;
                   final isHalloween = activeSeason == CosmicSeason.halloween;
 
-                  return GestureDetector(
-                    onTap: () => _safeAction(() => _showCosmicSeasonPickerModal(context)),
-                    child: Container(
+                  return Container(
                       width: double.infinity,
                       margin: const EdgeInsets.only(bottom: 16),
                       padding: const EdgeInsets.all(16),
@@ -1063,8 +1034,7 @@ class _HomeScreenState extends State<HomeScreen> {
                           ),
                         ],
                       ),
-                    ),
-                  );
+                    );
                 },
               ),
 

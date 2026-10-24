@@ -909,21 +909,21 @@ class AstroBulletinService {
     final clientName = profile.name.trim().isNotEmpty ? profile.name : 'Danışan';
     buffer.writeln('Sevgili $clientName, bugün ($dateStr) gökyüzünde Transit Ay, $transitMoonFormatted derecesinde seyrediyor ve haritanızın $natalHouseName ($natalHouseTheme) alanını aydınlatıyor.');
     buffer.writeln();
-    buffer.writeln('🏠 **$natalHouseName Yaşam Alanı Dinamiği:**');
+    buffer.writeln('🏠 $natalHouseName Yaşam Alanı Dinamiği:');
     buffer.writeln(natalHouseDesc);
     buffer.writeln();
 
     if (activeAspects.isNotEmpty) {
-      buffer.writeln('🪐 **Transit Ay\'ın Natal Gezegenlerinize Yaptığı Geometrik Açılar:**');
+      buffer.writeln('🪐 Transit Ay\'ın Natal Gezegenlerinize Yaptığı Geometrik Açılar:');
       for (final a in activeAspects) {
-        buffer.writeln('• ${a.aspectSymbol} **Transit Ay ${a.aspectName} Natal ${a.natalPlanet}** (${a.natalPlanetDegree}, Orb: ${a.orbStr}): ${a.interpretation}');
+        buffer.writeln('• ${a.aspectSymbol} Transit Ay ${a.aspectName} Natal ${a.natalPlanet} (${a.natalPlanetDegree}, Orb: ${a.orbStr}): ${a.interpretation}');
       }
     } else {
-      buffer.writeln('🪐 **Açı Durumu:**');
-      buffer.writeln('• 🌿 **Sakin & Dingin Kozmik Akış:** Transit Ay bugün doğum haritanızdaki majör gezegenlerle doğrudan sert veya bağlayıcı bir açı kurmuyor. Bu etki, $natalHouseName konularında dışsal çalkantılardan uzak, berrak bir odaklanma ve kendi ritminizi belirleme şansı tanıyor.');
+      buffer.writeln('🪐 Açı Durumu:');
+      buffer.writeln('• 🌿 Sakin & Dingin Kozmik Akış: Transit Ay bugün doğum haritanızdaki majör gezegenlerle doğrudan sert veya bağlayıcı bir açı kurmuyor. Bu etki, $natalHouseName konularında dışsal çalkantılardan uzak, berrak bir odaklanma ve kendi ritminizi belirleme şansı tanıyor.');
     }
     buffer.writeln();
-    buffer.writeln('🎯 **Günün Stratejik Rehberi:**');
+    buffer.writeln('🎯 Günün Stratejik Rehberi:');
     buffer.writeln(natalHouseAdvice);
 
     // 6. Şanslı Saatler ve Enerji Skoru
@@ -972,7 +972,7 @@ class AstroBulletinService {
       natalHouseDescription: natalHouseDesc,
       natalHouseCuspRange: cuspRange,
       activeAspects: activeAspects,
-      compiledDailySynthesis: buffer.toString(),
+      compiledDailySynthesis: buffer.toString().replaceAll('**', ''),
       dailyTheme: dailyThemeStr,
       dailyFocus: dailyFocusStr,
       dailyLuckyHours: dailyLuckyHoursStr,

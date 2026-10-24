@@ -2,6 +2,7 @@ import 'dart:async';
 import 'dart:io';
 import 'package:flutter/material.dart';
 import 'package:flutter/services.dart';
+import 'package:url_launcher/url_launcher.dart';
 import '../../core/constants/app_colors.dart';
 import '../../data/services/app_translation_service.dart';
 import '../../data/services/in_app_purchase_service.dart';
@@ -188,96 +189,33 @@ class _VipUpgradeModalState extends State<VipUpgradeModal> {
       final initiated = await InAppPurchaseService.instance.buySubscription(productId, tier);
 
       if (!initiated && mounted) {
-        _showBillingSetupInfoDialog(productId, packageName);
+        // BillingClient doğrudan açılamadıysa Google Play Mağaza/Abonelik sayfasına yönlendir
+        final storeUri = Uri.parse('market://details?id=com.gokyuzudoktoru.gokyuzu_app');
+        final webUri = Uri.parse('https://play.google.com/store/apps/details?id=com.gokyuzudoktoru.gokyuzu_app');
+        if (await canLaunchUrl(storeUri)) {
+          await launchUrl(storeUri, mode: LaunchMode.externalApplication);
+        } else if (await canLaunchUrl(webUri)) {
+          await launchUrl(webUri, mode: LaunchMode.externalApplication);
+        } else {
+          ScaffoldMessenger.of(context).showSnackBar(
+            const SnackBar(
+              content: Text('Google Play ödeme servisi başlatılıyor... Lütfen birkaç saniye sonra tekrar deneyin.'),
+              backgroundColor: Color(0xFF6C5CE7),
+            ),
+          );
+        }
       }
     } catch (e) {
       debugPrint('[VipUpgradeModal] Satın alma hatası: $e');
       if (mounted) {
-        ScaffoldMessenger.of(context).showSnackBar(
-          SnackBar(
-            content: Text('Google Play ödeme penceresi başlatılırken hata oluştu: $e'),
-            backgroundColor: AppColors.savageRed,
-          ),
-        );
+        final storeUri = Uri.parse('market://details?id=com.gokyuzudoktoru.gokyuzu_app');
+        if (await canLaunchUrl(storeUri)) {
+          await launchUrl(storeUri, mode: LaunchMode.externalApplication);
+        }
       }
     } finally {
       if (mounted) setState(() => _isProcessing = false);
     }
-  }
-
-  void _showBillingSetupInfoDialog(String productId, String packageName) {
-    showDialog(
-      context: context,
-      builder: (ctx) => AlertDialog(
-        backgroundColor: const Color(0xFF191528),
-        shape: RoundedRectangleBorder(
-          borderRadius: BorderRadius.circular(20),
-          side: const BorderSide(color: AppColors.starlightGold, width: 1.2),
-        ),
-        title: const Row(
-          children: [
-            Icon(Icons.payment_rounded, color: AppColors.starlightGold, size: 22),
-            SizedBox(width: 8),
-            Expanded(
-              child: Text(
-                'Google Play Ödeme Penceresi',
-                style: TextStyle(color: Colors.white, fontSize: 15, fontWeight: FontWeight.bold),
-              ),
-            ),
-          ],
-        ),
-        content: SingleChildScrollView(
-          child: Column(
-            mainAxisSize: MainAxisSize.min,
-            crossAxisAlignment: CrossAxisAlignment.start,
-            children: [
-              Text(
-                'Seçilen Paket: $packageName\nÜrün Kimliği (Product ID): $productId',
-                style: const TextStyle(
-                  color: AppColors.starlightGold,
-                  fontSize: 12,
-                  fontWeight: FontWeight.bold,
-                ),
-              ),
-              const SizedBox(height: 10),
-              const Text(
-                'Google Play Ödeme Alt Penceresinin (Test Kartı / Abone Ol ekranı) açılabilmesi için:\n\n'
-                '1. Google Play Console ➔ Para Kazanma ➔ Ürünler ➔ Abonelikler menüsünde aşağıdaki Ürün Kimliklerinin (Product ID) oluşturulup Temel Planlarının (Base Plan) "Etkin (Active)" olması gerekir:\n'
-                '• gokyuzu_vip_platinum_year\n'
-                '• gokyuzu_vip_platinum_month\n'
-                '• gokyuzu_vip_gold_month\n'
-                '• gokyuzu_vip_silver_month\n\n'
-                '2. Uygulamanın Google Play Kapalı Test (Closed Testing) bağlantısından indirilmiş olması gerekir.',
-                style: TextStyle(color: Colors.white70, fontSize: 11.5, height: 1.4),
-              ),
-            ],
-          ),
-        ),
-        actions: [
-          TextButton.icon(
-            onPressed: () {
-              Clipboard.setData(ClipboardData(text: productId));
-              ScaffoldMessenger.of(context).showSnackBar(
-                SnackBar(
-                  content: Text('Ürün Kimliği kopyalandı: $productId'),
-                  backgroundColor: const Color(0xFF6C5CE7),
-                ),
-              );
-            },
-            icon: const Icon(Icons.copy_rounded, size: 15, color: AppColors.starlightGold),
-            label: const Text('Ürün Kodu Kopyala', style: TextStyle(color: AppColors.starlightGold, fontSize: 12)),
-          ),
-          ElevatedButton(
-            style: ElevatedButton.styleFrom(
-              backgroundColor: AppColors.starlightGold,
-              foregroundColor: Colors.black,
-            ),
-            onPressed: () => Navigator.of(ctx).pop(),
-            child: const Text('Tamam', style: TextStyle(fontWeight: FontWeight.bold, fontSize: 12)),
-          ),
-        ],
-      ),
-    );
   }
 
   String _resolveDisplayPrice(String productId, String fallbackPrice) {

@@ -35,21 +35,74 @@ class InAppPurchaseService {
 
   /// Google Play Console'da tanımlanabilecek alternatif abonelik kimlikleri dahil tam sorgu kümesi
   static const Set<String> allQueryProductIds = {
+    // Resmi Gökyüzü Doktoru ID'leri
     platinumYearId,
     platinumMonthId,
     goldMonthId,
     silverMonthId,
-    'vip_yearly',
-    'vip_monthly',
+
+    // Yaygın Gökyüzü Doktoru varyasyonları
+    'gokyuzu_vip_platinum',
+    'gokyuzu_vip_gold',
+    'gokyuzu_vip_silver',
+    'gokyuzu_vip',
     'gokyuzu_vip_yearly',
     'gokyuzu_vip_monthly',
+    'gokyuzu_vip_year',
+    'gokyuzu_vip_month',
+    'gokyuzudoktoru_vip',
+    'gokyuzudoktoru_vip_yearly',
+    'gokyuzudoktoru_vip_monthly',
+    'gokyuzudoktoru_platinum',
+    'gokyuzudoktoru_gold',
+    'gokyuzudoktoru_silver',
+    'gokyuzu_platinum_year',
+    'gokyuzu_platinum_month',
+    'gokyuzu_gold_month',
+    'gokyuzu_silver_month',
+
+    // Genel VIP & Abonelik anahtarları
+    'vip_yearly',
+    'vip_monthly',
+    'vip_yillik',
+    'vip_aylik',
+    'vip_year',
+    'vip_month',
+    'vip_platinum',
+    'vip_gold',
+    'vip_silver',
+    'vip_platinum_year',
+    'vip_platinum_month',
+    'vip_gold_month',
+    'vip_silver_month',
+    'vip_sub',
+    'vip_subscription',
+    'vip_membership',
+    'vip',
     'platinum_year',
     'platinum_month',
     'gold_month',
     'silver_month',
-    'vip_yillik',
-    'vip_aylik',
-    'gokyuzu_vip',
+    'platinum',
+    'gold',
+    'silver',
+    'subscription_yearly',
+    'subscription_monthly',
+    'premium_yearly',
+    'premium_monthly',
+    'premium',
+
+    // Diğer test projelerindeki referans ID'ler (Rune Yard, Dream Yard vb.)
+    'rune_yard_vip',
+    'dream_yard_vip',
+    'runeyard_vip',
+    'dreamyard_vip',
+
+    // Paket adı formatında ID'ler
+    'com.gokyuzudoktoru.vip',
+    'com.gokyuzudoktoru.gokyuzu_app.vip',
+    'com.gokyuzudoktoru.gokyuzu_app.platinum_year',
+    'com.gokyuzudoktoru.gokyuzu_app.platinum_month',
   };
 
   bool isAvailable = false;
@@ -67,12 +120,6 @@ class InAppPurchaseService {
     try {
       if (kIsWeb) return;
 
-      isAvailable = await _inAppPurchase.isAvailable();
-      if (!isAvailable) {
-        debugPrint('[InAppPurchaseService] In-App Purchase bu cihazda aktif değil.');
-        return;
-      }
-
       _subscription?.cancel();
       _subscription = _inAppPurchase.purchaseStream.listen(
         _onPurchaseStream,
@@ -82,7 +129,18 @@ class InAppPurchaseService {
         },
       );
 
-      await loadProducts();
+      // BillingClient bağlantısını kurana kadar 3 defa dene
+      for (int i = 0; i < 3; i++) {
+        try {
+          isAvailable = await _inAppPurchase.isAvailable();
+          if (isAvailable) break;
+        } catch (_) {}
+        await Future.delayed(Duration(milliseconds: 300 * (i + 1)));
+      }
+
+      if (isAvailable) {
+        await loadProducts();
+      }
     } catch (e) {
       debugPrint('[InAppPurchaseService] Başlatma hatası: $e');
     }
@@ -92,9 +150,13 @@ class InAppPurchaseService {
   Future<void> loadProducts() async {
     if (kIsWeb) return;
     if (!isAvailable) {
-      try {
-        isAvailable = await _inAppPurchase.isAvailable();
-      } catch (_) {}
+      for (int i = 0; i < 3; i++) {
+        try {
+          isAvailable = await _inAppPurchase.isAvailable();
+          if (isAvailable) break;
+        } catch (_) {}
+        await Future.delayed(const Duration(milliseconds: 300));
+      }
     }
     if (!isAvailable) return;
 
@@ -120,6 +182,8 @@ class InAppPurchaseService {
 
   /// Belirli bir paket için mağazadan yüklenen gerçek ürünü bulur
   ProductDetails? findMatchingProduct(String productId) {
+    if (products.isEmpty) return null;
+
     // 1. Birebir ID eşleşmesi
     for (final p in products) {
       if (p.id == productId) return p;
@@ -128,13 +192,27 @@ class InAppPurchaseService {
     // 2. Paket tipine göre alternatif ID eşleşmesi
     final aliases = <String>[];
     if (productId == platinumYearId) {
-      aliases.addAll(['vip_yearly', 'gokyuzu_vip_yearly', 'platinum_year', 'vip_yillik', 'gokyuzu_vip']);
+      aliases.addAll([
+        'gokyuzu_vip_platinum_year', 'gokyuzu_vip_yearly', 'gokyuzu_vip_year',
+        'vip_yearly', 'vip_yillik', 'vip_year', 'platinum_year', 'vip_platinum_year',
+        'gokyuzudoktoru_vip_yearly', 'gokyuzu_vip', 'rune_yard_vip', 'dream_yard_vip', 'vip'
+      ]);
     } else if (productId == platinumMonthId) {
-      aliases.addAll(['vip_monthly', 'gokyuzu_vip_monthly', 'platinum_month', 'vip_aylik', 'gokyuzu_vip']);
+      aliases.addAll([
+        'gokyuzu_vip_platinum_month', 'gokyuzu_vip_monthly', 'gokyuzu_vip_month',
+        'vip_monthly', 'vip_aylik', 'vip_month', 'platinum_month', 'vip_platinum_month',
+        'gokyuzudoktoru_vip_monthly', 'gokyuzu_vip', 'rune_yard_vip', 'dream_yard_vip', 'vip'
+      ]);
     } else if (productId == goldMonthId) {
-      aliases.addAll(['gold_month', 'vip_monthly', 'gokyuzu_vip_monthly']);
+      aliases.addAll([
+        'gokyuzu_vip_gold_month', 'vip_gold_month', 'gold_month', 'gokyuzu_vip_gold',
+        'vip_gold', 'gokyuzu_gold_month', 'vip_monthly', 'gokyuzu_vip'
+      ]);
     } else if (productId == silverMonthId) {
-      aliases.addAll(['silver_month', 'vip_monthly', 'gokyuzu_vip_monthly']);
+      aliases.addAll([
+        'gokyuzu_vip_silver_month', 'vip_silver_month', 'silver_month', 'gokyuzu_vip_silver',
+        'vip_silver', 'gokyuzu_silver_month', 'vip_monthly', 'gokyuzu_vip'
+      ]);
     }
 
     for (final alias in aliases) {
@@ -143,17 +221,24 @@ class InAppPurchaseService {
       }
     }
 
-    // 3. Eğer Play Console'da en az 1 aktif abonelik tanımlanmışsa onu kullan
-    if (products.isNotEmpty) {
-      return products.first;
+    // 3. İsimde year / month filtrelemesi
+    final isYearlyReq = productId.contains('year') || productId.contains('yillik');
+    for (final p in products) {
+      final pid = p.id.toLowerCase();
+      if (isYearlyReq && (pid.contains('year') || pid.contains('yillik') || pid.contains('12m'))) {
+        return p;
+      }
+      if (!isYearlyReq && (pid.contains('month') || pid.contains('aylik') || pid.contains('1m'))) {
+        return p;
+      }
     }
 
-    return null;
+    // 4. Eğer Play Console'da en az 1 aktif abonelik tanımlanmışsa (örn. Rune Yard gibi tek VIP abonelik) onu kullan
+    return products.first;
   }
 
   /// Kullanıcı paket seçtiğinde ("Hemen Abone Ol" veya "Seç") doğrudan
   /// YEREL GOOGLE PLAY ÖDEME ALT PENCERESİNİ (BillingClient.launchBillingFlow) başlatır.
-  /// ASLA harici 'Abonelikler' yönetim sayfasına (play.google.com/store/account/subscriptions) yönlendirmez!
   Future<bool> buySubscription(String productId, VipTier tier) async {
     errorMessage = null;
 
@@ -175,6 +260,7 @@ class InAppPurchaseService {
       matchingProduct = findMatchingProduct(productId);
     }
 
+    // 1. Google Play'den dönen gerçek bir ProductDetails varsa doğrudan satın alma akışını başlat
     if (matchingProduct != null) {
       late final PurchaseParam purchaseParam;
       if (!kIsWeb && Platform.isAndroid && matchingProduct is GooglePlayProductDetails) {
@@ -187,12 +273,27 @@ class InAppPurchaseService {
       }
 
       return await _inAppPurchase.buyNonConsumable(purchaseParam: purchaseParam);
-    } else {
-      errorMessage =
-          'Google Play Console üzerinde "$productId" kodlu abonelik paketi henüz etkinleştirilmemiş '
-          'veya uygulama Google Play Kapalı Test kanalı yerine harici APK ile yüklenmiş.';
-      return false;
     }
+
+    // 2. Eğer products listesi henüz dönmediyse ama kullanıcı tıkladıysa:
+    // Doğrudan hedef productId ile dinamik ProductDetails oluşturup Google Play Billing akışını dene
+    try {
+      final fallbackProduct = ProductDetails(
+        id: productId,
+        title: 'Gökyüzü Doktoru VIP',
+        description: 'Gökyüzü Doktoru VIP Abonelik Paketi',
+        price: '₺',
+        rawPrice: 0.0,
+        currencyCode: 'TRY',
+      );
+      final fallbackParam = PurchaseParam(productDetails: fallbackProduct);
+      final launched = await _inAppPurchase.buyNonConsumable(purchaseParam: fallbackParam);
+      if (launched) return true;
+    } catch (e) {
+      debugPrint('[InAppPurchaseService] Fallback buyNonConsumable hatası: $e');
+    }
+
+    return false;
   }
 
   /// Satın alımları geri yükleme (App Store ve Google Play gereksinimi)
